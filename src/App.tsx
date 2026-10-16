@@ -19,6 +19,10 @@ import { Footer } from './components/Footer';
 import { AdminDashboard } from './components/AdminDashboard';
 import { SiteSettingsData, getSiteSettings } from './services/firebaseService';
 
+// Obscure, non-guessable admin portal slug without any hash
+export const ADMIN_SECRET_SLUG = 'portal-ege-8492';
+export const ADMIN_SECRET_PATH = `/${ADMIN_SECRET_SLUG}`;
+
 export default function App() {
   const [currentLang, setCurrentLang] = useState<Language>('ar');
   const [activeSection, setActiveSection] = useState<NavSection>('home');
@@ -27,19 +31,40 @@ export default function App() {
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [liveSettings, setLiveSettings] = useState<SiteSettingsData | null>(null);
 
-  // Check URL hash or query for admin route on boot & listen to hash changes
+  // Path routing without hash - check on initial load & popstate
   useEffect(() => {
-    const checkHash = () => {
+    const handleRouteChange = () => {
+      const pathname = window.location.pathname.replace(/^\/|\/$/g, '');
       const hash = window.location.hash;
-      const search = window.location.search;
-      if (hash === '#admin' || hash === '#admin-portal' || search.includes('admin=true')) {
+
+      // 1. Secret unguessable admin portal
+      if (
+        pathname === ADMIN_SECRET_SLUG ||
+        pathname === 'portal-ege-8492' ||
+        pathname === 'ege-portal-9472'
+      ) {
         setIsAdminOpen(true);
+        // Strip any residual hash from URL
+        if (hash) {
+          window.history.replaceState(null, '', `/${pathname}`);
+        }
+        return;
       }
+
+      // 2. If visiting old /admin or #admin, clean up and redirect to home
+      if (pathname === 'admin' || hash === '#admin' || hash === '#admin-portal') {
+        window.history.replaceState(null, '', '/');
+        setIsAdminOpen(false);
+        return;
+      }
+
+      // Default: Public visitor view
+      setIsAdminOpen(false);
     };
 
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
+    handleRouteChange();
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
   // Fetch live settings from Firebase on startup
@@ -95,17 +120,24 @@ export default function App() {
     setPrefilledMessage(details);
   };
 
+  const handleOpenAdmin = () => {
+    window.history.pushState(null, '', ADMIN_SECRET_PATH);
+    setIsAdminOpen(true);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleExitAdmin = () => {
+    window.history.pushState(null, '', '/');
+    setIsAdminOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // If Admin portal is activated, render the dedicated zero-popup dashboard
   if (isAdminOpen) {
     return (
       <AdminDashboard
         currentLang={currentLang}
-        onExit={() => {
-          setIsAdminOpen(false);
-          if (window.location.hash === '#admin' || window.location.hash === '#admin-portal') {
-            history.pushState(null, '', window.location.pathname);
-          }
-        }}
+        onExit={handleExitAdmin}
         onSettingsUpdated={(newSettings) => {
           setLiveSettings(newSettings);
         }}
@@ -182,14 +214,11 @@ export default function App() {
         />
       </main>
 
-      {/* 9. Quiet Corporate Footer with discreet admin portal link */}
+      {/* 9. Quiet Corporate Footer with discreet admin portal link without # */}
       <Footer
         currentLang={currentLang}
         onNavigate={handleNavigate}
-        onOpenAdmin={() => {
-          setIsAdminOpen(true);
-          window.location.hash = 'admin';
-        }}
+        onOpenAdmin={handleOpenAdmin}
       />
     </div>
   );

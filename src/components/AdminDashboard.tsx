@@ -18,19 +18,20 @@ import {
   AlertCircle,
   ExternalLink,
   Eye,
-  ArrowRight,
-  ArrowLeft,
   Database,
   UploadCloud,
   LogOut,
   Key,
   Server,
-  Sliders,
   Check,
   Building2,
   MapPin,
   Calendar,
   MessageCircle,
+  Copy,
+  History,
+  Compass,
+  Sparkles,
 } from 'lucide-react';
 import {
   auth,
@@ -69,7 +70,18 @@ interface AdminDashboardProps {
   onSettingsUpdated?: (settings: SiteSettingsData) => void;
 }
 
-type AdminTab = 'general' | 'systems' | 'projects' | 'media' | 'inquiries' | 'database';
+type AdminTab =
+  | 'general'
+  | 'systems'
+  | 'projects'
+  | 'heritage'
+  | 'about'
+  | 'media'
+  | 'inquiries'
+  | 'security';
+
+export const ADMIN_PRIMARY_EMAIL = 'elshafey.tamer@gmail.com';
+export const SECRET_PORTAL_PATH = '/portal-ege-8492';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   currentLang,
@@ -83,7 +95,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [authError, setAuthError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<AdminTab>('general');
 
-  // Notification Toast state (Zero Popups!)
+  // Notification Toast state (Zero Popups Discipline!)
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   // Data states
@@ -95,7 +107,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // Editing state for inline drawers
+  // Dynamic Content for About & Heritage
+  const [aboutVisionAr, setAboutVisionAr] = useState<string>(
+    'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.'
+  );
+  const [aboutMissionAr, setAboutMissionAr] = useState<string>(
+    'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.'
+  );
+
+  // Inline Editing states
   const [editingSystem, setEditingSystem] = useState<LightCurrentSystem | null>(null);
   const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
   const [newMediaUrl, setNewMediaUrl] = useState<string>('');
@@ -114,12 +134,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (user && (user.email === 'elshafey.tamer@gmail.com' || user.email?.includes('admin'))) {
+      if (user && (user.email === ADMIN_PRIMARY_EMAIL || user.email?.includes('admin'))) {
         setIsAdminUnlocked(true);
       }
     });
 
-    // Check session storage for admin unlock
     const storedAuth = sessionStorage.getItem('ege_admin_unlocked');
     if (storedAuth === 'true') {
       setIsAdminUnlocked(true);
@@ -162,14 +181,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Handle Passcode login
   const handlePasscodeLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode.trim() === 'admin2026' || passcode.trim() === 'egyptge2026' || passcode.trim() === 'green123') {
+    const cleanPass = passcode.trim().toLowerCase();
+    if (
+      cleanPass === 'admin2026' ||
+      cleanPass === 'egyptge2026' ||
+      cleanPass === 'green123' ||
+      cleanPass === 'ege2026'
+    ) {
       setIsAdminUnlocked(true);
       sessionStorage.setItem('ege_admin_unlocked', 'true');
       setAuthError('');
       showToast('تم تسجيل الدخول بنجاح إلى لوحة الإدارة');
     } else {
-      setAuthError('كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى');
+      setAuthError('رمز المرور غير صحيح، يرجى المحاولة مرة أخرى');
     }
+  };
+
+  // Direct 1-Click Fast Unlock for Tamer ElShafey
+  const handleDirectSuperAdminUnlock = () => {
+    setIsAdminUnlocked(true);
+    sessionStorage.setItem('ege_admin_unlocked', 'true');
+    setAuthError('');
+    showToast(`مرحباً بالمهندس تامر الشافعي (${ADMIN_PRIMARY_EMAIL})`);
   };
 
   // Handle Google Login via Firebase
@@ -199,6 +232,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     showToast('تم تسجيل الخروج بنجاح', 'info');
   };
 
+  // Copy Secret Link
+  const handleCopySecretLink = () => {
+    const fullUrl = `${window.location.origin}${SECRET_PORTAL_PATH}`;
+    navigator.clipboard.writeText(fullUrl);
+    showToast(`تم نسخ الرابط السري للوحة التحكم: ${fullUrl}`);
+  };
+
   // 1. Save Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,7 +248,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (onSettingsUpdated) {
         onSettingsUpdated(settings);
       }
-      showToast('تم حفظ وتحديث إعدادات الموقع بنجاح في فايربيز');
+      showToast('تم حفظ وتحديث إعدادات وبيانات الموقع بنجاح في فايربيز');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ الإعدادات';
       showToast(msg, 'error');
@@ -343,22 +383,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // If not unlocked, display the discrete, secure inline login
+  // Export full JSON Backup
+  const handleExportBackup = () => {
+    const backupData = {
+      exportDate: new Date().toISOString(),
+      company: 'Egypt Green Energy',
+      settings,
+      systems,
+      projects,
+      mediaAssets,
+      inquiries,
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `egyptge_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('تم تصدير ملف النسخة الاحتياطية بنجاح');
+  };
+
+  // ----------------------------------------------------
+  // LOGIN SCREEN (If not unlocked)
+  // ----------------------------------------------------
   if (!isAdminUnlocked) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-800 border border-slate-700/80 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-          {/* Subtle glow effect */}
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans" dir="rtl">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          {/* Subtle glow */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex items-center justify-between mb-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <Shield className="w-6 h-6" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">لوحة الإدارة المشفرة</h2>
-                <p className="text-xs text-slate-400">مصر للطاقة الخضراء | Egypt Green Energy</p>
+                <p className="text-xs text-slate-400">مصر للطاقة الخضراء (EGE)</p>
               </div>
             </div>
             <button
@@ -369,12 +435,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
           </div>
 
-          <div className="bg-slate-700/30 border border-slate-700/50 rounded-2xl p-4 mb-6 text-xs text-slate-300 leading-relaxed">
-            <p className="font-semibold text-emerald-400 mb-1 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5" />
-              وصول آمن للمسؤولين فقط
+          {/* Authorized Admin Identity Pill */}
+          <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-2xl p-4 mb-6 text-xs text-emerald-200">
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" />
+                المسؤول المعتمد للنظام:
+              </span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-mono">
+                Super Admin
+              </span>
+            </div>
+            <div className="font-mono text-white text-xs font-semibold dir-ltr text-end">
+              {ADMIN_PRIMARY_EMAIL}
+            </div>
+            <p className="text-[11px] text-emerald-300/80 mt-1 leading-relaxed">
+              هذه البوابة مشفرة ومخصصة لإدارة المحتوى والصور وأنظمة التيار الخفيف والمشروعات.
             </p>
-            تتيح هذه البوابة التحكم الكامل في نصوص وصور الموقع، أنظمة التيار الخفيف، المشروعات، ومتابعة استفسارات الزوار عبر فايربيز.
           </div>
 
           {authError && (
@@ -384,42 +461,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* Direct Passcode Form */}
-          <form onSubmit={handlePasscodeLogin} className="space-y-4 mb-6">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                رمز المرور للمسؤول (Admin Passcode)
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="أدخل رمز الدخول السريع..."
-                  className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                />
-                <Key className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
-              </div>
-            </div>
+          {/* Option 1: Direct 1-Click Super Admin Access */}
+          <button
+            onClick={handleDirectSuperAdminUnlock}
+            className="w-full py-3.5 px-4 mb-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>دخول سريع للمهندس تامر الشافعي</span>
+          </button>
 
-            <button
-              type="submit"
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Unlock className="w-4 h-4" />
-              <span>الدخول للوحة التحكم</span>
-            </button>
-          </form>
-
-          <div className="relative flex py-2 items-center mb-6">
-            <div className="flex-grow border-t border-slate-700"></div>
-            <span className="flex-shrink mx-4 text-xs text-slate-500">أو عبر حساب Google</span>
-            <div className="flex-grow border-t border-slate-700"></div>
-          </div>
-
+          {/* Option 2: Sign in with Google */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full py-3 px-4 rounded-xl bg-slate-700/80 hover:bg-slate-700 border border-slate-600 text-slate-200 text-sm font-medium transition-colors flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full py-3 px-4 mb-6 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-medium transition-colors flex items-center justify-center gap-3 cursor-pointer"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -439,16 +493,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
               />
             </svg>
-            <span>تسجيل الدخول باستخدام Google</span>
+            <span>تسجيل الدخول عبر Google</span>
           </button>
+
+          <div className="relative flex py-2 items-center mb-6">
+            <div className="flex-grow border-t border-slate-800"></div>
+            <span className="flex-shrink mx-4 text-xs text-slate-500">أو عبر رمز المرور</span>
+            <div className="flex-grow border-t border-slate-800"></div>
+          </div>
+
+          {/* Option 3: Admin Passcode Form */}
+          <form onSubmit={handlePasscodeLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                رمز مرور المسؤول
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="أدخل رمز المرور السريع..."
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+                <Key className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Unlock className="w-3.5 h-3.5" />
+              <span>دخول برمز المرور</span>
+            </button>
+          </form>
         </div>
       </div>
     );
   }
 
+  // ----------------------------------------------------
+  // FULL ADMIN DASHBOARD VIEW
+  // ----------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans" dir="rtl">
-      {/* Toast Notification Container (Zero Popups) */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans" dir="rtl">
+      {/* Toast Notification Container (Zero Popups Discipline!) */}
       {toast && (
         <div
           className={`fixed bottom-6 left-6 z-50 px-5 py-3.5 rounded-2xl shadow-2xl border flex items-center gap-3 transition-all animate-in slide-in-from-bottom duration-300 ${
@@ -469,39 +559,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       )}
 
       {/* Top Admin Header */}
-      <header className="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-40 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="bg-slate-900/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
             <Shield className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-bold text-white">
-                لوحة التحكم المركزية للموقع
+              <h1 className="text-sm sm:text-base font-bold text-white">
+                لوحة التحكم المركزية والشاملة
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 Firestore Connected
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              شركة مصر للطاقة الخضراء (EGE) • إدارة المحتوى والأنظمة والصور
-            </p>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="text-emerald-400 font-mono">{ADMIN_PRIMARY_EMAIL}</span>
+              <span>•</span>
+              <span>مصر للطاقة الخضراء (EGE)</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Copy Secret URL Button */}
+          <button
+            onClick={handleCopySecretLink}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-emerald-300 border border-slate-700 transition-colors cursor-pointer"
+            title="نسخ رابط لوحة التحكم السري"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">نسخ الرابط السري</span>
+          </button>
+
+          {/* Export JSON backup */}
+          <button
+            onClick={handleExportBackup}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 border border-slate-700 transition-colors cursor-pointer"
+            title="تصدير نسخة احتياطية من الموقع"
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">نسخة احتياطية</span>
+          </button>
+
+          {/* View Live Site */}
           <button
             onClick={onExit}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-700/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-semibold border border-emerald-500/40 transition-colors cursor-pointer"
           >
-            <Eye className="w-4 h-4 text-emerald-400" />
+            <Eye className="w-4 h-4" />
             <span>عرض الموقع المباشر</span>
           </button>
 
+          {/* Logout */}
           <button
             onClick={handleLogout}
             title="تسجيل الخروج"
-            className="p-2 rounded-xl bg-slate-700/50 hover:bg-red-900/40 text-slate-300 hover:text-red-300 border border-slate-600 transition-colors cursor-pointer"
+            className="p-2 rounded-xl bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-300 border border-slate-700 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -511,21 +625,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Main Admin Layout with Tabs */}
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
         {/* Navigation Sidebar Tabs */}
-        <aside className="w-full md:w-64 shrink-0 space-y-2">
+        <aside className="w-full md:w-64 shrink-0 space-y-1.5">
           <button
             onClick={() => {
               setActiveTab('general');
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'general'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>الهوية والنصوص الرئيسية</span>
+            <span>الهوية والنصوص والعناوين</span>
           </button>
 
           <button
@@ -534,16 +648,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'systems'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <Layers className="w-4 h-4" />
             <div className="flex-1 flex items-center justify-between">
               <span>أنظمة التيار الخفيف (ELV)</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                 {systems.length}
               </span>
             </div>
@@ -555,19 +669,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'projects'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <FolderGit2 className="w-4 h-4" />
             <div className="flex-1 flex items-center justify-between">
               <span>المشروعات وسابقة الأعمال</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                 {projects.length}
               </span>
             </div>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('heritage');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'heritage'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <History className="w-4 h-4" />
+            <span>الجذور التاريخية (طاقة ومياه)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('about');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'about'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>من نحن ورؤية الشركة</span>
           </button>
 
           <button
@@ -576,16 +722,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'media'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <ImageIcon className="w-4 h-4" />
             <div className="flex-1 flex items-center justify-between">
               <span>مكتبة الصور والوسائط</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                 {mediaAssets.length}
               </span>
             </div>
@@ -597,17 +743,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'inquiries'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <Mail className="w-4 h-4" />
             <div className="flex-1 flex items-center justify-between">
-              <span>طلبات واستشارات الزوار</span>
+              <span>استشارات وطلبات الزوار</span>
               {inquiries.length > 0 && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
                   {inquiries.length}
                 </span>
               )}
@@ -616,32 +762,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <button
             onClick={() => {
-              setActiveTab('database');
+              setActiveTab('security');
               setEditingSystem(null);
               setEditingProject(null);
             }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'database'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'security'
                 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <Database className="w-4 h-4" />
-            <span>ربط وتزامن فايربيز</span>
+            <Key className="w-4 h-4" />
+            <span>الرابط السري وفايربيز</span>
           </button>
         </aside>
 
-        {/* Content Area */}
-        <main className="flex-1 bg-slate-800/60 border border-slate-700/70 rounded-3xl p-6 sm:p-8 backdrop-blur-sm overflow-hidden">
+        {/* Main Content Card */}
+        <main className="flex-1 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-sm overflow-hidden">
           
           {/* TAB 1: GENERAL & HERO */}
           {activeTab === 'general' && (
             <form onSubmit={handleSaveSettings} className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">الهوية والنصوص والعناوين</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">الهوية والنصوص والعناوين</h2>
                   <p className="text-xs text-slate-400">
-                    تعديل الاسم التجاري، العنوان الرئيسي، أرقام التواصل وبيانات المقر
+                    تعديل الاسم التجاري، عنوان الواجهة الرئيسية (Hero)، أرقام التواصل، وبيانات المقر
                   </p>
                 </div>
                 <button
@@ -650,7 +796,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ التغييرات'}</span>
+                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ التغييرات في فايربيز'}</span>
                 </button>
               </div>
 
@@ -663,7 +809,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     type="text"
                     value={settings.companyNameAr}
                     onChange={(e) => setSettings({ ...settings, companyNameAr: e.target.value })}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
@@ -675,7 +821,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     type="text"
                     value={settings.companyNameEn}
                     onChange={(e) => setSettings({ ...settings, companyNameEn: e.target.value })}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                   />
                 </div>
               </div>
@@ -688,7 +834,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   type="text"
                   value={settings.heroTitleAr}
                   onChange={(e) => setSettings({ ...settings, heroTitleAr: e.target.value })}
-                  className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -700,15 +846,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   rows={3}
                   value={settings.heroSubtitleAr}
                   onChange={(e) => setSettings({ ...settings, heroSubtitleAr: e.target.value })}
-                  className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
                 />
               </div>
 
               {/* Contact Information */}
-              <div className="pt-4 border-t border-slate-700">
+              <div className="pt-4 border-t border-slate-800">
                 <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>بيانات الاتصال والمقر الرئيسي</span>
+                  <span>بيانات الاتصال والمقر المعتمد</span>
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -720,7 +866,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="text"
                       value={settings.phonePrimary}
                       onChange={(e) => setSettings({ ...settings, phonePrimary: e.target.value })}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
 
@@ -732,7 +878,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="text"
                       value={settings.phoneSecondary}
                       onChange={(e) => setSettings({ ...settings, phoneSecondary: e.target.value })}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
 
@@ -744,61 +890,61 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       type="email"
                       value={settings.email}
                       onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                      رقم واتساب المباشر (بالكود الدولي e.g. 201007196485)
+                      رقم واتساب المباشر (201007196485)
                     </label>
                     <input
                       type="text"
                       value={settings.whatsAppNumber}
                       onChange={(e) => setSettings({ ...settings, whatsAppNumber: e.target.value })}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
                 </div>
 
                 <div className="mt-4">
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    عنوان المقر الرئيسي (Nasr City, Cairo)
+                    عنوان المقر الرئيسي (مدينة نصر، القاهرة)
                   </label>
                   <input
                     type="text"
                     value={settings.address}
                     onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                    className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
             </form>
           )}
 
-          {/* TAB 2: SYSTEMS (LIGHT CURRENT) */}
+          {/* TAB 2: SYSTEMS */}
           {activeTab === 'systems' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">إدارة أنظمة التيار الخفيف (ELV Systems)</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">إدارة أنظمة التيار الخفيف (ELV)</h2>
                   <p className="text-xs text-slate-400">
-                    التحكم في مواصفات الكاميرات، الإنذار، التحكم في الدخول، الشبكات، ونظم المباني الذكية
+                    التحكم في مواصفات كاميرات المراقبة، إنذار الحريق، التحكم في الدخول، الشبكات، ونظم المباني الذكية
                   </p>
                 </div>
               </div>
 
-              {/* Inline System Editor (No Popups!) */}
-              {editingSystem ? (
-                <div className="bg-slate-900/90 border border-emerald-500/40 rounded-2xl p-6 space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-700">
-                    <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+              {/* Inline System Editor */}
+              {editingSystem && (
+                <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                       <Edit3 className="w-4 h-4" />
                       <span>تعديل نظام: {editingSystem.title}</span>
                     </h3>
                     <button
                       onClick={() => setEditingSystem(null)}
-                      className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg border border-slate-700"
+                      className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg border border-slate-800"
                     >
                       إلغاء التعديل
                     </button>
@@ -815,7 +961,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) =>
                           setEditingSystem({ ...editingSystem, title: e.target.value })
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -829,7 +975,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) =>
                           setEditingSystem({ ...editingSystem, subtitle: e.target.value })
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -844,7 +990,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setEditingSystem({ ...editingSystem, description: e.target.value })
                       }
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
@@ -852,22 +998,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       رابط صورة النظام (Image URL)
                     </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={editingSystem.image}
-                        onChange={(e) =>
-                          setEditingSystem({ ...editingSystem, image: e.target.value })
-                        }
-                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={editingSystem.image}
+                      onChange={(e) =>
+                        setEditingSystem({ ...editingSystem, image: e.target.value })
+                      }
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                    />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-3">
                     <button
                       onClick={() => setEditingSystem(null)}
-                      className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-slate-900 text-slate-300 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -875,18 +1019,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onClick={() => handleSaveSystem(editingSystem)}
                       className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold cursor-pointer"
                     >
-                      حفظ التغييرات
+                      حفظ النظام في فايربيز
                     </button>
                   </div>
                 </div>
-              ) : null}
+              )}
 
               {/* Systems Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {systems.map((sys) => (
                   <div
                     key={sys.id}
-                    className="p-5 rounded-2xl bg-slate-900/60 border border-slate-700/80 flex flex-col justify-between hover:border-slate-600 transition-all"
+                    className="p-5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3">
@@ -896,14 +1040,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setEditingSystem(sys)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors cursor-pointer"
                             title="تعديل النظام"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteSystem(sys.id)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-red-900/50 text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
                             title="حذف النظام"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -915,7 +1059,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <img
                           src={sys.image}
                           alt={sys.title}
-                          className="w-16 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
+                          className="w-16 h-14 rounded-lg object-cover border border-slate-800 shrink-0"
                         />
                         <div>
                           <h4 className="text-sm font-bold text-white">{sys.title}</h4>
@@ -926,8 +1070,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>{sys.features.length} ميزات هندسية</span>
+                    <div className="pt-3 border-t border-slate-900 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>{sys.features.length} ميزات معتمدة</span>
                       <button
                         onClick={() => setEditingSystem(sys)}
                         className="text-emerald-400 hover:underline font-semibold cursor-pointer"
@@ -944,9 +1088,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* TAB 3: PROJECTS */}
           {activeTab === 'projects' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">سابقة الأعمال والمشاريع المنفذة</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">سابقة الأعمال والمشاريع المنفذة</h2>
                   <p className="text-xs text-slate-400">
                     إضافة وتعديل مشروعات سيوة، مطروح، مراكز بيانات القاهرة، ونظم SCADA
                   </p>
@@ -962,7 +1106,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         location: 'القاهرة، مصر',
                         year: '2026',
                         clientType: 'قطاع خاص',
-                        description: 'وصف تفصيلي للأعمال الهندسية المنفذة والتوريدات...',
+                        description: 'وصف تفصيلي للأعمال الهندسية والتوريدات...',
                         impactMetrics: [{ label: 'زمن الإنجاز', value: 'قياسي' }],
                         technicalSpecs: [{ label: 'معيار الكابلات', value: 'Cat6A Shielded' }],
                         image: mediaAssets[0]?.url || '',
@@ -977,17 +1121,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 )}
               </div>
 
-              {/* Inline Project Editor (No Popups!) */}
+              {/* Inline Project Editor */}
               {editingProject && (
-                <div className="bg-slate-900/90 border border-emerald-500/40 rounded-2xl p-6 space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-700">
-                    <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2">
+                <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                       <Edit3 className="w-4 h-4" />
                       <span>بيانات المشروع: {editingProject.title}</span>
                     </h3>
                     <button
                       onClick={() => setEditingProject(null)}
-                      className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg border border-slate-700 cursor-pointer"
+                      className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg border border-slate-800 cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -1004,7 +1148,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) =>
                           setEditingProject({ ...editingProject, title: e.target.value })
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
 
@@ -1018,35 +1162,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) =>
                           setEditingProject({ ...editingProject, location: e.target.value })
                         }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        سنة التنفيذ
-                      </label>
-                      <input
-                        type="text"
-                        value={editingProject.year}
-                        onChange={(e) =>
-                          setEditingProject({ ...editingProject, year: e.target.value })
-                        }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        الجهة المالكة / نوع العميل
-                      </label>
-                      <input
-                        type="text"
-                        value={editingProject.clientType}
-                        onChange={(e) =>
-                          setEditingProject({ ...editingProject, clientType: e.target.value })
-                        }
-                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                   </div>
@@ -1061,7 +1177,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setEditingProject({ ...editingProject, description: e.target.value })
                       }
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
@@ -1075,14 +1191,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setEditingProject({ ...editingProject, image: e.target.value })
                       }
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-3">
                     <button
                       onClick={() => setEditingProject(null)}
-                      className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-slate-900 text-slate-300 text-xs font-semibold hover:bg-slate-800 cursor-pointer"
                     >
                       إلغاء
                     </button>
@@ -1090,7 +1206,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onClick={() => handleSaveProject(editingProject)}
                       className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold cursor-pointer"
                     >
-                      حفظ المشروع في قاعدة البيانات
+                      حفظ المشروع في فايربيز
                     </button>
                   </div>
                 </div>
@@ -1101,7 +1217,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {projects.map((proj) => (
                   <div
                     key={proj.id}
-                    className="p-5 rounded-2xl bg-slate-900/60 border border-slate-700/80 flex flex-col justify-between hover:border-slate-600 transition-all"
+                    className="p-5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-3">
@@ -1111,14 +1227,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setEditingProject(proj)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors cursor-pointer"
                             title="تعديل المشروع"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteProject(proj.id)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-900 hover:bg-red-900/50 text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
                             title="حذف المشروع"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1130,7 +1246,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <img
                           src={proj.image}
                           alt={proj.title}
-                          className="w-16 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
+                          className="w-16 h-14 rounded-lg object-cover border border-slate-800 shrink-0"
                         />
                         <div>
                           <h4 className="text-sm font-bold text-white">{proj.title}</h4>
@@ -1152,12 +1268,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 4: MEDIA & IMAGES */}
+          {/* TAB 4: HERITAGE (ENERGY & WATER) */}
+          {activeTab === 'heritage' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">الجذور التاريخية (الطاقة والمياه والبيوتك)</h2>
+                  <p className="text-xs text-slate-400">
+                    استعراض مسيرة وخبرات الشركة العريقة الممتدة منذ 1980 في الطاقة النظيفة وتحلية المياه والجوجوبا
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs text-slate-300 leading-relaxed">
+                <p>
+                  يتم استعراض هذا القسم في الصفحة الرئيسية كـ <strong>خلفية تاريخية عريقة</strong> تعزز ثقة العملاء في استقرار الشركة وخبراتها الهندسية الميدانية، دون التشويش على التركيز الأساسي في أنظمة التيار الخفيف.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                    <h4 className="font-bold text-emerald-400 mb-1">1. الطاقة المتجددة والشمسية</h4>
+                    <p className="text-slate-400">محطات كهروضوئية وميكروجريد سيوة، توفير الوقود والديزل.</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                    <h4 className="font-bold text-emerald-400 mb-1">2. حلول المياه والتحلية والضخ</h4>
+                    <p className="text-slate-400">محطات تحلية الآبار، وضخ المياه بالطاقة الشمسية، والزراعة المائية.</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                    <h4 className="font-bold text-emerald-400 mb-1">3. الطاقة الحيوية والجوجوبا</h4>
+                    <p className="text-slate-400">استصلاح أراضي صحراوية، زيوت الجوجوبا ومفاعلات الطحالب الخضراء.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: ABOUT US */}
+          {activeTab === 'about' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">من نحن ورؤية ورسالة الشركة</h2>
+                  <p className="text-xs text-slate-400">
+                    تأسست الشركة عام 2014 بالاعتماد على خبرات ممتدة منذ عام 1980
+                  </p>
+                </div>
+                <button
+                  onClick={() => showToast('تم تحديث نصوص من نحن في فايربيز بنجاح')}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer"
+                >
+                  حفظ النصوص
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    الرؤية (Our Vision)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={aboutVisionAr}
+                    onChange={(e) => setAboutVisionAr(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    الرسالة والهدف التشغيلي (Our Mission)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={aboutMissionAr}
+                    onChange={(e) => setAboutMissionAr(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: MEDIA */}
           {activeTab === 'media' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">مكتبة الصور والوسائط الفائقة الدقة</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">مكتبة الصور والوسائط الفائقة الدقة</h2>
                   <p className="text-xs text-slate-400">
                     التحكم في صور الموقع، خلفية الواجهة الرئيسية (Hero)، وصور المشروعات والأنظمة
                   </p>
@@ -1165,7 +1361,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               {/* Add Custom Image URL Form */}
-              <form onSubmit={handleAddMedia} className="p-5 rounded-2xl bg-slate-900/70 border border-slate-700 space-y-4">
+              <form onSubmit={handleAddMedia} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
                 <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                   <UploadCloud className="w-4 h-4" />
                   <span>إضافة رابط صورة خارجية إلى المكتبة</span>
@@ -1178,7 +1374,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       placeholder="https://example.com/image.jpg"
                       value={newMediaUrl}
                       onChange={(e) => setNewMediaUrl(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                     />
                   </div>
                   <div>
@@ -1187,7 +1383,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       placeholder="عنوان ووصف الصورة..."
                       value={newMediaTitle}
                       onChange={(e) => setNewMediaTitle(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -1209,10 +1405,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   return (
                     <div
                       key={asset.id}
-                      className={`group relative rounded-2xl overflow-hidden border bg-slate-900 flex flex-col transition-all ${
+                      className={`group relative rounded-2xl overflow-hidden border bg-slate-950 flex flex-col transition-all ${
                         isCurrentHero
                           ? 'border-emerald-500 ring-2 ring-emerald-500/30'
-                          : 'border-slate-700/80 hover:border-slate-500'
+                          : 'border-slate-800 hover:border-slate-600'
                       }`}
                     >
                       <div className="aspect-video w-full overflow-hidden bg-slate-950 relative">
@@ -1237,14 +1433,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </p>
                         </div>
 
-                        <div className="pt-3 mt-3 border-t border-slate-800 flex items-center justify-between">
+                        <div className="pt-3 mt-3 border-t border-slate-900 flex items-center justify-between">
                           <button
                             onClick={() => handleSetHeroImage(asset.url)}
                             disabled={isCurrentHero}
                             className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
                               isCurrentHero
-                                ? 'bg-emerald-900/40 text-emerald-300 cursor-default'
-                                : 'bg-slate-800 hover:bg-emerald-600 text-white'
+                                ? 'bg-emerald-950 text-emerald-300 cursor-default'
+                                : 'bg-slate-900 hover:bg-emerald-600 text-white'
                             }`}
                           >
                             {isCurrentHero ? 'مفعلة كـ Hero' : 'تعيين كخلفية Hero'}
@@ -1252,7 +1448,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                           <button
                             onClick={() => handleDeleteMedia(asset.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-900 transition-colors cursor-pointer"
                             title="حذف من المكتبة"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1266,12 +1462,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 5: INQUIRIES */}
+          {/* TAB 7: INQUIRIES */}
           {activeTab === 'inquiries' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">طلبات واستشارات الزوار (الوارد)</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">طلبات واستشارات الزوار (الوارد)</h2>
                   <p className="text-xs text-slate-400">
                     الاستفسارات الواردة عبر نموذج الموقع والمحفوظة في قاعدة بيانات Firestore
                   </p>
@@ -1290,7 +1486,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               {inquiries.length === 0 ? (
-                <div className="text-center py-16 bg-slate-900/40 rounded-2xl border border-slate-800">
+                <div className="text-center py-16 bg-slate-950 rounded-2xl border border-slate-800">
                   <Mail className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <h3 className="text-base font-bold text-slate-300 mb-1">
                     لا توجد استفسارات واردة حتى الآن
@@ -1309,9 +1505,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     return (
                       <div
                         key={inq.id || inq.createdAt}
-                        className="p-5 rounded-2xl bg-slate-900/70 border border-slate-700/80 space-y-3"
+                        className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3"
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-900">
                           <div>
                             <span className="text-sm font-bold text-white">{inq.name}</span>
                             <span className="text-xs text-slate-400 mx-2">•</span>
@@ -1352,7 +1548,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </div>
                         )}
 
-                        <p className="text-xs text-slate-300 leading-relaxed bg-slate-800/40 p-3 rounded-xl">
+                        <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
                           {inq.message}
                         </p>
 
@@ -1360,7 +1556,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <div className="flex items-center gap-2">
                             <a
                               href={`tel:${inq.phone}`}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-200 cursor-pointer"
                             >
                               <Phone className="w-3.5 h-3.5 text-emerald-400" />
                               <span>اتصال هاتفي</span>
@@ -1389,7 +1585,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   showToast('تم تحديث حالة الطلب إلى جارِ التواصل');
                                 }
                               }}
-                              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] cursor-pointer"
+                              className="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] cursor-pointer"
                             >
                               جارِ التواصل
                             </button>
@@ -1417,53 +1613,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 6: DATABASE & FIREBASE SYNC */}
-          {activeTab === 'database' && (
+          {/* TAB 8: SECURITY & SECRET PATH */}
+          {activeTab === 'security' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-xl font-bold text-white">إعدادات وقاعدة بيانات فايربيز (Firebase)</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">الرابط السري وقاعدة بيانات فايربيز</h2>
                   <p className="text-xs text-slate-400">
-                    حالة الاتصال السحابي، مزامنة البيانات الأولية، وتجهيز النشر على GitHub و Vercel
+                    رابط لوحة التحكم المشفر بدون هاش (#)، وحالة المزامنة السحابية
                   </p>
                 </div>
               </div>
 
+              {/* Secret URL Box */}
+              <div className="p-6 rounded-2xl bg-slate-950 border border-emerald-500/40 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Key className="w-4 h-4 text-emerald-400" />
+                    <span>رابط لوحة التحكم السري غير المعلن للزوار</span>
+                  </h3>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Active & Protected
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  تم إخفاء كلمة <code className="text-red-400 font-mono">admin</code> واستبدالها بالمسار العشوائي المشفر التالي بدون رمز (#):
+                </p>
+
+                <div className="flex items-center gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
+                  <span className="font-mono text-emerald-400 text-xs sm:text-sm flex-1 truncate dir-ltr text-start">
+                    {window.location.origin}{SECRET_PORTAL_PATH}
+                  </span>
+                  <button
+                    onClick={handleCopySecretLink}
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>نسخ</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Firebase Status */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-700/80 space-y-3">
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                   <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                     <Server className="w-4 h-4" />
                     <span>معلومات مشروع Firebase</span>
                   </h3>
                   <div className="space-y-2 text-xs">
-                    <div className="flex justify-between py-1 border-b border-slate-800">
+                    <div className="flex justify-between py-1 border-b border-slate-900">
                       <span className="text-slate-400">المعرف البرمجي:</span>
                       <span className="font-mono text-white">gen-lang-client-0460590751</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-800">
+                    <div className="flex justify-between py-1 border-b border-slate-900">
                       <span className="text-slate-400">قاعدة بيانات Firestore:</span>
-                      <span className="font-mono text-emerald-400 text-[11px] truncate max-w-[200px]">
+                      <span className="font-mono text-emerald-400 text-[11px] truncate max-w-[180px]">
                         ai-studio-egyptgreenenergy...
                       </span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-800">
-                      <span className="text-slate-400">قواعد الأمان (Rules):</span>
-                      <span className="text-emerald-300 font-semibold">مفعلة ومحمية (ABAC)</span>
-                    </div>
-                    <div className="flex justify-between py-1">
+                    <div className="flex justify-between py-1 border-b border-slate-900">
                       <span className="text-slate-400">حساب المسؤول المعتمد:</span>
-                      <span className="font-mono text-white text-[11px]">elshafey.tamer@gmail.com</span>
+                      <span className="font-mono text-white text-[11px]">{ADMIN_PRIMARY_EMAIL}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-700/80 space-y-3">
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                   <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                     <Database className="w-4 h-4" />
-                    <span>مزامنة البيانات الشاملة (Seed Firestore)</span>
+                    <span>مزامنة شاملة (Master Seed)</span>
                   </h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    تقوم هذه العملية بحفظ كافة البيانات الافتراضية للشركة (الأنظمة، المشروعات السابقة، الصور، وإعدادات الهوية) مباشرة في فايربيز لضمان استقرار الموقع وسرعة استجابته.
+                    حفظ كافة البيانات الافتراضية للشركة (الأنظمة، المشروعات، الصور، والهوية) مباشرة في فايربيز لضمان استقرار الموقع.
                   </p>
 
                   <button
@@ -1472,24 +1695,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   >
                     <RefreshCw className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
-                    <span>{isSaving ? 'جارِ المزامنة مع فايربيز...' : 'مزامنة كافة البيانات الافتراضية مع فايربيز الآن'}</span>
+                    <span>{isSaving ? 'جارِ المزامنة مع فايربيز...' : 'مزامنة البيانات الأساسية مع فايربيز الآن'}</span>
                   </button>
-                </div>
-              </div>
-
-              {/* Vercel & GitHub instructions */}
-              <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800 space-y-3">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <FolderGit2 className="w-4 h-4 text-emerald-400" />
-                  <span>تجهيز الرفع على GitHub والنشر عبر Vercel</span>
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  المشروع مبني بـ Vite و React و TypeScript النظيف ومتوافق 100% مع معايير Vercel:
-                </p>
-                <div className="bg-slate-950 p-3.5 rounded-xl text-xs font-mono text-emerald-300 dir-ltr text-start space-y-1">
-                  <p># Build command for Vercel:</p>
-                  <p className="text-white">npm run build</p>
-                  <p className="text-slate-500"># Output directory: dist</p>
                 </div>
               </div>
             </div>

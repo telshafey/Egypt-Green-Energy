@@ -139,7 +139,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
               <button
                 onClick={onOpenAdmin}
                 className="opacity-40 hover:opacity-100 transition-opacity text-slate-500 hover:text-emerald-400 flex items-center gap-1 cursor-pointer"
-                title="لوحة الإدارة المشفرة (#admin)"
+                title="بوابة الإدارة"
               >
                 <span>•</span>
                 <span className="text-[11px]">بوابة الإدارة</span>
