@@ -18,12 +18,14 @@ interface ProjectsSectionProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onSelectProjectForBOQ?: (projectTitle: string) => void;
+  customProjects?: ProjectItem[];
 }
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   currentLang,
   onNavigate,
   onSelectProjectForBOQ,
+  customProjects,
 }) => {
   const t = content[currentLang].projects;
   const isRtl = currentLang === 'ar';
@@ -35,9 +37,11 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   // Ref to project technical dossier to transport visitor directly to reading the content
   const projectDossierRef = useRef<HTMLDivElement | null>(null);
 
+  const projectsList = (customProjects && customProjects.length > 0) ? customProjects : t.items;
+
   const filteredProjects = activeFilter === 'all'
-    ? t.items
-    : t.items.filter((item) => item.category === activeFilter);
+    ? projectsList
+    : projectsList.filter((item) => item.category === activeFilter);
 
   const handleSelectProject = (project: ProjectItem) => {
     setSelectedProject(project);

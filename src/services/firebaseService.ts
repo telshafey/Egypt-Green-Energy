@@ -11,9 +11,19 @@ import {
   orderBy,
   onSnapshot,
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
+import { db, handleFirestoreError, OperationType, testFirestoreConnection, FirestoreHealthResult } from '../lib/firebase';
 import { LightCurrentSystem, ProjectItem } from '../types';
-import { content, HERO_IMAGE, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE, DATACENTER_IMAGE, ENERGY_IMAGE, BIOTECH_IMAGE, JOJOBA_IMAGE } from '../data/translations';
+import {
+  content,
+  HERO_IMAGE,
+  CCTV_IMAGE,
+  CABLING_IMAGE,
+  ACCESS_IMAGE,
+  DATACENTER_IMAGE,
+  ENERGY_IMAGE,
+  BIOTECH_IMAGE,
+  JOJOBA_IMAGE,
+} from '../data/translations';
 
 export interface SiteSettingsData {
   companyNameAr: string;
@@ -50,6 +60,20 @@ export interface MediaAssetData {
   url: string;
   category: string;
   createdAt: string;
+}
+
+export interface FirestoreDatabaseStats {
+  connected: boolean;
+  latencyMs: number;
+  databaseId: string;
+  projectId: string;
+  settingsCount: number;
+  systemsCount: number;
+  projectsCount: number;
+  inquiriesCount: number;
+  mediaAssetsCount: number;
+  lastChecked: string;
+  error?: string;
 }
 
 // Default Seed Assets
@@ -91,7 +115,7 @@ export const DEFAULT_MEDIA_ASSETS: MediaAssetData[] = [
   },
   {
     id: 'solar-microgrid',
-    title: 'Clean Energy & Solar Microgrid',
+    title: 'Solar Energy & Microgrid Infrastructure',
     url: ENERGY_IMAGE,
     category: 'energy',
     createdAt: new Date().toISOString(),
@@ -144,6 +168,20 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
   }
 }
 
+export function subscribeToSiteSettings(callback: (settings: SiteSettingsData) => void): () => void {
+  return onSnapshot(
+    doc(db, 'settings', 'general'),
+    (snap) => {
+      if (snap.exists()) {
+        callback(snap.data() as SiteSettingsData);
+      }
+    },
+    (err) => {
+      console.warn('Settings subscription fallback:', err);
+    }
+  );
+}
+
 export async function saveSiteSettings(settings: SiteSettingsData): Promise<void> {
   const path = 'settings/general';
   try {
@@ -169,6 +207,20 @@ export async function getSystems(): Promise<LightCurrentSystem[]> {
     console.warn('Fallback to bundled systems:', err);
     return content.ar.systems.items;
   }
+}
+
+export function subscribeToSystems(callback: (systems: LightCurrentSystem[]) => void): () => void {
+  return onSnapshot(
+    collection(db, 'systems'),
+    (snap) => {
+      if (!snap.empty) {
+        callback(snap.docs.map((d) => d.data() as LightCurrentSystem));
+      }
+    },
+    (err) => {
+      console.warn('Systems subscription fallback:', err);
+    }
+  );
 }
 
 export async function saveSystem(system: LightCurrentSystem): Promise<void> {
@@ -205,6 +257,20 @@ export async function getProjects(): Promise<ProjectItem[]> {
     console.warn('Fallback to bundled projects:', err);
     return content.ar.projects.items;
   }
+}
+
+export function subscribeToProjects(callback: (projects: ProjectItem[]) => void): () => void {
+  return onSnapshot(
+    collection(db, 'projects'),
+    (snap) => {
+      if (!snap.empty) {
+        callback(snap.docs.map((d) => d.data() as ProjectItem));
+      }
+    },
+    (err) => {
+      console.warn('Projects subscription fallback:', err);
+    }
+  );
 }
 
 export async function saveProject(project: ProjectItem): Promise<void> {
@@ -258,12 +324,39 @@ export async function getInquiries(): Promise<InquiryData[]> {
   }
 }
 
+export function subscribeToInquiries(callback: (inquiries: InquiryData[]) => void): () => void {
+  const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      callback(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as InquiryData[]
+      );
+    },
+    (err) => {
+      console.warn('Inquiries subscription fallback:', err);
+    }
+  );
+}
+
 export async function updateInquiryStatus(inquiryId: string, status: 'new' | 'in_progress' | 'completed'): Promise<void> {
   const path = `inquiries/${inquiryId}`;
   try {
     await updateDoc(doc(db, 'inquiries', inquiryId), { status });
   } catch (err) {
     handleFirestoreError(err, OperationType.UPDATE, path);
+  }
+}
+
+export async function deleteInquiry(inquiryId: string): Promise<void> {
+  const path = `inquiries/${inquiryId}`;
+  try {
+    await deleteDoc(doc(db, 'inquiries', inquiryId));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 
@@ -300,44 +393,101 @@ export async function deleteMediaAsset(assetId: string): Promise<void> {
   }
 }
 
-// 6. Master Seed / Sync Initial Data to Firestore
-export async function seedInitialFirestoreData(): Promise<{ success: boolean; message: string }> {
+// 6. Comprehensive Database Diagnostics & Document Counter
+export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStats> {
+  const health: FirestoreHealthResult = await testFirestoreConnection();
+  let settingsCount = 0;
+  let systemsCount = 0;
+  let projectsCount = 0;
+  let inquiriesCount = 0;
+  let mediaAssetsCount = 0;
+
+  if (health.success) {
+    try {
+      const [settSnap, sysSnap, projSnap, inqSnap, medSnap] = await Promise.all([
+        getDoc(doc(db, 'settings', 'general')),
+        getDocs(collection(db, 'systems')),
+        getDocs(collection(db, 'projects')),
+        getDocs(collection(db, 'inquiries')),
+        getDocs(collection(db, 'media_assets')),
+      ]);
+
+      if (settSnap.exists()) settingsCount = 1;
+      systemsCount = sysSnap.size;
+      projectsCount = projSnap.size;
+      inquiriesCount = inqSnap.size;
+      mediaAssetsCount = medSnap.size;
+    } catch (err) {
+      console.warn('Diagnostic counts fallback:', err);
+    }
+  }
+
+  return {
+    connected: health.success,
+    latencyMs: health.latencyMs,
+    databaseId: health.databaseId,
+    projectId: health.projectId,
+    settingsCount,
+    systemsCount,
+    projectsCount,
+    inquiriesCount,
+    mediaAssetsCount,
+    lastChecked: new Date().toLocaleTimeString('ar-EG'),
+    error: health.error,
+  };
+}
+
+// 7. Master Seed / Sync Initial Data to Firestore
+export async function seedInitialFirestoreData(): Promise<{ success: boolean; message: string; counts: { systems: number; projects: number; media: number } }> {
   try {
-    // Save settings
+    // 1. Save settings
     await setDoc(doc(db, 'settings', 'general'), {
       ...DEFAULT_SITE_SETTINGS,
       updatedAt: new Date().toISOString(),
     });
 
-    // Save systems
+    // 2. Save all 8 low-current systems
+    let sysCount = 0;
     for (const sys of content.ar.systems.items) {
       await setDoc(doc(db, 'systems', sys.id), {
         ...sys,
         updatedAt: new Date().toISOString(),
       });
+      sysCount++;
     }
 
-    // Save projects
+    // 3. Save all 6 landmark projects
+    let projCount = 0;
     for (const proj of content.ar.projects.items) {
       await setDoc(doc(db, 'projects', proj.id), {
         ...proj,
         updatedAt: new Date().toISOString(),
       });
+      projCount++;
     }
 
-    // Save media assets
+    // 4. Save default media assets
+    let medCount = 0;
     for (const asset of DEFAULT_MEDIA_ASSETS) {
       await setDoc(doc(db, 'media_assets', asset.id), asset);
+      medCount++;
     }
 
     return {
       success: true,
-      message: 'تمت مزامنة وتهيئة كافة البيانات والأنظمة والمشروعات والصور في فايربيز بنجاح!',
+      message: `تم بنجاح رفع ومزامنة الإعدادات العامة، و ${sysCount} أنظمة تيار خفيف، و ${projCount} مشروعات معتمدة، و ${medCount} صور وسائط داخل قاعدة بيانات فايربيز!`,
+      counts: {
+        systems: sysCount,
+        projects: projCount,
+        media: medCount,
+      },
     };
   } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'حدث خطأ أثناء المزامنة مع فايربيز';
     return {
       success: false,
-      message: err instanceof Error ? err.message : 'حدث خطأ أثناء المزامنة مع فايربيز',
+      message: errorMsg,
+      counts: { systems: 0, projects: 0, media: 0 },
     };
   }
 }

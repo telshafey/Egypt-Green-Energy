@@ -18,12 +18,14 @@ interface SystemsSectionProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onSelectSystemForBOQ?: (systemTitle: string) => void;
+  customSystems?: LightCurrentSystem[];
 }
 
 export const SystemsSection: React.FC<SystemsSectionProps> = ({
   currentLang,
   onNavigate,
   onSelectSystemForBOQ,
+  customSystems,
 }) => {
   const t = content[currentLang].systems;
   const isRtl = currentLang === 'ar';
@@ -37,9 +39,11 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
   // Ref to technical dossier to transport visitor directly to reading the content
   const dossierRef = useRef<HTMLDivElement | null>(null);
 
+  const systemsList = (customSystems && customSystems.length > 0) ? customSystems : t.items;
+
   const filteredItems = activeCategory === 'all'
-    ? t.items
-    : t.items.filter((item) => {
+    ? systemsList
+    : systemsList.filter((item) => {
         if (activeCategory === 'audio-bms') {
           return item.category === 'audio-bms';
         }

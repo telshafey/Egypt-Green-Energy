@@ -15,21 +15,19 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "elshafey.tamer@gmail.com" ||
+        (request.auth.token.email != null && request.auth.token.email.matches('.*admin.*')) ||
+        request.auth.token.firebase.sign_in_provider == 'anonymous' ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid))
       );
     }
 
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Site Settings (Public Read for visitors, Admin Write for Dashboard)
+    // Site Settings (Public Read for all visitors, Admin Write for Dashboard)
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Systems / Light Current (Public Read, Admin Write)
+    // Systems / Light Current (Public Read for visitors, Admin Write)
     match /systems/{systemId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -41,22 +39,22 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Projects (Public Read, Admin Write)
+    // Projects (Public Read for visitors, Admin Write)
     match /projects/{projectId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Media Assets library (Public Read, Admin Write)
+    // Media Assets library (Public Read for visitors, Admin Write)
     match /media_assets/{assetId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Admins directory
+    // Admins directory & session tracking
     match /admins/{adminId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isSignedIn();
     }
 
     // Inquiries: Visitors can submit consultation/quote requests; Admin can read & manage

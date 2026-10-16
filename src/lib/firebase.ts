@@ -1,6 +1,13 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInAnonymously,
+  onAuthStateChanged,
+  signOut,
+} from 'firebase/auth';
+import { getFirestore, doc, getDocFromServer, setDoc } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
@@ -54,20 +61,51 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path,
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  throw new Error(errInfo.error);
 }
 
-// Validation test for initial connection
-export async function testConnection(): Promise<boolean> {
+// Live Health & Diagnostics Test
+export interface FirestoreHealthResult {
+  success: boolean;
+  latencyMs: number;
+  databaseId: string;
+  projectId: string;
+  authEmail: string | null;
+  isAuthenticated: boolean;
+  error?: string;
+}
+
+export async function testFirestoreConnection(): Promise<FirestoreHealthResult> {
+  const start = performance.now();
+  const databaseId = firebaseConfig.firestoreDatabaseId;
+  const projectId = firebaseConfig.projectId;
+  const currentUser = auth.currentUser;
+
   try {
+    // Attempt live read from server
     await getDocFromServer(doc(db, 'settings', 'general'));
-    return true;
+    const latencyMs = Math.round(performance.now() - start);
+    return {
+      success: true,
+      latencyMs,
+      databaseId,
+      projectId,
+      authEmail: currentUser?.email || (currentUser?.isAnonymous ? 'مفتاح جلسة إدارة مشفر (Anonymous Admin)' : null),
+      isAuthenticated: !!currentUser,
+    };
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase connection check: Client is offline or initializing.');
-    }
-    return false;
+    const latencyMs = Math.round(performance.now() - start);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      latencyMs,
+      databaseId,
+      projectId,
+      authEmail: currentUser?.email || null,
+      isAuthenticated: !!currentUser,
+      error: errorMsg,
+    };
   }
 }
 
-export { signInWithPopup, signOut };
+export { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut };
