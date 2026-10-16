@@ -666,7 +666,7 @@ export const content: Record<Language, TranslationContent> = {
     },
     contact: {
       sectionKicker: "ابدأ مشروعك اليوم",
-      heading: "تواصل مع مهندسي أنظمة التيار الخفيف",
+      heading: "تواصل معنا",
       subheading: "سواء كنت تؤسس مقراً جديداً، أو ترغب في تحديث شبكة الكاميرات والإنذار، أو تحتاج إلى عقد صيانة SLA لمنشأتك، نحن مستعدون لمعاينة الموقع فوراً.",
       officeTitle: "المقر الرئيسي للإدارة الهندسية",
       officeAddress: "مدينة نصر، القاهرة، جمهورية مصر العربية",
@@ -1201,7 +1201,7 @@ export const content: Record<Language, TranslationContent> = {
     },
     contact: {
       sectionKicker: "Start Your Project",
-      heading: "Consult With Our Low Current Project Engineers",
+      heading: "Contact Us",
       subheading: "Whether you are fitting out a new corporate tower, upgrading surveillance and fire safety, or requiring an SLA maintenance contract, our team is ready to inspect your site.",
       officeTitle: "Engineering Headquarters",
       officeAddress: "Nasr City, Cairo, Arab Republic of Egypt",
