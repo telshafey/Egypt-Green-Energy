@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global configuration and customizable content for Egypt Green Energy",
+      "type": "object",
+      "properties": {
+        "companyNameAr": { "type": "string", "maxLength": 100 },
+        "companyNameEn": { "type": "string", "maxLength": 100 },
+        "taglineAr": { "type": "string", "maxLength": 200 },
+        "taglineEn": { "type": "string", "maxLength": 200 },
+        "heroTitleAr": { "type": "string", "maxLength": 200 },
+        "heroTitleEn": { "type": "string", "maxLength": 200 },
+        "heroSubtitleAr": { "type": "string", "maxLength": 500 },
+        "heroSubtitleEn": { "type": "string", "maxLength": 500 },
+        "heroImageUrl": { "type": "string", "maxLength": 1000 },
+        "phonePrimary": { "type": "string", "maxLength": 50 },
+        "phoneSecondary": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 },
+        "addressAr": { "type": "string", "maxLength": 200 },
+        "addressEn": { "type": "string", "maxLength": 200 },
+        "whatsappNumber": { "type": "string", "maxLength": 50 },
+        "projectsCount": { "type": "string", "maxLength": 20 },
+        "satisfactionRate": { "type": "string", "maxLength": 20 },
+        "yearsExperience": { "type": "string", "maxLength": 20 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["companyNameAr", "companyNameEn", "heroTitleAr", "email"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Light current (ELV) and specialized engineering service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "titleAr": { "type": "string", "maxLength": 150 },
+        "titleEn": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 50 },
+        "descriptionAr": { "type": "string", "maxLength": 1000 },
+        "descriptionEn": { "type": "string", "maxLength": 1000 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "order": { "type": "number" },
+        "featuresAr": { "type": "array" },
+        "featuresEn": { "type": "array" },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "titleAr", "titleEn", "descriptionAr"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Showcase portfolio project executed by the company",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "titleAr": { "type": "string", "maxLength": 150 },
+        "titleEn": { "type": "string", "maxLength": 150 },
+        "category": { "type": "string", "maxLength": 50 },
+        "locationAr": { "type": "string", "maxLength": 100 },
+        "locationEn": { "type": "string", "maxLength": 100 },
+        "year": { "type": "string", "maxLength": 20 },
+        "descriptionAr": { "type": "string", "maxLength": 1000 },
+        "descriptionEn": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "scopeAr": { "type": "string", "maxLength": 300 },
+        "scopeEn": { "type": "string", "maxLength": 300 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "titleAr", "titleEn", "category"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Incoming client consultation request or message",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "service": { "type": "string", "maxLength": 100 },
+        "facilityType": { "type": "string", "maxLength": 100 },
+        "message": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "maxLength": 30 }
+      },
+      "required": ["name", "phone", "message"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": "SiteSettings",
+      "description": "Global website configuration document"
+    },
+    "/services/{serviceId}": {
+      "schema": "Service",
+      "description": "Light current and ELV technology services"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Portfolio of past and present engineering projects"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Customer inquiries and quotes"
+    }
+  }
+}
