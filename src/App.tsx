@@ -17,7 +17,16 @@ import { PartnersSection } from './components/PartnersSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { AdminDashboard } from './components/AdminDashboard';
-import { SiteSettingsData, getSiteSettings } from './services/firebaseService';
+import {
+  SiteSettingsData,
+  getSiteSettings,
+  subscribeToSiteSettings,
+  getSystems,
+  subscribeToSystems,
+  getProjects,
+  subscribeToProjects,
+} from './services/firebaseService';
+import { LightCurrentSystem, ProjectItem } from './types';
 
 // Obscure, non-guessable admin portal slug without any hash
 export const ADMIN_SECRET_SLUG = 'portal-ege-8492';
@@ -30,6 +39,8 @@ export default function App() {
   const [prefilledService, setPrefilledService] = useState<string>('');
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [liveSettings, setLiveSettings] = useState<SiteSettingsData | null>(null);
+  const [liveSystems, setLiveSystems] = useState<LightCurrentSystem[] | null>(null);
+  const [liveProjects, setLiveProjects] = useState<ProjectItem[] | null>(null);
 
   // Path routing without hash - check on initial load & popstate
   useEffect(() => {
@@ -67,17 +78,27 @@ export default function App() {
     return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
-  // Fetch live settings from Firebase on startup
+  // Fetch & Subscribe to live settings, systems, and projects from Firebase
   useEffect(() => {
-    async function loadInitialSettings() {
-      try {
-        const s = await getSiteSettings();
-        setLiveSettings(s);
-      } catch (err) {
-        console.warn('App: Initial settings fallback:', err);
-      }
-    }
-    loadInitialSettings();
+    // Initial fetch
+    getSiteSettings().then(setLiveSettings).catch(console.warn);
+    getSystems().then((s) => s.length > 0 && setLiveSystems(s)).catch(console.warn);
+    getProjects().then((p) => p.length > 0 && setLiveProjects(p)).catch(console.warn);
+
+    // Real-time Firestore subscriptions
+    const unsubSettings = subscribeToSiteSettings((s) => setLiveSettings(s));
+    const unsubSystems = subscribeToSystems((sys) => {
+      if (sys && sys.length > 0) setLiveSystems(sys);
+    });
+    const unsubProjects = subscribeToProjects((projs) => {
+      if (projs && projs.length > 0) setLiveProjects(projs);
+    });
+
+    return () => {
+      unsubSettings();
+      unsubSystems();
+      unsubProjects();
+    };
   }, []);
 
   // Dynamically update document dir and lang attributes
@@ -187,6 +208,7 @@ export default function App() {
           currentLang={currentLang}
           onNavigate={handleNavigate}
           onSelectSystemForBOQ={handleSelectSystemForBOQ}
+          customSystems={liveSystems || undefined}
         />
 
         {/* 5. Landmark Low Current Projects & Field Installations */}
@@ -194,6 +216,7 @@ export default function App() {
           currentLang={currentLang}
           onNavigate={handleNavigate}
           onSelectProjectForBOQ={handleSelectSystemForBOQ}
+          customProjects={liveProjects || undefined}
         />
 
         {/* 6. Interactive Low Current Scope & BOQ Configurator */}
@@ -211,6 +234,7 @@ export default function App() {
           currentLang={currentLang}
           prefilledMessage={prefilledMessage}
           prefilledService={prefilledService}
+          customSettings={liveSettings}
         />
       </main>
 
@@ -219,6 +243,7 @@ export default function App() {
         currentLang={currentLang}
         onNavigate={handleNavigate}
         onOpenAdmin={handleOpenAdmin}
+        customSettings={liveSettings}
       />
     </div>
   );

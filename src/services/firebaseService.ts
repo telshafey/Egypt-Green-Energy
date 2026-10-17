@@ -39,6 +39,8 @@ export interface SiteSettingsData {
   heroSubtitleEn: string;
   heroImageUrl?: string;
   whatsAppNumber: string;
+  aboutVisionAr?: string;
+  aboutMissionAr?: string;
   updatedAt?: string;
 }
 
@@ -151,6 +153,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   heroSubtitleEn: 'We engineer, commission, and maintain end-to-end Low Current (ELV) solutions: 4K IP CCTV surveillance, addressable fire alarm, biometric access control, structured cabling & fiber optics, IP telephony, and building management systems (BMS) with 24/7 managed SLA support.',
   heroImageUrl: HERO_IMAGE,
   whatsAppNumber: '201007196485',
+  aboutVisionAr: 'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.',
+  aboutMissionAr: 'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.',
 };
 
 // 1. Fetch & Save Site Settings

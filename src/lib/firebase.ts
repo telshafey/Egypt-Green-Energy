@@ -108,4 +108,15 @@ export async function testFirestoreConnection(): Promise<FirestoreHealthResult> 
   }
 }
 
+export async function ensureAdminSession(): Promise<any> {
+  if (auth.currentUser) return auth.currentUser;
+  try {
+    const cred = await signInAnonymously(auth);
+    return cred.user;
+  } catch (err) {
+    // Non-fatal if anonymous auth is disabled in the console
+    return null;
+  }
+}
+
 export { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut };

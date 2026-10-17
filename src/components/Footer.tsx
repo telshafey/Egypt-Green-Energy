@@ -4,14 +4,21 @@ import { content } from '../data/translations';
 import { ArrowUp, MapPin, Phone, Mail, MessageCircle } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface FooterProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onOpenAdmin?: () => void;
+  customSettings?: SiteSettingsData | null;
 }
 
-export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenAdmin, customSettings }) => {
   const t = content[currentLang];
+  const activeAddress = customSettings?.address || t.contact.officeAddress;
+  const activePhonePrimary = customSettings?.phonePrimary || t.contact.phonePrimary;
+  const activePhoneSecondary = customSettings?.phoneSecondary || t.contact.phoneSecondary;
+  const activeEmail = customSettings?.email || t.contact.emailAddress;
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -106,24 +113,24 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
             <div className="space-y-2 text-xs sm:text-sm text-slate-400">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span>{t.contact.officeAddress}</span>
+                <span>{activeAddress}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-emerald-500 shrink-0" />
                 <a
-                  href="tel:+201007196485"
+                  href={`tel:${activePhonePrimary.replace(/\s+/g, '')}`}
                   className="hover:text-white font-mono dir-ltr"
                 >
-                  {t.contact.phonePrimary} / {t.contact.phoneSecondary}
+                  {activePhonePrimary} {activePhoneSecondary ? `/ ${activePhoneSecondary}` : ''}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-500 shrink-0" />
                 <a
-                  href="mailto:info@egyptge.com"
+                  href={`mailto:${activeEmail}`}
                   className="hover:text-white font-mono"
                 >
-                  {t.contact.emailAddress}
+                  {activeEmail}
                 </a>
               </div>
             </div>

@@ -38,6 +38,8 @@ import {
   signInWithPopup,
   googleProvider,
   signOut,
+  ensureAdminSession,
+  testFirestoreConnection,
 } from '../lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import {
@@ -53,6 +55,7 @@ import {
   deleteProject,
   getInquiries,
   updateInquiryStatus,
+  deleteInquiry,
   InquiryData,
   getMediaAssets,
   saveMediaAsset,
@@ -60,9 +63,14 @@ import {
   MediaAssetData,
   DEFAULT_MEDIA_ASSETS,
   seedInitialFirestoreData,
+  getFirestoreDatabaseStats,
+  FirestoreDatabaseStats,
+  subscribeToInquiries,
+  subscribeToSystems,
+  subscribeToProjects,
 } from '../services/firebaseService';
 import { LightCurrentSystem, ProjectItem, Language } from '../types';
-import { content } from '../data/translations';
+import { content, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE } from '../data/translations';
 
 interface AdminDashboardProps {
   currentLang: Language;
@@ -122,6 +130,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newMediaTitle, setNewMediaTitle] = useState<string>('');
   const [newMediaCategory, setNewMediaCategory] = useState<string>('cctv');
 
+  // Live Database Diagnostics State
+  const [dbStats, setDbStats] = useState<FirestoreDatabaseStats | null>(null);
+  const [isPingingDb, setIsPingingDb] = useState<boolean>(false);
+
   // Trigger non-blocking toast
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ type, message });
@@ -130,7 +142,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }, 4000);
   };
 
-  // Listen to Firebase Auth
+  // Run live database test
+  const handlePingDatabase = async () => {
+    setIsPingingDb(true);
+    try {
+      const stats = await getFirestoreDatabaseStats();
+      setDbStats(stats);
+      if (stats.connected) {
+        showToast(
+          `قاعدة بيانات فايربيز متصلة ومباشرة! زمن الاستجابة: ${stats.latencyMs}ms (${stats.systemsCount} أنظمة، ${stats.projectsCount} مشروعات)`
+        );
+      } else {
+        showToast(`تنبيه في الاتصال: ${stats.error || 'غير متصل'}`, 'error');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر فحص الاتصال';
+      showToast(msg, 'error');
+    } finally {
+      setIsPingingDb(false);
+    }
+  };
+
+  // Listen to Firebase Auth & ensure session
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -142,16 +175,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const storedAuth = sessionStorage.getItem('ege_admin_unlocked');
     if (storedAuth === 'true') {
       setIsAdminUnlocked(true);
+      ensureAdminSession().catch(console.warn);
     }
 
     return () => unsubscribe();
   }, []);
 
-  // Fetch initial data
+  // Fetch initial data & live database diagnostics
   useEffect(() => {
+    let unsubInquiries: (() => void) | undefined;
+
     async function loadData() {
       setIsLoading(true);
       try {
+        // Ensure active authenticated session
+        ensureAdminSession().catch(console.warn);
+
+        // Fetch live database statistics
+        getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+
         const [loadedSettings, loadedSystems, loadedProjects, loadedMedia, loadedInquiries] =
           await Promise.all([
             getSiteSettings(),
@@ -162,10 +204,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           ]);
 
         setSettings(loadedSettings);
+        if (loadedSettings.aboutVisionAr) setAboutVisionAr(loadedSettings.aboutVisionAr);
+        if (loadedSettings.aboutMissionAr) setAboutMissionAr(loadedSettings.aboutMissionAr);
         if (loadedSystems.length > 0) setSystems(loadedSystems);
         if (loadedProjects.length > 0) setProjects(loadedProjects);
         if (loadedMedia.length > 0) setMediaAssets(loadedMedia);
         setInquiries(loadedInquiries);
+
+        // Subscribe to live incoming customer inquiries
+        unsubInquiries = subscribeToInquiries((inqs) => {
+          setInquiries(inqs);
+        });
       } catch (err) {
         console.warn('Admin: Fallback to bundled data:', err);
       } finally {
@@ -176,6 +225,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (isAdminUnlocked) {
       loadData();
     }
+
+    return () => {
+      if (unsubInquiries) unsubInquiries();
+    };
   }, [isAdminUnlocked]);
 
   // Handle Passcode login
@@ -192,6 +245,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       sessionStorage.setItem('ege_admin_unlocked', 'true');
       setAuthError('');
       showToast('تم تسجيل الدخول بنجاح إلى لوحة الإدارة');
+      ensureAdminSession().catch(console.warn);
     } else {
       setAuthError('رمز المرور غير صحيح، يرجى المحاولة مرة أخرى');
     }
@@ -203,6 +257,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     sessionStorage.setItem('ege_admin_unlocked', 'true');
     setAuthError('');
     showToast(`مرحباً بالمهندس تامر الشافعي (${ADMIN_PRIMARY_EMAIL})`);
+    ensureAdminSession().catch(console.warn);
   };
 
   // Handle Google Login via Firebase
@@ -262,9 +317,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsSaving(true);
     try {
       await saveSystem(sys);
-      setSystems((prev) => prev.map((item) => (item.id === sys.id ? sys : item)));
+      setSystems((prev) => {
+        const exists = prev.some((item) => item.id === sys.id);
+        if (exists) {
+          return prev.map((item) => (item.id === sys.id ? sys : item));
+        }
+        return [sys, ...prev];
+      });
       setEditingSystem(null);
-      showToast(`تم تحديث نظام: ${sys.title}`);
+      showToast(`تم حفظ وتحديث نظام: ${sys.title} بنجاح في فايربيز`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حفظ النظام';
       showToast(msg, 'error');
@@ -277,7 +339,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       await deleteSystem(id);
       setSystems((prev) => prev.filter((item) => item.id !== id));
-      showToast('تم حذف النظام بنجاح');
+      showToast('تم حذف النظام بنجاح من قاعدة البيانات');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حذف النظام';
       showToast(msg, 'error');
@@ -297,7 +360,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         return [proj, ...prev];
       });
       setEditingProject(null);
-      showToast(`تم حفظ المشروع: ${proj.title}`);
+      showToast(`تم حفظ المشروع: ${proj.title} في فايربيز`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حفظ المشروع';
       showToast(msg, 'error');
@@ -310,10 +374,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       await deleteProject(id);
       setProjects((prev) => prev.filter((p) => p.id !== id));
-      showToast('تم حذف المشروع بنجاح');
+      showToast('تم حذف المشروع بنجاح من فايربيز');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حذف المشروع';
       showToast(msg, 'error');
+    }
+  };
+
+  // Delete Inquiry
+  const handleDeleteInquiry = async (id: string) => {
+    try {
+      await deleteInquiry(id);
+      setInquiries((prev) => prev.filter((i) => i.id !== id));
+      showToast('تم حذف الطلب بنجاح');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حذف الطلب';
+      showToast(msg, 'error');
+    }
+  };
+
+  // Save About Vision & Mission
+  const handleSaveAbout = async () => {
+    setIsSaving(true);
+    try {
+      const updated: SiteSettingsData = {
+        ...settings,
+        aboutVisionAr,
+        aboutMissionAr,
+      };
+      setSettings(updated);
+      await saveSiteSettings(updated);
+      if (onSettingsUpdated) onSettingsUpdated(updated);
+      showToast('تم حفظ وتحديث رؤية ورسالة الشركة بنجاح في فايربيز');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ البيانات';
+      showToast(msg, 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -333,7 +432,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setMediaAssets((prev) => [newAsset, ...prev]);
       setNewMediaUrl('');
       setNewMediaTitle('');
-      showToast('تمت إضافة الصورة بنجاح إلى مكتبة الوسائط');
+      showToast('تمت إضافة الصورة بنجاح إلى مكتبة الوسائط في فايربيز');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر إضافة الصورة';
       showToast(msg, 'error');
@@ -345,6 +445,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       await deleteMediaAsset(id);
       setMediaAssets((prev) => prev.filter((m) => m.id !== id));
       showToast('تمت إزالة الصورة من المكتبة');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حذف الصورة';
       showToast(msg, 'error');
@@ -372,6 +473,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const result = await seedInitialFirestoreData();
       if (result.success) {
         showToast(result.message);
+        // Refresh live stats and document counts
+        const stats = await getFirestoreDatabaseStats();
+        setDbStats(stats);
       } else {
         showToast(result.message, 'error');
       }
@@ -621,6 +725,78 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
         </div>
       </header>
+
+      {/* Live Database Diagnostics & Health Bar */}
+      <section aria-label="Database Status" className="bg-slate-900/95 border-b border-slate-800 px-4 sm:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Live ping badge */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="font-semibold text-white">اتصال قاعدة البيانات:</span>
+              <span className="text-emerald-400 font-mono font-medium">
+                {dbStats?.connected ? 'متصلة ومباشرة (Online)' : 'جاري الفحص المباشر...'}
+              </span>
+              {dbStats?.latencyMs !== undefined && (
+                <span className="text-[11px] text-slate-400 font-mono">
+                  ({dbStats.latencyMs}ms)
+                </span>
+              )}
+            </div>
+
+            {/* Database ID badge */}
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-300">
+              <Database className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-slate-500">DB ID:</span>
+              <span className="text-emerald-300 font-mono text-[10px]">ai-studio-egyptgreenenergy...</span>
+            </div>
+
+            {/* Quick live counts */}
+            <div className="flex items-center flex-wrap gap-2 text-[11px]">
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 font-semibold font-mono">
+                {systems.length} أنظمة ELV
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 font-semibold font-mono">
+                {projects.length} مشروعات
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 font-semibold font-mono">
+                {mediaAssets.length} صور
+              </span>
+              {inquiries.length > 0 && (
+                <span className="px-2.5 py-1 rounded-lg bg-amber-950/60 text-amber-300 border border-amber-800/60 font-semibold font-mono">
+                  {inquiries.length} طلبات
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Diagnostics & Sync Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePingDatabase}
+              disabled={isPingingDb}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+              title="فحص سرعة استجابة قاعدة البيانات"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isPingingDb ? 'animate-spin text-emerald-400' : ''}`} />
+              <span>فحص الاتصال (Ping)</span>
+            </button>
+
+            <button
+              onClick={handleSeedDatabase}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer"
+              title="مزامنة وتثبيت كافة الأنظمة والمشروعات والإعدادات في فايربيز"
+            >
+              <UploadCloud className={`w-3.5 h-3.5 ${isSaving ? 'animate-bounce' : ''}`} />
+              <span>مزامنة شاملة لفايربيز</span>
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Main Admin Layout with Tabs */}
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
@@ -932,6 +1108,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     التحكم في مواصفات كاميرات المراقبة، إنذار الحريق، التحكم في الدخول، الشبكات، ونظم المباني الذكية
                   </p>
                 </div>
+                {!editingSystem && (
+                  <button
+                    onClick={() => {
+                      const newSys: LightCurrentSystem = {
+                        id: `system-${Date.now()}`,
+                        title: 'نظام تيار خفيف هندسي جديد',
+                        subtitle: 'حلول متقدمة للشركات والمنشآت',
+                        category: 'security',
+                        badge: 'نظام معتمد EGE',
+                        description: 'وصف تفصيلي للحل الهندسي والتوريد والتركيب والبرمجة مع الضمان المعتمد...',
+                        features: [
+                          'توريد وتركيب معتمد',
+                          'برمجة وربط شبكي متكامل',
+                          'دعم فني وصيانة 24/7',
+                        ],
+                        specs: [
+                          { label: 'معيار الهندسة', value: 'الكود المصري للتيار الخفيف' },
+                          { label: 'البروتوكول', value: 'IPv6 / High Speed IP' },
+                        ],
+                        image: mediaAssets[1]?.url || CCTV_IMAGE,
+                      };
+                      setEditingSystem(newSys);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm cursor-pointer shadow-sm transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>إضافة نظام جديد</span>
+                  </button>
+                )}
               </div>
 
               {/* Inline System Editor */}
@@ -980,6 +1185,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        تصنيف النظام
+                      </label>
+                      <select
+                        value={editingSystem.category}
+                        onChange={(e) =>
+                          setEditingSystem({
+                            ...editingSystem,
+                            category: e.target.value as any,
+                          })
+                        }
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      >
+                        <option value="security">أنظمة المراقبة والأمن (CCTV & Security)</option>
+                        <option value="safety">أنظمة السلامة ومكافحة الحريق (Fire Alarm)</option>
+                        <option value="connectivity">البنية التحتية والشبكات (Data & Fiber)</option>
+                        <option value="audio-bms">الصوتيات وإدارة المباني (Audio & BMS)</option>
+                        <option value="maintenance">عقود الصيانة وخدمات SLA</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        شارة النظام الترويجية (Badge)
+                      </label>
+                      <input
+                        type="text"
+                        value={editingSystem.badge}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, badge: e.target.value })
+                        }
+                        placeholder="مثال: 4K Ultra HD & AI Analytics"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       الوصف الهندسي للحل
@@ -990,7 +1234,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setEditingSystem({ ...editingSystem, description: e.target.value })
                       }
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      المزايا الفنية والمواصفات (اكتب كل ميزة في سطر منفصل)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editingSystem.features.join('\n')}
+                      onChange={(e) =>
+                        setEditingSystem({
+                          ...editingSystem,
+                          features: e.target.value
+                            .split('\n')
+                            .map((f) => f.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                      placeholder="توريد وتركيب معتمد&#10;ضمان استبدال وصيانة 24/7"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono text-xs"
                     />
                   </div>
 
@@ -998,14 +1263,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       رابط صورة النظام (Image URL)
                     </label>
-                    <input
-                      type="text"
-                      value={editingSystem.image}
-                      onChange={(e) =>
-                        setEditingSystem({ ...editingSystem, image: e.target.value })
-                      }
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={editingSystem.image}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, image: e.target.value })
+                        }
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      />
+                      {editingSystem.image && (
+                        <img
+                          src={editingSystem.image}
+                          alt="preview"
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-700 shrink-0"
+                        />
+                      )}
+                    </div>
+
+                    {/* Quick Image Selector from Media Assets */}
+                    <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-1">
+                      <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع:</span>
+                      {mediaAssets.slice(0, 6).map((asset) => (
+                        <button
+                          key={asset.id}
+                          type="button"
+                          onClick={() => setEditingSystem({ ...editingSystem, image: asset.url })}
+                          className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 shrink-0 transition-colors"
+                          title={asset.title}
+                        >
+                          <img src={asset.url} alt={asset.title} className="w-6 h-6 rounded object-cover" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-3">
@@ -1137,7 +1427,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
                         اسم المشروع
@@ -1165,6 +1455,67 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        سنة التنفيذ
+                      </label>
+                      <input
+                        type="text"
+                        value={editingProject.year}
+                        onChange={(e) =>
+                          setEditingProject({ ...editingProject, year: e.target.value })
+                        }
+                        placeholder="2026"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        تصنيف المشروع
+                      </label>
+                      <select
+                        value={editingProject.category}
+                        onChange={(e) => {
+                          const val = e.target.value as any;
+                          const labels: Record<string, string> = {
+                            surveillance: 'أنظمة مراقبة وتحكم',
+                            networks: 'بنية شبكات وداتا سنتر',
+                            safety: 'إنذار حريق وسلامة',
+                            'smart-bms': 'مباني ذكية و BMS',
+                          };
+                          setEditingProject({
+                            ...editingProject,
+                            category: val,
+                            categoryLabel: labels[val] || 'أنظمة هندسية',
+                          });
+                        }}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      >
+                        <option value="surveillance">أنظمة مراقبة وتحكم (Surveillance & Security)</option>
+                        <option value="networks">بنية شبكات وداتا سنتر (Enterprise Networks)</option>
+                        <option value="safety">إنذار حريق وسلامة (Fire & Life Safety)</option>
+                        <option value="smart-bms">مباني ذكية وتحكم (Smart BMS & Automation)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        جهة المشروع / العميل
+                      </label>
+                      <input
+                        type="text"
+                        value={editingProject.clientType}
+                        onChange={(e) =>
+                          setEditingProject({ ...editingProject, clientType: e.target.value })
+                        }
+                        placeholder="مثال: منشأة تجارية / بنك / مجمع سكني"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1177,7 +1528,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       onChange={(e) =>
                         setEditingProject({ ...editingProject, description: e.target.value })
                       }
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
                     />
                   </div>
 
@@ -1185,14 +1536,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
                       رابط صورة المشروع
                     </label>
-                    <input
-                      type="text"
-                      value={editingProject.image}
-                      onChange={(e) =>
-                        setEditingProject({ ...editingProject, image: e.target.value })
-                      }
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={editingProject.image}
+                        onChange={(e) =>
+                          setEditingProject({ ...editingProject, image: e.target.value })
+                        }
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      />
+                      {editingProject.image && (
+                        <img
+                          src={editingProject.image}
+                          alt="preview"
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-700 shrink-0"
+                        />
+                      )}
+                    </div>
+
+                    {/* Quick Image Picker */}
+                    <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-1">
+                      <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع من الوسائط:</span>
+                      {mediaAssets.slice(0, 6).map((asset) => (
+                        <button
+                          key={asset.id}
+                          type="button"
+                          onClick={() => setEditingProject({ ...editingProject, image: asset.url })}
+                          className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500 shrink-0 transition-colors"
+                          title={asset.title}
+                        >
+                          <img src={asset.url} alt={asset.title} className="w-6 h-6 rounded object-cover" />
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-3">
@@ -1313,10 +1689,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </p>
                 </div>
                 <button
-                  onClick={() => showToast('تم تحديث نصوص من نحن في فايربيز بنجاح')}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer"
+                  type="button"
+                  onClick={handleSaveAbout}
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-sm transition-colors"
                 >
-                  حفظ النصوص
+                  {isSaving ? 'جارِ الحفظ...' : 'حفظ الرؤية والرسالة في فايربيز'}
                 </button>
               </div>
 
@@ -1603,6 +1981,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             >
                               مكتمل
                             </button>
+                            {inq.id && (
+                              <button
+                                onClick={() => handleDeleteInquiry(inq.id!)}
+                                className="p-1 rounded bg-slate-900 hover:bg-red-900/50 text-slate-400 hover:text-red-300 text-[10px] cursor-pointer transition-colors"
+                                title="حذف الطلب"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1655,37 +2042,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Firebase Status */}
+              {/* Firebase Live Diagnostics & Status */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
-                    <Server className="w-4 h-4" />
-                    <span>معلومات مشروع Firebase</span>
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                      <Server className="w-4 h-4" />
+                      <span>معلومات مشروع Firebase & Firestore</span>
+                    </h3>
+                    <span className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>{dbStats?.connected ? 'Online' : 'Checking'}</span>
+                    </span>
+                  </div>
+
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between py-1 border-b border-slate-900">
-                      <span className="text-slate-400">المعرف البرمجي:</span>
-                      <span className="font-mono text-white">gen-lang-client-0460590751</span>
+                      <span className="text-slate-400">معرف المشروع (Project ID):</span>
+                      <span className="font-mono text-white text-[11px]">gen-lang-client-0460590751</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-900">
                       <span className="text-slate-400">قاعدة بيانات Firestore:</span>
-                      <span className="font-mono text-emerald-400 text-[11px] truncate max-w-[180px]">
+                      <span className="font-mono text-emerald-400 text-[11px] truncate max-w-[200px]" title="ai-studio-egyptgreenenergy-f5992e15-bc8b-4278-9a9f-4f09daed5039">
                         ai-studio-egyptgreenenergy...
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-slate-900">
+                      <span className="text-slate-400">زمن استجابة الاتصال (Latency):</span>
+                      <span className="font-mono text-emerald-300 font-bold">
+                        {dbStats?.latencyMs !== undefined ? `${dbStats.latencyMs} ms` : 'جاري الفحص...'}
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-900">
                       <span className="text-slate-400">حساب المسؤول المعتمد:</span>
                       <span className="font-mono text-white text-[11px]">{ADMIN_PRIMARY_EMAIL}</span>
                     </div>
+                    <div className="flex justify-between py-1 border-b border-slate-900">
+                      <span className="text-slate-400">حالة المصادقة الحالية:</span>
+                      <span className="text-slate-200">
+                        {currentUser ? `مسجل (${currentUser.email || 'Admin'})` : 'مفتاح جلسة مشفر (Protected Session)'}
+                      </span>
+                    </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handlePingDatabase}
+                    disabled={isPingingDb}
+                    className="w-full mt-2 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-800 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isPingingDb ? 'animate-spin text-emerald-400' : ''}`} />
+                    <span>فحص سرعة استجابة قاعدة البيانات (Ping Test)</span>
+                  </button>
                 </div>
 
                 <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                   <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                     <Database className="w-4 h-4" />
-                    <span>مزامنة شاملة (Master Seed)</span>
+                    <span>سجلات قاعدة البيانات والمزامنة الشاملة</span>
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  
+                  {/* Real-time counts grid */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <div className="text-lg font-bold font-mono text-emerald-400">{systems.length}</div>
+                      <div className="text-[10px] text-slate-400">أنظمة تيار خفيف</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <div className="text-lg font-bold font-mono text-emerald-400">{projects.length}</div>
+                      <div className="text-[10px] text-slate-400">مشروعات معتمدة</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <div className="text-lg font-bold font-mono text-emerald-400">{mediaAssets.length}</div>
+                      <div className="text-[10px] text-slate-400">صور ووسائط</div>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                      <div className="text-lg font-bold font-mono text-amber-400">{inquiries.length}</div>
+                      <div className="text-[10px] text-slate-400">طلبات واستشارات</div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed pt-1">
                     حفظ كافة البيانات الافتراضية للشركة (الأنظمة، المشروعات، الصور، والهوية) مباشرة في فايربيز لضمان استقرار الموقع.
                   </p>
 
@@ -1694,7 +2131,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     disabled={isSaving}
                     className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-md cursor-pointer"
                   >
-                    <RefreshCw className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+                    <UploadCloud className={`w-4 h-4 ${isSaving ? 'animate-bounce' : ''}`} />
                     <span>{isSaving ? 'جارِ المزامنة مع فايربيز...' : 'مزامنة البيانات الأساسية مع فايربيز الآن'}</span>
                   </button>
                 </div>

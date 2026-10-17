@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { content } from '../data/translations';
-import { createInquiry } from '../services/firebaseService';
+import { createInquiry, SiteSettingsData } from '../services/firebaseService';
 import {
   MapPin,
   Phone,
@@ -18,14 +18,22 @@ interface ContactSectionProps {
   currentLang: Language;
   prefilledMessage?: string;
   prefilledService?: string;
+  customSettings?: SiteSettingsData | null;
 }
 
 export const ContactSection: React.FC<ContactSectionProps> = ({
   currentLang,
   prefilledMessage = '',
   prefilledService = '',
+  customSettings,
 }) => {
   const t = content[currentLang].contact;
+  const activePhonePrimary = customSettings?.phonePrimary || t.phonePrimary;
+  const activePhoneSecondary = customSettings?.phoneSecondary || t.phoneSecondary;
+  const activeEmail = customSettings?.email || t.emailAddress;
+  const activeAddress = customSettings?.address || t.officeAddress;
+  const activeHours = customSettings?.hours || t.hoursValue;
+  const activeWhatsAppNumber = customSettings?.whatsAppNumber || '201007196485';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -149,7 +157,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     {t.officeTitle}
                   </h4>
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {t.officeAddress}
+                    {activeAddress}
                   </p>
                 </div>
               </div>
@@ -165,17 +173,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   </h4>
                   <div className="space-y-1">
                     <a
-                      href="tel:+201007196485"
+                      href={`tel:${activePhonePrimary.replace(/\s+/g, '')}`}
                       className="block text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
                     >
-                      {t.phonePrimary}
+                      {activePhonePrimary}
                     </a>
-                    <a
-                      href="tel:+201200728006"
-                      className="block text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
-                    >
-                      {t.phoneSecondary}
-                    </a>
+                    {activePhoneSecondary && (
+                      <a
+                        href={`tel:${activePhoneSecondary.replace(/\s+/g, '')}`}
+                        className="block text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
+                      >
+                        {activePhoneSecondary}
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -190,10 +200,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     {t.emailTitle}
                   </h4>
                   <a
-                    href="mailto:info@egyptge.com"
+                    href={`mailto:${activeEmail}`}
                     className="text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800"
                   >
-                    {t.emailAddress}
+                    {activeEmail}
                   </a>
                 </div>
               </div>
@@ -208,7 +218,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                     {t.hoursTitle}
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    {t.hoursValue}
+                    {activeHours}
                   </p>
                 </div>
               </div>
@@ -216,7 +226,11 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               {/* Direct WhatsApp Call to Action Button */}
               <div className="pt-4 border-t border-slate-100">
                 <a
-                  href={whatsappUrl}
+                  href={`https://wa.me/${activeWhatsAppNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                    currentLang === 'ar'
+                      ? 'مرحباً، أود الاستفسار عن توريد وتركيب أنظمة التيار الخفيف وطلب مقايسة فنية لمنشأتنا.'
+                      : 'Hello, I would like to inquire about low current systems installation and request a technical BOQ for our facility.'
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold text-sm shadow-sm transition-colors cursor-pointer"
