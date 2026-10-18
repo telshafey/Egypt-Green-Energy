@@ -42,6 +42,14 @@ export interface SiteSettingsData {
   whatsAppNumber: string;
   aboutVisionAr?: string;
   aboutMissionAr?: string;
+  showStats?: boolean;
+  showAbout?: boolean;
+  showHeritage?: boolean;
+  showSystems?: boolean;
+  showProjects?: boolean;
+  showConfigurator?: boolean;
+  showPartners?: boolean;
+  showContact?: boolean;
   updatedAt?: string;
 }
 
@@ -182,6 +190,14 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   whatsAppNumber: '201007196485',
   aboutVisionAr: 'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.',
   aboutMissionAr: 'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.',
+  showStats: true,
+  showAbout: true,
+  showHeritage: true,
+  showSystems: true,
+  showProjects: true,
+  showConfigurator: true,
+  showPartners: true,
+  showContact: true,
 };
 
 // 1. Fetch & Save Site Settings
