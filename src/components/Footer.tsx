@@ -9,10 +9,11 @@ import { SiteSettingsData } from '../services/firebaseService';
 interface FooterProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
+  onOpenAdmin?: () => void;
   customSettings?: SiteSettingsData | null;
 }
 
-export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customSettings }) => {
+export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenAdmin, customSettings }) => {
   const t = content[currentLang];
   const activeAddress = customSettings?.address || t.contact.officeAddress;
   const activePhonePrimary = customSettings?.phonePrimary || t.contact.phonePrimary;
@@ -148,6 +149,16 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
         <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-3">
             <span>{t.footer.rights}</span>
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="opacity-40 hover:opacity-100 transition-opacity text-slate-500 hover:text-emerald-400 flex items-center gap-1 cursor-pointer"
+                title="بوابة الإدارة"
+              >
+                <span>•</span>
+                <span className="text-[11px]">بوابة الإدارة</span>
+              </button>
+            )}
           </div>
           <button
             onClick={scrollToTop}

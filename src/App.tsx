@@ -242,10 +242,11 @@ export default function App() {
         />
       </main>
 
-      {/* 9. Quiet Corporate Footer without public admin link */}
+      {/* 9. Quiet Corporate Footer with discreet admin portal link without # */}
       <Footer
         currentLang={currentLang}
         onNavigate={handleNavigate}
+        onOpenAdmin={handleOpenAdmin}
         customSettings={liveSettings}
       />
     </div>
