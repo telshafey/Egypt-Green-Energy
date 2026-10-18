@@ -38,6 +38,7 @@ export interface SiteSettingsData {
   heroSubtitleAr: string;
   heroSubtitleEn: string;
   heroImageUrl?: string;
+  logoUrl?: string;
   whatsAppNumber: string;
   aboutVisionAr?: string;
   aboutMissionAr?: string;
@@ -64,6 +65,17 @@ export interface MediaAssetData {
   createdAt: string;
 }
 
+export interface AdminUserData {
+  id: string;
+  name: string;
+  email: string;
+  role: 'super_admin' | 'systems_engineer' | 'content_manager';
+  passcode: string;
+  isActive: boolean;
+  createdAt: string;
+  notes?: string;
+}
+
 export interface FirestoreDatabaseStats {
   connected: boolean;
   latencyMs: number;
@@ -74,9 +86,23 @@ export interface FirestoreDatabaseStats {
   projectsCount: number;
   inquiriesCount: number;
   mediaAssetsCount: number;
+  adminUsersCount: number;
   lastChecked: string;
   error?: string;
 }
+
+export const DEFAULT_ADMIN_USERS: AdminUserData[] = [
+  {
+    id: 'admin-master',
+    name: 'مدير النظام الرئيسي',
+    email: 'admin@egyptge.com',
+    role: 'super_admin',
+    passcode: 'admin2026',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    notes: 'الحساب الرئيسي للوحة التحكم وإدارة الصلاحيات',
+  },
+];
 
 // Default Seed Assets
 export const DEFAULT_MEDIA_ASSETS: MediaAssetData[] = [
@@ -152,6 +178,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   heroSubtitleAr: 'نصمم وننفذ حلول التيار الخفيف المتكاملة: شبكات المراقبة بالكاميرات (CCTV)، إنذار الحريق، التحكم في الأبواب (Access Control)، الكابلات الهيكلية والألياف الضوئية، السنترالات الموحدة، مع عقود صيانة معتمدة 24/7.',
   heroSubtitleEn: 'We engineer, commission, and maintain end-to-end Low Current (ELV) solutions: 4K IP CCTV surveillance, addressable fire alarm, biometric access control, structured cabling & fiber optics, IP telephony, and building management systems (BMS) with 24/7 managed SLA support.',
   heroImageUrl: HERO_IMAGE,
+  logoUrl: '',
   whatsAppNumber: '201007196485',
   aboutVisionAr: 'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.',
   aboutMissionAr: 'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.',
@@ -397,7 +424,68 @@ export async function deleteMediaAsset(assetId: string): Promise<void> {
   }
 }
 
-// 6. Comprehensive Database Diagnostics & Document Counter
+// 6. Admin Users & Access Management
+export async function getAdminUsers(): Promise<AdminUserData[]> {
+  const path = 'admin_users';
+  try {
+    const snap = await getDocs(collection(db, path));
+    if (!snap.empty) {
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as AdminUserData));
+    }
+    return DEFAULT_ADMIN_USERS;
+  } catch (err) {
+    console.warn('Fallback to default admin users:', err);
+    return DEFAULT_ADMIN_USERS;
+  }
+}
+
+export async function saveAdminUser(user: AdminUserData): Promise<void> {
+  const path = `admin_users/${user.id}`;
+  try {
+    await setDoc(doc(db, 'admin_users', user.id), {
+      ...user,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteAdminUser(userId: string): Promise<void> {
+  const path = `admin_users/${userId}`;
+  try {
+    await deleteDoc(doc(db, 'admin_users', userId));
+  } catch (err) {
+    handleFirestoreError(err, OperationType.DELETE, path);
+  }
+}
+
+export function subscribeToAdminUsers(callback: (users: AdminUserData[]) => void): () => void {
+  try {
+    const q = collection(db, 'admin_users');
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as AdminUserData));
+          callback(list);
+        } else {
+          callback(DEFAULT_ADMIN_USERS);
+        }
+      },
+      (error) => {
+        console.warn('Real-time admin users subscription fallback:', error);
+        callback(DEFAULT_ADMIN_USERS);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time admin users subscription setup failed:', err);
+    callback(DEFAULT_ADMIN_USERS);
+    return () => {};
+  }
+}
+
+// 7. Comprehensive Database Diagnostics & Document Counter
 export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStats> {
   const health: FirestoreHealthResult = await testFirestoreConnection();
   let settingsCount = 0;
@@ -405,15 +493,17 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
   let projectsCount = 0;
   let inquiriesCount = 0;
   let mediaAssetsCount = 0;
+  let adminUsersCount = 0;
 
   if (health.success) {
     try {
-      const [settSnap, sysSnap, projSnap, inqSnap, medSnap] = await Promise.all([
+      const [settSnap, sysSnap, projSnap, inqSnap, medSnap, userSnap] = await Promise.all([
         getDoc(doc(db, 'settings', 'general')),
         getDocs(collection(db, 'systems')),
         getDocs(collection(db, 'projects')),
         getDocs(collection(db, 'inquiries')),
         getDocs(collection(db, 'media_assets')),
+        getDocs(collection(db, 'admin_users')),
       ]);
 
       if (settSnap.exists()) settingsCount = 1;
@@ -421,6 +511,7 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
       projectsCount = projSnap.size;
       inquiriesCount = inqSnap.size;
       mediaAssetsCount = medSnap.size;
+      adminUsersCount = userSnap.size;
     } catch (err) {
       console.warn('Diagnostic counts fallback:', err);
     }
@@ -436,13 +527,18 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
     projectsCount,
     inquiriesCount,
     mediaAssetsCount,
+    adminUsersCount,
     lastChecked: new Date().toLocaleTimeString('ar-EG'),
     error: health.error,
   };
 }
 
-// 7. Master Seed / Sync Initial Data to Firestore
-export async function seedInitialFirestoreData(): Promise<{ success: boolean; message: string; counts: { systems: number; projects: number; media: number } }> {
+// 8. Master Seed / Sync Initial Data to Firestore
+export async function seedInitialFirestoreData(): Promise<{
+  success: boolean;
+  message: string;
+  counts: { systems: number; projects: number; media: number; users: number };
+}> {
   try {
     // 1. Save settings
     await setDoc(doc(db, 'settings', 'general'), {
@@ -477,13 +573,24 @@ export async function seedInitialFirestoreData(): Promise<{ success: boolean; me
       medCount++;
     }
 
+    // 5. Save default admin users if not exist
+    let userCount = 0;
+    for (const user of DEFAULT_ADMIN_USERS) {
+      await setDoc(doc(db, 'admin_users', user.id), {
+        ...user,
+        updatedAt: new Date().toISOString(),
+      });
+      userCount++;
+    }
+
     return {
       success: true,
-      message: `تم بنجاح رفع ومزامنة الإعدادات العامة، و ${sysCount} أنظمة تيار خفيف، و ${projCount} مشروعات معتمدة، و ${medCount} صور وسائط داخل قاعدة بيانات فايربيز!`,
+      message: `تم بنجاح رفع ومزامنة الإعدادات العامة، و ${sysCount} أنظمة تيار خفيف، و ${projCount} مشروعات معتمدة، و ${medCount} صور وسائط، و ${userCount} مستخدمي إدارة داخل قاعدة بيانات فايربيز!`,
       counts: {
         systems: sysCount,
         projects: projCount,
         media: medCount,
+        users: userCount,
       },
     };
   } catch (err) {
@@ -491,7 +598,8 @@ export async function seedInitialFirestoreData(): Promise<{ success: boolean; me
     return {
       success: false,
       message: errorMsg,
-      counts: { systems: 0, projects: 0, media: 0 },
+      counts: { systems: 0, projects: 0, media: 0, users: 0 },
     };
   }
 }
+

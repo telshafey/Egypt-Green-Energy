@@ -1,13 +1,27 @@
 import { Language, LightCurrentSystem, ProjectItem, TimelineEvent } from '../types';
+import {
+  DEFAULT_HERO_IMAGE,
+  DEFAULT_CCTV_IMAGE,
+  DEFAULT_CABLING_IMAGE,
+  DEFAULT_ACCESS_IMAGE,
+  DEFAULT_DATACENTER_IMAGE,
+  DEFAULT_ENERGY_IMAGE,
+  DEFAULT_BIOTECH_IMAGE,
+  DEFAULT_JOJOBA_IMAGE,
+  DEFAULT_FIRE_ALARM_IMAGE,
+  DEFAULT_BMS_IMAGE,
+} from '../utils/imageHelper';
 
-export const HERO_IMAGE = '/src/assets/images/hero_light_current_command_1792181184410.jpg';
-export const CCTV_IMAGE = '/src/assets/images/cctv_surveillance_control_1792181185253.jpg';
-export const CABLING_IMAGE = '/src/assets/images/structured_cabling_rack_1792181185069.jpg';
-export const ACCESS_IMAGE = '/src/assets/images/access_control_turnstiles_1792181185252.jpg';
-export const DATACENTER_IMAGE = '/src/assets/images/it_scada_datacenter_1792180511048.jpg';
-export const ENERGY_IMAGE = '/src/assets/images/energy_solar_microgrid_1792180512010.jpg';
-export const BIOTECH_IMAGE = '/src/assets/images/biotech_algae_hydroponics_1792180510094.jpg';
-export const JOJOBA_IMAGE = '/src/assets/images/jojoba_biofuel_plantation_1792180511642.jpg';
+export const HERO_IMAGE = DEFAULT_HERO_IMAGE;
+export const CCTV_IMAGE = DEFAULT_CCTV_IMAGE;
+export const CABLING_IMAGE = DEFAULT_CABLING_IMAGE;
+export const ACCESS_IMAGE = DEFAULT_ACCESS_IMAGE;
+export const DATACENTER_IMAGE = DEFAULT_DATACENTER_IMAGE;
+export const ENERGY_IMAGE = DEFAULT_ENERGY_IMAGE;
+export const BIOTECH_IMAGE = DEFAULT_BIOTECH_IMAGE;
+export const JOJOBA_IMAGE = DEFAULT_JOJOBA_IMAGE;
+export const FIRE_ALARM_IMAGE = DEFAULT_FIRE_ALARM_IMAGE;
+export const BMS_IMAGE = DEFAULT_BMS_IMAGE;
 
 export interface TranslationContent {
   meta: {

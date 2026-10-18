@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Language, NavSection, LightCurrentSystem } from '../types';
 import { content } from '../data/translations';
+import { resolveImageUrl, handleImageError, DEFAULT_CCTV_IMAGE } from '../utils/imageHelper';
 import {
   Shield,
   Flame,
@@ -237,9 +238,10 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   {/* Visual Thumbnail */}
                   <div className="relative h-48 overflow-hidden bg-slate-100 cursor-pointer" onClick={() => handleSelectSystem(item)}>
                     <img
-                      src={item.image}
+                      src={resolveImageUrl(item.image, DEFAULT_CCTV_IMAGE)}
                       alt={item.title}
                       referrerPolicy="no-referrer"
+                      onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
@@ -353,11 +355,12 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
               
               {/* Media Column */}
               <div className="w-full lg:w-5/12">
-                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-md">
+                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-md bg-slate-900">
                   <img
-                    src={selectedSystem.image}
+                    src={resolveImageUrl(selectedSystem.image, DEFAULT_CCTV_IMAGE)}
                     alt={selectedSystem.title}
                     referrerPolicy="no-referrer"
+                    onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex items-end p-6">

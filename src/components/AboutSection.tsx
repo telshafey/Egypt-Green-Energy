@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { content, HERO_IMAGE } from '../data/translations';
+import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE } from '../utils/imageHelper';
 import { Compass, Target, CheckCircle2, Award, Calendar } from 'lucide-react';
 
 interface AboutSectionProps {
@@ -67,11 +68,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
 
           {/* Right Column: Architectural Visual & Heritage Spotlight */}
           <div className="lg:col-span-5 flex flex-col">
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 h-full min-h-[360px] shadow-sm">
+            <div className="relative rounded-2xl overflow-hidden border border-slate-200 h-full min-h-[360px] shadow-sm bg-slate-900">
               <img
-                src={HERO_IMAGE}
+                src={resolveImageUrl(HERO_IMAGE, DEFAULT_HERO_IMAGE)}
                 alt="Egypt Low Current Systems and Technical Heritage"
                 referrerPolicy="no-referrer"
+                onError={handleImageError(DEFAULT_HERO_IMAGE)}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white">

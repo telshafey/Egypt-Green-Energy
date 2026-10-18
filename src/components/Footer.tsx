@@ -39,7 +39,14 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
           
           {/* Brand Column */}
           <div className="lg:col-span-5 space-y-4">
-            <BrandLogo size="lg" variant="horizontal" textColor="white" />
+            <BrandLogo
+              size="lg"
+              variant="horizontal"
+              textColor="white"
+              logoUrl={customSettings?.logoUrl}
+              companyNameAr={customSettings?.companyNameAr}
+              companyNameEn={customSettings?.companyNameEn}
+            />
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
               {t.footer.about}
             </p>

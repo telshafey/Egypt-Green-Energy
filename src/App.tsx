@@ -174,6 +174,9 @@ export default function App() {
         onToggleLang={handleToggleLang}
         activeSection={activeSection}
         onNavigate={handleNavigate}
+        customLogoUrl={liveSettings?.logoUrl}
+        companyNameAr={liveSettings?.companyNameAr}
+        companyNameEn={liveSettings?.companyNameEn}
       />
 
       <main className="flex-1">
@@ -192,6 +195,7 @@ export default function App() {
               : liveSettings?.heroSubtitleEn
           }
           customHeroImage={liveSettings?.heroImageUrl}
+          customLogoUrl={liveSettings?.logoUrl}
         />
 
         {/* 2. Quantified Stats & Heritage Strip */}

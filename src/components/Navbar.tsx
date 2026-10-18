@@ -9,6 +9,9 @@ interface NavbarProps {
   onToggleLang: () => void;
   activeSection: NavSection;
   onNavigate: (section: NavSection) => void;
+  customLogoUrl?: string;
+  companyNameAr?: string;
+  companyNameEn?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +19,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleLang,
   activeSection,
   onNavigate,
+  customLogoUrl,
+  companyNameAr,
+  companyNameEn,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = content[currentLang];
@@ -36,7 +42,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleNavClick('home')}
             className="group cursor-pointer shrink-0"
           >
-            <BrandLogo size="md" variant="horizontal" textColor="white" />
+            <BrandLogo
+              size="md"
+              variant="horizontal"
+              textColor="white"
+              logoUrl={customLogoUrl}
+              companyNameAr={companyNameAr}
+              companyNameEn={companyNameEn}
+            />
           </button>
 
           {/* Zone 2: Single-line Clean Nav Links */}

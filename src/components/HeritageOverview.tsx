@@ -2,6 +2,7 @@ import React from 'react';
 import { Language } from '../types';
 import { SunMedium, Droplets, Leaf, History, ArrowUpRight } from 'lucide-react';
 import { ENERGY_IMAGE, BIOTECH_IMAGE, JOJOBA_IMAGE } from '../data/translations';
+import { resolveImageUrl, handleImageError, DEFAULT_ENERGY_IMAGE } from '../utils/imageHelper';
 
 interface HeritageOverviewProps {
   currentLang: Language;
@@ -97,11 +98,12 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
               >
                 <div>
                   {/* Visual Header */}
-                  <div className="relative h-44 overflow-hidden bg-slate-200">
+                  <div className="relative h-44 overflow-hidden bg-slate-900">
                     <img
-                      src={item.image}
+                      src={resolveImageUrl(item.image, DEFAULT_ENERGY_IMAGE)}
                       alt={item.title}
                       referrerPolicy="no-referrer"
+                      onError={handleImageError(DEFAULT_ENERGY_IMAGE)}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent flex items-end p-4">

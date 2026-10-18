@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Language, NavSection, ProjectItem } from '../types';
 import { content } from '../data/translations';
+import { resolveImageUrl, handleImageError, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
 import {
   MapPin,
   Calendar,
@@ -166,9 +167,10 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   {/* Visual Thumbnail */}
                   <div className="relative h-52 overflow-hidden bg-slate-100">
                     <img
-                      src={project.image}
+                      src={resolveImageUrl(project.image, DEFAULT_CABLING_IMAGE)}
                       alt={project.title}
                       referrerPolicy="no-referrer"
+                      onError={handleImageError(DEFAULT_CABLING_IMAGE)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
@@ -271,11 +273,12 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
               
               {/* Media Column */}
               <div className="w-full lg:w-5/12">
-                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-md">
+                <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden shadow-md bg-slate-900">
                   <img
-                    src={selectedProject.image}
+                    src={resolveImageUrl(selectedProject.image, DEFAULT_CABLING_IMAGE)}
                     alt={selectedProject.title}
                     referrerPolicy="no-referrer"
+                    onError={handleImageError(DEFAULT_CABLING_IMAGE)}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent flex items-end p-6">

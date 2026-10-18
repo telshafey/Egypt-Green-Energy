@@ -1,6 +1,7 @@
 import React from 'react';
 import { Language, ProjectItem } from '../types';
 import { content } from '../data/translations';
+import { resolveImageUrl, handleImageError, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
 import { X, MapPin, Calendar, Building2, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface ProjectModalProps {
@@ -34,8 +35,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         {/* Header with image */}
         <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden bg-slate-900">
           <img
-            src={project.image}
+            src={resolveImageUrl(project.image, DEFAULT_CABLING_IMAGE)}
             alt={project.title}
+            referrerPolicy="no-referrer"
+            onError={handleImageError(DEFAULT_CABLING_IMAGE)}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />

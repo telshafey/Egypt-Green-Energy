@@ -14,6 +14,7 @@
         "heroSubtitleAr": { "type": "string", "maxLength": 500 },
         "heroSubtitleEn": { "type": "string", "maxLength": 500 },
         "heroImageUrl": { "type": "string", "maxLength": 1000 },
+        "logoUrl": { "type": "string", "maxLength": 1000 },
         "phonePrimary": { "type": "string", "maxLength": 50 },
         "phoneSecondary": { "type": "string", "maxLength": 50 },
         "email": { "type": "string", "maxLength": 100 },
@@ -84,6 +85,21 @@
         "status": { "type": "string", "maxLength": 30 }
       },
       "required": ["name", "phone", "message"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized administrators and team members permitted to access the admin dashboard",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "maxLength": 50 },
+        "passcode": { "type": "string", "maxLength": 50 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "email", "role"]
     }
   },
   "firestore": {
@@ -102,6 +118,11 @@
     "/inquiries/{inquiryId}": {
       "schema": "Inquiry",
       "description": "Customer inquiries and quotes"
+    },
+    "/admin_users/{userId}": {
+      "schema": "AdminUser",
+      "description": "Authorized administrators and control panel users"
     }
   }
 }
+

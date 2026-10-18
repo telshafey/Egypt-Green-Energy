@@ -3,6 +3,7 @@ import { Language, NavSection } from '../types';
 import { content, HERO_IMAGE } from '../data/translations';
 import { ArrowLeft, ArrowRight, ShieldCheck, Cpu, Clock } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+import { resolveImageUrl, DEFAULT_HERO_IMAGE } from '../utils/imageHelper';
 
 interface HeroProps {
   currentLang: Language;
@@ -10,6 +11,7 @@ interface HeroProps {
   customTitle?: string;
   customSubtitle?: string;
   customHeroImage?: string;
+  customLogoUrl?: string;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -18,11 +20,12 @@ export const Hero: React.FC<HeroProps> = ({
   customTitle,
   customSubtitle,
   customHeroImage,
+  customLogoUrl,
 }) => {
   const t = content[currentLang];
   const isRtl = currentLang === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
-  const heroImageSrc = customHeroImage || HERO_IMAGE;
+  const heroImageSrc = resolveImageUrl(customHeroImage, DEFAULT_HERO_IMAGE);
   const displayTitle = customTitle || t.hero.title;
   const displaySubtitle = customSubtitle || t.hero.subtitle;
 
@@ -34,6 +37,11 @@ export const Hero: React.FC<HeroProps> = ({
           src={heroImageSrc}
           alt="Low Current Systems and Central Security Operations Center"
           referrerPolicy="no-referrer"
+          onError={(e) => {
+            if (e.currentTarget.src !== DEFAULT_HERO_IMAGE) {
+              e.currentTarget.src = DEFAULT_HERO_IMAGE;
+            }
+          }}
           className="w-full h-full object-cover object-center scale-105 transform motion-safe:transition-transform motion-safe:duration-1000"
         />
         {/* Measured dark scrim for high-contrast WCAG AA legibility */}
@@ -46,7 +54,7 @@ export const Hero: React.FC<HeroProps> = ({
           
           {/* Quiet Unboxed Kicker Metadata with Official Emblem */}
           <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-emerald-400 mb-4 tracking-wide font-mono">
-            <BrandLogo variant="emblem" size="sm" />
+            <BrandLogo variant="emblem" size="sm" logoUrl={customLogoUrl} />
             <span className="uppercase tracking-wider font-semibold">{t.hero.kicker}</span>
             <span aria-hidden="true" className="text-slate-500">·</span>
             <span className="text-slate-300">{currentLang === 'ar' ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
