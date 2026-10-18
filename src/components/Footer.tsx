@@ -10,16 +10,9 @@ interface FooterProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   customSettings?: SiteSettingsData | null;
-  sectionVisibility?: {
-    showAbout?: boolean;
-    showSystems?: boolean;
-    showProjects?: boolean;
-    showConfigurator?: boolean;
-    showContact?: boolean;
-  };
 }
 
-export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customSettings, sectionVisibility }) => {
+export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customSettings }) => {
   const t = content[currentLang];
   const activeAddress = customSettings?.address || t.contact.officeAddress;
   const activePhonePrimary = customSettings?.phonePrimary || t.contact.phonePrimary;
@@ -37,7 +30,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
   )}`;
 
   return (
-    <footer className="bg-slate-950 text-slate-300 border-t border-slate-900 pt-16 pb-12">
+    <footer className="bg-slate-950 text-slate-400 border-t border-slate-900 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Grid */}
@@ -53,10 +46,10 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
               companyNameAr={customSettings?.companyNameAr}
               companyNameEn={customSettings?.companyNameEn}
             />
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
               {t.footer.about}
             </p>
-            <div className="text-xs text-slate-400 font-mono">
+            <div className="text-xs text-slate-500 font-mono">
               {t.footer.crNumber}
             </div>
           </div>
@@ -66,7 +59,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
             <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
               {t.footer.quickLinks}
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
+            <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <button
                   onClick={() => onNavigate('home')}
@@ -75,56 +68,46 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                   {t.nav.home}
                 </button>
               </li>
-              {sectionVisibility?.showAbout !== false && (
-                <li>
-                  <button
-                    onClick={() => onNavigate('about')}
-                    className="hover:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    {t.nav.about}
-                  </button>
-                </li>
-              )}
-              {sectionVisibility?.showSystems !== false && (
-                <li>
-                  <button
-                    onClick={() => onNavigate('systems')}
-                    className="hover:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    {t.nav.systems}
-                  </button>
-                </li>
-              )}
-              {sectionVisibility?.showProjects !== false && (
-                <li>
-                  <button
-                    onClick={() => onNavigate('projects')}
-                    className="hover:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    {t.nav.projects}
-                  </button>
-                </li>
-              )}
-              {sectionVisibility?.showConfigurator !== false && (
-                <li>
-                  <button
-                    onClick={() => onNavigate('configurator')}
-                    className="hover:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    {t.nav.configurator}
-                  </button>
-                </li>
-              )}
-              {sectionVisibility?.showContact !== false && (
-                <li>
-                  <button
-                    onClick={() => onNavigate('contact')}
-                    className="hover:text-emerald-400 transition-colors cursor-pointer"
-                  >
-                    {t.nav.contact}
-                  </button>
-                </li>
-              )}
+              <li>
+                <button
+                  onClick={() => onNavigate('about')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  {t.nav.about}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('systems')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  {t.nav.systems}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('projects')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  {t.nav.projects}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('configurator')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  {t.nav.configurator}
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('contact')}
+                  className="hover:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  {t.nav.contact}
+                </button>
+              </li>
             </ul>
           </div>
 

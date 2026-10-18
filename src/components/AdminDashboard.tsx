@@ -37,10 +37,6 @@ import {
   UserPlus,
   UserCheck,
   Upload,
-  Sliders,
-  Award,
-  TrendingUp,
-  LayoutGrid,
 } from 'lucide-react';
 import {
   auth,
@@ -97,7 +93,6 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | 'general'
-  | 'visibility'
   | 'systems'
   | 'projects'
   | 'heritage'
@@ -621,53 +616,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       showToast('تمت استعادة الشعار الفيكتور الافتراضي للشركة');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر استعادة الشعار الافتراضي';
-      showToast(msg, 'error');
-    }
-  };
-
-  // Toggle individual section visibility on/off
-  const handleToggleSectionVisibility = async (key: keyof SiteSettingsData) => {
-    const currentVal = settings[key] !== false;
-    const updated = { ...settings, [key]: !currentVal };
-    setSettings(updated);
-    if (onSettingsUpdated) onSettingsUpdated(updated);
-    try {
-      await saveSiteSettings(updated);
-      showToast(
-        !currentVal
-          ? 'تم تفعيل وإظهار هذا القسم بنجاح في الموقع'
-          : 'تم إخفاء هذا القسم بنجاح من الموقع وحفظ التغيير'
-      );
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ الحالة';
-      showToast(msg, 'error');
-    }
-  };
-
-  // Batch toggle all sections
-  const handleSetAllSectionsVisibility = async (visible: boolean) => {
-    const updated: SiteSettingsData = {
-      ...settings,
-      showStats: visible,
-      showAbout: visible,
-      showHeritage: visible,
-      showSystems: visible,
-      showProjects: visible,
-      showConfigurator: visible,
-      showPartners: visible,
-      showContact: visible,
-    };
-    setSettings(updated);
-    if (onSettingsUpdated) onSettingsUpdated(updated);
-    try {
-      await saveSiteSettings(updated);
-      showToast(
-        visible
-          ? 'تم تفعيل وإظهار كافة أقسام الموقع بنجاح'
-          : 'تم إخفاء الأقسام الاختيارية بنجاح'
-      );
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'تعذر حفظ الإعدادات';
       showToast(msg, 'error');
     }
   };

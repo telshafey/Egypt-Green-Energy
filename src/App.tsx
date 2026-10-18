@@ -177,7 +177,6 @@ export default function App() {
         customLogoUrl={liveSettings?.logoUrl}
         companyNameAr={liveSettings?.companyNameAr}
         companyNameEn={liveSettings?.companyNameEn}
-        sectionVisibility={liveSettings || undefined}
       />
 
       <main className="flex-1">
@@ -200,71 +199,54 @@ export default function App() {
         />
 
         {/* 2. Quantified Stats & Heritage Strip */}
-        {liveSettings?.showStats !== false && (
-          <StatsStrip currentLang={currentLang} />
-        )}
+        <StatsStrip currentLang={currentLang} />
 
         {/* 3. About Us with 44-year Heritage & Interactive Timeline */}
-        {liveSettings?.showAbout !== false && (
-          <AboutSection currentLang={currentLang} />
-        )}
+        <AboutSection currentLang={currentLang} />
 
         {/* 4. Historical Track Record in Energy, Water & Biotechnology */}
-        {liveSettings?.showHeritage !== false && (
-          <HeritageOverview currentLang={currentLang} />
-        )}
+        <HeritageOverview currentLang={currentLang} />
 
         {/* 5. Flagship: Comprehensive Low Current (ELV) Systems Showcase */}
-        {liveSettings?.showSystems !== false && (
-          <SystemsSection
-            currentLang={currentLang}
-            onNavigate={handleNavigate}
-            onSelectSystemForBOQ={handleSelectSystemForBOQ}
-            customSystems={liveSystems || undefined}
-          />
-        )}
+        <SystemsSection
+          currentLang={currentLang}
+          onNavigate={handleNavigate}
+          onSelectSystemForBOQ={handleSelectSystemForBOQ}
+          customSystems={liveSystems || undefined}
+        />
 
-        {/* 6. Landmark Low Current Projects & Field Installations */}
-        {liveSettings?.showProjects !== false && (
-          <ProjectsSection
-            currentLang={currentLang}
-            onNavigate={handleNavigate}
-            onSelectProjectForBOQ={handleSelectSystemForBOQ}
-            customProjects={liveProjects || undefined}
-          />
-        )}
+        {/* 5. Landmark Low Current Projects & Field Installations */}
+        <ProjectsSection
+          currentLang={currentLang}
+          onNavigate={handleNavigate}
+          onSelectProjectForBOQ={handleSelectSystemForBOQ}
+          customProjects={liveProjects || undefined}
+        />
 
-        {/* 7. Interactive Low Current Scope & BOQ Configurator */}
-        {liveSettings?.showConfigurator !== false && (
-          <BOQConfigurator
-            currentLang={currentLang}
-            onNavigate={handleNavigate}
-            onPrefillInquiry={handlePrefillInquiryFromConfigurator}
-          />
-        )}
+        {/* 6. Interactive Low Current Scope & BOQ Configurator */}
+        <BOQConfigurator
+          currentLang={currentLang}
+          onNavigate={handleNavigate}
+          onPrefillInquiry={handlePrefillInquiryFromConfigurator}
+        />
 
-        {/* 8. Technology Partners & Certified Vendors */}
-        {liveSettings?.showPartners !== false && (
-          <PartnersSection currentLang={currentLang} />
-        )}
+        {/* 7. Technology Partners & Certified Vendors */}
+        <PartnersSection currentLang={currentLang} />
 
-        {/* 9. Engineering Contact Section with Validation, WhatsApp, and Nasr City Location */}
-        {liveSettings?.showContact !== false && (
-          <ContactSection
-            currentLang={currentLang}
-            prefilledMessage={prefilledMessage}
-            prefilledService={prefilledService}
-            customSettings={liveSettings}
-          />
-        )}
+        {/* 8. Engineering Contact Section with Validation, WhatsApp, and Nasr City Location */}
+        <ContactSection
+          currentLang={currentLang}
+          prefilledMessage={prefilledMessage}
+          prefilledService={prefilledService}
+          customSettings={liveSettings}
+        />
       </main>
 
-      {/* Quiet Corporate Footer without public admin link */}
+      {/* 9. Quiet Corporate Footer without public admin link */}
       <Footer
         currentLang={currentLang}
         onNavigate={handleNavigate}
         customSettings={liveSettings}
-        sectionVisibility={liveSettings || undefined}
       />
     </div>
   );

@@ -12,13 +12,6 @@ interface NavbarProps {
   customLogoUrl?: string;
   companyNameAr?: string;
   companyNameEn?: string;
-  sectionVisibility?: {
-    showAbout?: boolean;
-    showSystems?: boolean;
-    showProjects?: boolean;
-    showConfigurator?: boolean;
-    showContact?: boolean;
-  };
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,7 +22,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   customLogoUrl,
   companyNameAr,
   companyNameEn,
-  sectionVisibility,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const t = content[currentLang];
@@ -61,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {/* Zone 2: Single-line Clean Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-200">
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300">
             <button
               onClick={() => handleNavClick('home')}
               className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
@@ -70,56 +62,46 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {t.nav.home}
             </button>
-            {sectionVisibility?.showAbout !== false && (
-              <button
-                onClick={() => handleNavClick('about')}
-                className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
-                  activeSection === 'about' ? 'text-emerald-400 font-semibold' : ''
-                }`}
-              >
-                {t.nav.about}
-              </button>
-            )}
-            {sectionVisibility?.showSystems !== false && (
-              <button
-                onClick={() => handleNavClick('systems')}
-                className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
-                  activeSection === 'systems' ? 'text-emerald-400 font-semibold' : ''
-                }`}
-              >
-                {t.nav.systems}
-              </button>
-            )}
-            {sectionVisibility?.showProjects !== false && (
-              <button
-                onClick={() => handleNavClick('projects')}
-                className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
-                  activeSection === 'projects' ? 'text-emerald-400 font-semibold' : ''
-                }`}
-              >
-                {t.nav.projects}
-              </button>
-            )}
-            {sectionVisibility?.showConfigurator !== false && (
-              <button
-                onClick={() => handleNavClick('configurator')}
-                className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
-                  activeSection === 'configurator' ? 'text-emerald-400 font-semibold' : ''
-                }`}
-              >
-                {t.nav.configurator}
-              </button>
-            )}
-            {sectionVisibility?.showContact !== false && (
-              <button
-                onClick={() => handleNavClick('contact')}
-                className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
-                  activeSection === 'contact' ? 'text-emerald-400 font-semibold' : ''
-                }`}
-              >
-                {t.nav.contact}
-              </button>
-            )}
+            <button
+              onClick={() => handleNavClick('about')}
+              className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
+                activeSection === 'about' ? 'text-emerald-400 font-semibold' : ''
+              }`}
+            >
+              {t.nav.about}
+            </button>
+            <button
+              onClick={() => handleNavClick('systems')}
+              className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
+                activeSection === 'systems' ? 'text-emerald-400 font-semibold' : ''
+              }`}
+            >
+              {t.nav.systems}
+            </button>
+            <button
+              onClick={() => handleNavClick('projects')}
+              className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
+                activeSection === 'projects' ? 'text-emerald-400 font-semibold' : ''
+              }`}
+            >
+              {t.nav.projects}
+            </button>
+            <button
+              onClick={() => handleNavClick('configurator')}
+              className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
+                activeSection === 'configurator' ? 'text-emerald-400 font-semibold' : ''
+              }`}
+            >
+              {t.nav.configurator}
+            </button>
+            <button
+              onClick={() => handleNavClick('contact')}
+              className={`hover:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer py-1 ${
+                activeSection === 'contact' ? 'text-emerald-400 font-semibold' : ''
+              }`}
+            >
+              {t.nav.contact}
+            </button>
           </nav>
 
           {/* Zone 3: 1 Primary Action + Language Switcher */}
@@ -165,46 +147,36 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {t.nav.home}
             </button>
-            {sectionVisibility?.showAbout !== false && (
-              <button
-                onClick={() => handleNavClick('about')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
-              >
-                {t.nav.about}
-              </button>
-            )}
-            {sectionVisibility?.showSystems !== false && (
-              <button
-                onClick={() => handleNavClick('systems')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
-              >
-                {t.nav.systems}
-              </button>
-            )}
-            {sectionVisibility?.showProjects !== false && (
-              <button
-                onClick={() => handleNavClick('projects')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
-              >
-                {t.nav.projects}
-              </button>
-            )}
-            {sectionVisibility?.showConfigurator !== false && (
-              <button
-                onClick={() => handleNavClick('configurator')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
-              >
-                {t.nav.configurator}
-              </button>
-            )}
-            {sectionVisibility?.showContact !== false && (
-              <button
-                onClick={() => handleNavClick('contact')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
-              >
-                {t.nav.contact}
-              </button>
-            )}
+            <button
+              onClick={() => handleNavClick('about')}
+              className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+            >
+              {t.nav.about}
+            </button>
+            <button
+              onClick={() => handleNavClick('systems')}
+              className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+            >
+              {t.nav.systems}
+            </button>
+            <button
+              onClick={() => handleNavClick('projects')}
+              className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+            >
+              {t.nav.projects}
+            </button>
+            <button
+              onClick={() => handleNavClick('configurator')}
+              className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+            >
+              {t.nav.configurator}
+            </button>
+            <button
+              onClick={() => handleNavClick('contact')}
+              className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+            >
+              {t.nav.contact}
+            </button>
             <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
               <button
                 onClick={() => handleNavClick('contact')}

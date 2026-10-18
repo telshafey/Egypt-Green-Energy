@@ -24,14 +24,6 @@
         "projectsCount": { "type": "string", "maxLength": 20 },
         "satisfactionRate": { "type": "string", "maxLength": 20 },
         "yearsExperience": { "type": "string", "maxLength": 20 },
-        "showStats": { "type": "boolean" },
-        "showAbout": { "type": "boolean" },
-        "showHeritage": { "type": "boolean" },
-        "showSystems": { "type": "boolean" },
-        "showProjects": { "type": "boolean" },
-        "showConfigurator": { "type": "boolean" },
-        "showPartners": { "type": "boolean" },
-        "showContact": { "type": "boolean" },
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
       "required": ["companyNameAr", "companyNameEn", "heroTitleAr", "email"]
