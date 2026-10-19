@@ -42,6 +42,14 @@ export interface SiteSettingsData {
   whatsAppNumber: string;
   aboutVisionAr?: string;
   aboutMissionAr?: string;
+  showStats?: boolean;
+  showAbout?: boolean;
+  showHeritage?: boolean;
+  showSystems?: boolean;
+  showProjects?: boolean;
+  showConfigurator?: boolean;
+  showPartners?: boolean;
+  showContact?: boolean;
   updatedAt?: string;
 }
 
@@ -166,11 +174,11 @@ export const DEFAULT_MEDIA_ASSETS: MediaAssetData[] = [
 
 // Default site settings
 export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
-  companyNameAr: 'مصر للطاقة الخضراء ذ.م.م',
+  companyNameAr: 'شركة مصر للطاقة الخضراء ذ.م.م',
   companyNameEn: 'Egypt Green Energy L.L.C',
   phonePrimary: '+20 100 719 6485',
   phoneSecondary: '+20 120 072 8006',
-  email: 'info@egyptge.com',
+  email: 'info@egypt-ge.com',
   address: 'مدينة نصر، القاهرة، جمهورية مصر العربية',
   hours: 'السبت - الخميس: 9:00 ص - 6:00 م (خدمة طوارئ 24/7 لعقود SLA)',
   heroTitleAr: 'أنظمة التيار الخفيف والحلول التكنولوجية الذكية للمباني والشركات',
@@ -182,6 +190,14 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   whatsAppNumber: '201007196485',
   aboutVisionAr: 'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.',
   aboutMissionAr: 'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.',
+  showStats: true,
+  showAbout: true,
+  showHeritage: true,
+  showSystems: true,
+  showProjects: true,
+  showConfigurator: true,
+  showPartners: true,
+  showContact: true,
 };
 
 // 1. Fetch & Save Site Settings

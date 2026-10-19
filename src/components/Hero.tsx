@@ -57,7 +57,7 @@ export const Hero: React.FC<HeroProps> = ({
             <BrandLogo variant="emblem" size="sm" logoUrl={customLogoUrl} />
             <span className="uppercase tracking-wider font-semibold">{t.hero.kicker}</span>
             <span aria-hidden="true" className="text-slate-500">·</span>
-            <span className="text-slate-300">{currentLang === 'ar' ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
+            <span className="text-slate-300">{currentLang === 'ar' ? 'شركة مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
           </div>
 
           {/* Refined Display Headline with balanced wrapping */}

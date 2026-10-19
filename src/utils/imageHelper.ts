@@ -9,6 +9,14 @@ import jojobaImg from '../assets/images/jojoba_biofuel_plantation_1792180511642.
 import fireAlarmImg from '../assets/images/fire_alarm_smart_panel_1792182918338.jpg';
 import bmsImg from '../assets/images/bms_smart_building_dashboard_1792182919025.jpg';
 
+// Authentic Field Execution Photos (Dedicated for Projects & Real Site Verification)
+import projectCctvSiteImg from '../assets/images/project_cctv_site_1792406677847.jpg';
+import projectCablingSiteImg from '../assets/images/project_cabling_site_1792406693368.jpg';
+import projectFireSiteImg from '../assets/images/project_fire_site_1792406708652.jpg';
+import projectBmsTowerSiteImg from '../assets/images/project_bms_tower_site_1792406888983.jpg';
+import projectSoundWarehouseSiteImg from '../assets/images/project_sound_warehouse_site_1792406903815.jpg';
+import projectSolarSecuritySiwaImg from '../assets/images/project_solar_security_siwa_1792406916423.jpg';
+
 export {
   heroCommandImg,
   cctvImg,
@@ -20,6 +28,12 @@ export {
   jojobaImg,
   fireAlarmImg,
   bmsImg,
+  projectCctvSiteImg,
+  projectCablingSiteImg,
+  projectFireSiteImg,
+  projectBmsTowerSiteImg,
+  projectSoundWarehouseSiteImg,
+  projectSolarSecuritySiwaImg,
 };
 
 export const DEFAULT_HERO_IMAGE = heroCommandImg;
@@ -33,6 +47,14 @@ export const DEFAULT_JOJOBA_IMAGE = jojobaImg;
 export const DEFAULT_FIRE_ALARM_IMAGE = fireAlarmImg;
 export const DEFAULT_BMS_IMAGE = bmsImg;
 
+// Project Site Execution Images
+export const PROJECT_CCTV_SITE_IMAGE = projectCctvSiteImg;
+export const PROJECT_CABLING_SITE_IMAGE = projectCablingSiteImg;
+export const PROJECT_FIRE_SITE_IMAGE = projectFireSiteImg;
+export const PROJECT_BMS_SITE_IMAGE = projectBmsTowerSiteImg;
+export const PROJECT_SOUND_SITE_IMAGE = projectSoundWarehouseSiteImg;
+export const PROJECT_SIWA_SITE_IMAGE = projectSolarSecuritySiwaImg;
+
 /**
  * Robust image URL resolver:
  * Ensures any image URL (bundled, stored in Firestore, or public) is properly resolved
@@ -44,10 +66,29 @@ export function resolveImageUrl(url?: string | null, fallback: string = heroComm
   }
 
   const cleanUrl = url.trim();
-
-  // Handle mapped asset image names and keywords
   const lower = cleanUrl.toLowerCase();
 
+  // Specific Project Site Execution Photos
+  if (lower.includes('project_bms') || lower.includes('bms_tower_site')) {
+    return projectBmsTowerSiteImg;
+  }
+  if (lower.includes('project_sound') || lower.includes('sound_warehouse')) {
+    return projectSoundWarehouseSiteImg;
+  }
+  if (lower.includes('project_solar') || lower.includes('security_siwa') || lower.includes('siwa')) {
+    return projectSolarSecuritySiwaImg;
+  }
+  if (lower.includes('project_cctv') || lower.includes('cctv_site')) {
+    return projectCctvSiteImg;
+  }
+  if (lower.includes('project_cabling') || lower.includes('cabling_site')) {
+    return projectCablingSiteImg;
+  }
+  if (lower.includes('project_fire') || lower.includes('fire_site')) {
+    return projectFireSiteImg;
+  }
+
+  // General Systems / Catalog Illustrations
   if (lower.includes('cctv') || lower.includes('surveillance') || lower.includes('camera')) {
     return cctvImg;
   }

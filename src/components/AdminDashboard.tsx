@@ -37,6 +37,11 @@ import {
   UserPlus,
   UserCheck,
   Upload,
+  Sliders,
+  Award,
+  TrendingUp,
+  LayoutGrid,
+  Cpu,
 } from 'lucide-react';
 import {
   auth,
@@ -93,6 +98,7 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | 'general'
+  | 'visibility'
   | 'systems'
   | 'projects'
   | 'heritage'
@@ -620,6 +626,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
+  // Toggle individual section visibility on/off
+  const handleToggleSectionVisibility = async (key: keyof SiteSettingsData) => {
+    const currentVal = settings[key] !== false;
+    const updated = { ...settings, [key]: !currentVal };
+    setSettings(updated);
+    if (onSettingsUpdated) onSettingsUpdated(updated);
+    try {
+      await saveSiteSettings(updated);
+      showToast(
+        !currentVal
+          ? 'تم تفعيل وإظهار هذا القسم بنجاح في الموقع'
+          : 'تم إخفاء هذا القسم بنجاح من الموقع وحفظ التغيير'
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ الحالة';
+      showToast(msg, 'error');
+    }
+  };
+
+  // Batch toggle all sections
+  const handleSetAllSectionsVisibility = async (visible: boolean) => {
+    const updated: SiteSettingsData = {
+      ...settings,
+      showStats: visible,
+      showAbout: visible,
+      showHeritage: visible,
+      showSystems: visible,
+      showProjects: visible,
+      showConfigurator: visible,
+      showPartners: visible,
+      showContact: visible,
+    };
+    setSettings(updated);
+    if (onSettingsUpdated) onSettingsUpdated(updated);
+    try {
+      await saveSiteSettings(updated);
+      showToast(
+        visible
+          ? 'تم تفعيل وإظهار كافة أقسام الموقع بنجاح'
+          : 'تم إخفاء الأقسام الاختيارية بنجاح'
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ الإعدادات';
+      showToast(msg, 'error');
+    }
+  };
+
   // 5. Seed Firestore master data
   const handleSeedDatabase = async () => {
     setIsSaving(true);
@@ -722,123 +775,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   if (!isAdminUnlocked) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans" dir="rtl">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           {/* Subtle glow */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Header */}
-          <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-800/80">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600/10 border border-emerald-500/30 flex items-center justify-center p-1.5 shrink-0">
                 <BrandLogo size="sm" variant="emblem" logoUrl={settings.logoUrl} />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">تسجيل الدخول للوحة الإدارة</h2>
-                <p className="text-xs text-slate-400">بوابة الإدارة المركزية والتحكم المشفر</p>
+                <p className="text-xs text-slate-300">بوابة الإدارة المركزية والتحكم المشفر</p>
               </div>
             </div>
             <button
               onClick={onExit}
-              className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer"
+              className="text-xs text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors cursor-pointer"
             >
               العودة للموقع
             </button>
           </div>
 
           {authError && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-900/30 border border-red-500/40 text-red-300 text-xs flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mb-5 p-3.5 rounded-xl bg-red-950/60 border border-red-500/50 text-red-200 text-xs flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
               <span>{authError}</span>
             </div>
           )}
 
-          {/* Standard Credentials Sign In Form */}
-          <form onSubmit={handlePasscodeLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                البريد الإلكتروني أو اسم المستخدم (اختياري)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="admin@egyptge.com"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                />
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                كلمة المرور أو رمز الدخول المشفر
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={passcode}
-                  onChange={(e) => setPasscode(e.target.value)}
-                  placeholder="أدخل كلمة المرور أو رمز الدخول..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 pe-10 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-3 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                  title={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
+          {/* Login Options Container */}
+          <div className="space-y-5">
+            {/* 1. Google Sign In Button */}
             <button
-              type="submit"
-              className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group"
             >
-              <Unlock className="w-4 h-4" />
-              <span>تسجيل الدخول</span>
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                />
+              </svg>
+              <span className="text-slate-900 group-hover:text-emerald-700 transition-colors">
+                تسجيل الدخول السريع باستخدام Google
+              </span>
             </button>
-          </form>
 
-          {/* Divider */}
-          <div className="relative flex py-4 items-center my-2">
-            <div className="flex-grow border-t border-slate-800"></div>
-            <span className="flex-shrink mx-4 text-xs text-slate-500">أو عبر حساب Google المعتمد</span>
-            <div className="flex-grow border-t border-slate-800"></div>
-          </div>
-
-          {/* Google Sign In Button */}
-          <button
-            onClick={handleGoogleLogin}
-            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-3 cursor-pointer"
-          >
-            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-              />
-            </svg>
-            <span>تسجيل الدخول عبر Google</span>
-          </button>
-
-          {/* Privacy & Access Notice */}
-          <div className="mt-6 pt-4 border-t border-slate-800/60 text-center text-[11px] text-slate-500">
-            هذه البوابة مخصصة للمهندسين ومسؤولي النظام المصرح لهم فقط.
+            {/* Corporate Security Verification Notice */}
+            <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-slate-300 leading-relaxed text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold">
+                <Lock className="w-4 h-4" />
+                <span>مصادقة أمنية موحدة عبر حساب Google المعتمد</span>
+              </div>
+              <p className="text-slate-400 text-[11px]">
+                بوابة الإدارة المركزية مخصصة للمهندسين والمشرفين المصرح لهم بموجب حسابات Google المؤسسية المعتمدة لشركة مصر للطاقة الخضراء.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1031,6 +1038,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <button
             onClick={() => {
+              setActiveTab('visibility');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'visibility'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Eye className="w-4 h-4" />
+            <div className="flex-1 flex items-center justify-between">
+              <span>أقسام العرض (إظهار / إخفاء)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
+                {[
+                  settings.showStats !== false,
+                  settings.showAbout !== false,
+                  settings.showHeritage !== false,
+                  settings.showSystems !== false,
+                  settings.showProjects !== false,
+                  settings.showConfigurator !== false,
+                  settings.showPartners !== false,
+                  settings.showContact !== false,
+                ].filter(Boolean).length}/8 مفعل
+              </span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
               setActiveTab('systems');
               setEditingSystem(null);
               setEditingProject(null);
@@ -1205,6 +1242,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 >
                   <Save className="w-4 h-4" />
                   <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ التغييرات في فايربيز'}</span>
+                </button>
+              </div>
+
+              {/* Quick Section Visibility Feature Banner */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-950 border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-900/60 border border-emerald-700/60 flex items-center justify-center text-emerald-300 shrink-0">
+                    <Eye className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <span>التحكم في ظهور أو إخفاء أقسام الموقع في العرض</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        متاح الآن
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      يمكنك تفعيل أو إيقاف أي جزء (الإحصائيات، سابقة الأعمال، الكتالوج، المقايسة، الشركاء، التواصل) بنقرة واحدة.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('visibility')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors shrink-0 cursor-pointer shadow-md"
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>فتح لوحة تحكم أقسام العرض ←</span>
                 </button>
               </div>
 
@@ -1458,6 +1524,227 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
             </form>
+          )}
+
+          {/* TAB: SECTION VISIBILITY (إظهار / إخفاء أقسام الموقع في العرض) */}
+          {activeTab === 'visibility' && (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      التحكم في ظهور وأقسام الموقع في العرض
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    يمكنك تفعيل أو إيقاف أي جزء ليظهر أو يختفي من الموقع للزوار بنقرة واحدة، مع مزامنة فورية في فايربيز وتحديث تلقائي لروابط شريط التصفح.
+                  </p>
+                </div>
+
+                {/* Batch Actions */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleSetAllSectionsVisibility(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                    title="تفعيل كافة أقسام الموقع ليظهر العرض الشامل كاملاً"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>إظهار وتفعيل الكل</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSetAllSectionsVisibility(false)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                    title="إخفاء الأقسام لتركيز العرض"
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>إخفاء الكل</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Overview Card */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Sliders className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-slate-200 block">حالة العرض المباشر</span>
+                    <span className="text-sm font-bold text-white">
+                      {[
+                        settings.showStats !== false,
+                        settings.showAbout !== false,
+                        settings.showHeritage !== false,
+                        settings.showSystems !== false,
+                        settings.showProjects !== false,
+                        settings.showConfigurator !== false,
+                        settings.showPartners !== false,
+                        settings.showContact !== false,
+                      ].filter(Boolean).length} من 8 أقسام ظاهرة حالياً في الموقع
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-400 bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 max-w-md">
+                  💡 <strong>ملاحظة تقنية:</strong> عند إخفاء أي قسم، يتم أيضاً إخفاء رابطه تلقائياً من شريط التصفح العلوي (Navbar) والفوتر لمنع أي روابط معطلة.
+                </div>
+              </div>
+
+              {/* Grid of 8 Sections with Individual Toggles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    key: 'showStats' as keyof SiteSettingsData,
+                    title: 'شريط الأرقام القياسية والإحصائيات',
+                    badge: 'Stats Strip',
+                    desc: 'إحصائيات إنجاز الشركة الموثقة: 68+ مشروعاً منجزاً، 46+ عاماً من الخبرة الهندسية (1980–2026)، 92% نسبة رضا العملاء، 8+ تخصصات تيار خفيف.',
+                    icon: TrendingUp,
+                  },
+                  {
+                    key: 'showAbout' as keyof SiteSettingsData,
+                    title: 'من نحن وقصة الريادة الهندسية',
+                    badge: 'About & Timeline',
+                    desc: 'عرض نبذة الشركة، الرؤية والرسالة المعتمدة، والخط الزمني التفاعلي للمحطات التاريخية من 1980 حتى 2026.',
+                    icon: Compass,
+                  },
+                  {
+                    key: 'showHeritage' as keyof SiteSettingsData,
+                    title: 'الجذور التاريخية (الطاقة والمياه والبيوتكنولوجي)',
+                    badge: 'Heritage Overview',
+                    desc: 'سجل الخبرات الميدانية التأسيسية في محطات الطاقة الشمسية، ضخ وتحلية المياه، ومزارع الجوجوبا واستصلاح الأراضي.',
+                    icon: History,
+                  },
+                  {
+                    key: 'showSystems' as keyof SiteSettingsData,
+                    title: 'أنظمة وحلول التيار الخفيف المتكاملة (ELV)',
+                    badge: 'Low Current Systems',
+                    desc: 'الكتالوج الأساسي: كاميرات المراقبة 4K، إنذار الحريق، التحكم في الدخول، الكابلات والشبكات، مع المواصفات الفنية.',
+                    icon: Layers,
+                  },
+                  {
+                    key: 'showProjects' as keyof SiteSettingsData,
+                    title: 'المشروعات وسابقة الأعمال الميدانية',
+                    badge: 'Projects Showcase',
+                    desc: 'معرض المنشآت والجهات المنفذة (بنوك، مستشفيات، مصانع، مقرات ومراكز بيانات) مع معايير الكود المصري.',
+                    icon: FolderGit2,
+                  },
+                  {
+                    key: 'showConfigurator' as keyof SiteSettingsData,
+                    title: 'حاسبة ومقايسة التيار الخفيف التفاعلية (BOQ)',
+                    badge: 'BOQ Configurator',
+                    desc: 'أداة تفاعلية للعملاء لحساب الكاميرات التقديرية ونقاط الداتا والأبواب المؤمنة بناءً على مساحة المنشأة ونوعها.',
+                    icon: Cpu,
+                  },
+                  {
+                    key: 'showPartners' as keyof SiteSettingsData,
+                    title: 'شركاء التكنولوجيا والموردون المعتمدون',
+                    badge: 'Certified Partners',
+                    desc: 'شعارات ومواصفات كبرى الشركات التكنولوجية (Hikvision, Dahua, Cisco, Schneider Electric, Honeywell, Panasonic).',
+                    icon: Award,
+                  },
+                  {
+                    key: 'showContact' as keyof SiteSettingsData,
+                    title: 'التواصل والاستشارات الهندسية والمقر والخريطة',
+                    badge: 'Contact & Consultation',
+                    desc: 'بيانات الاتصال، أرقام الهواتف، زر الواتساب المباشر، نموذج طلب المقايسة، وخريطة المقر المعتمد بمدينة نصر.',
+                    icon: Mail,
+                  },
+                ].map((sec) => {
+                  const Icon = sec.icon;
+                  const isVisible = settings[sec.key] !== false;
+
+                  return (
+                    <div
+                      key={sec.key}
+                      className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+                        isVisible
+                          ? 'bg-slate-950/90 border-emerald-500/40 shadow-sm'
+                          : 'bg-slate-950/40 border-slate-800/80 opacity-75'
+                      }`}
+                    >
+                      <div>
+                        {/* Top Row: Icon + Title + Status Badge */}
+                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                          <div className="flex items-center gap-2.5">
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                isVisible
+                                  ? 'bg-emerald-950 border border-emerald-800 text-emerald-400'
+                                  : 'bg-slate-900 border border-slate-800 text-slate-500'
+                              }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                                <span>{sec.title}</span>
+                              </h3>
+                              <span className="text-[10px] font-mono text-slate-400">{sec.badge}</span>
+                            </div>
+                          </div>
+
+                          <span
+                            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 flex items-center gap-1 ${
+                              isVisible
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-slate-800 text-slate-400 border border-slate-700'
+                            }`}
+                          >
+                            {isVisible ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span>ظاهر بالعرض</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3 h-3 text-slate-400" />
+                                <span>مخفي</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                          {sec.desc}
+                        </p>
+                      </div>
+
+                      {/* Interactive Toggle Control Row */}
+                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                        <span className="text-xs text-slate-400">
+                          {isVisible ? 'القسم معروض حالياً للزوار' : 'القسم مخفي من واجهة الموقع'}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSectionVisibility(sec.key)}
+                          className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none ${
+                            isVisible
+                              ? 'bg-emerald-600 border-emerald-500'
+                              : 'bg-slate-800 border-slate-700'
+                          }`}
+                          role="switch"
+                          aria-checked={isVisible}
+                          title={isVisible ? 'انقر لإخفاء هذا القسم' : 'انقر لإظهار هذا القسم'}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                              isVisible ? 'translate-x-0' : '-translate-x-6'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           {/* TAB 2: SYSTEMS */}

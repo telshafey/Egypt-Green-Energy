@@ -108,7 +108,9 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
           >
             <Shield className="w-5 h-5 text-emerald-500 mb-2" />
             <h3 className="text-sm font-bold block mb-0.5">{t.categories.security}</h3>
-            <span className="text-[11px] text-slate-400 block">CCTV & Access Control</span>
+            <span className={`text-[11px] block font-medium ${activeCategory === 'security' ? 'text-slate-300' : 'text-slate-600'}`}>
+              CCTV & Access Control
+            </span>
           </button>
 
           <button
@@ -121,7 +123,9 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
           >
             <Flame className="w-5 h-5 text-amber-500 mb-2" />
             <h3 className="text-sm font-bold block mb-0.5">{t.categories.safety}</h3>
-            <span className="text-[11px] text-slate-400 block">Fire Alarm & NFPA 72</span>
+            <span className={`text-[11px] block font-medium ${activeCategory === 'safety' ? 'text-slate-300' : 'text-slate-600'}`}>
+              Fire Alarm & NFPA 72
+            </span>
           </button>
 
           <button
@@ -134,7 +138,9 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
           >
             <Network className="w-5 h-5 text-sky-500 mb-2" />
             <h3 className="text-sm font-bold block mb-0.5">{t.categories.connectivity}</h3>
-            <span className="text-[11px] text-slate-400 block">Cat6A, Fiber & IP PBX</span>
+            <span className={`text-[11px] block font-medium ${activeCategory === 'connectivity' ? 'text-slate-300' : 'text-slate-600'}`}>
+              Cat6A, Fiber & IP PBX
+            </span>
           </button>
 
           <button
@@ -147,7 +153,9 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
           >
             <Wrench className="w-5 h-5 text-emerald-500 mb-2" />
             <h3 className="text-sm font-bold block mb-0.5">{t.categories.maintenance}</h3>
-            <span className="text-[11px] text-slate-400 block">24/7 SLA Engineering</span>
+            <span className={`text-[11px] block font-medium ${activeCategory === 'maintenance' ? 'text-slate-300' : 'text-slate-600'}`}>
+              24/7 SLA Engineering
+            </span>
           </button>
         </div>
 
@@ -244,10 +252,15 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                       onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
                     
+                    {/* Clear Technical Specification / Diagram Badge */}
+                    <div className="absolute top-3 start-3 px-2.5 py-1 rounded-lg bg-slate-900/90 backdrop-blur-sm border border-slate-700/80 text-[10px] font-semibold text-slate-200 flex items-center gap-1 shadow-sm">
+                      <span>{currentLang === 'ar' ? 'مخطط ومواصفات النظام الفنية' : 'System Diagram & Specs'}</span>
+                    </div>
+
                     {/* Subtle Technical Standard Tag */}
-                    <div className="absolute bottom-3 start-3 text-xs font-mono font-semibold text-emerald-300 drop-shadow-sm">
+                    <div className="absolute bottom-3 start-3 text-xs font-mono font-bold text-emerald-300 drop-shadow-sm">
                       {item.badge}
                     </div>
 
@@ -263,21 +276,21 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <div className="p-6">
                     <h3
                       onClick={() => handleSelectSystem(item)}
-                      className="text-lg font-bold text-slate-900 mb-1 group-hover:text-emerald-700 transition-colors cursor-pointer"
+                      className="text-lg font-bold text-slate-950 mb-1 group-hover:text-emerald-700 transition-colors cursor-pointer leading-snug"
                     >
                       {item.title}
                     </h3>
-                    <p className="text-xs font-medium text-slate-500 mb-4 line-clamp-1">
+                    <p className="text-xs font-semibold text-emerald-800 mb-4 line-clamp-1">
                       {item.subtitle}
                     </p>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-xs sm:text-sm text-slate-800 leading-relaxed mb-6 line-clamp-3">
                       {item.description}
                     </p>
 
                     {/* Feature Highlights */}
                     <div className="space-y-2 mb-6">
                       {item.features.slice(0, 2).map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-900 font-semibold">
                           <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           <span>{feat}</span>
                         </div>
@@ -285,11 +298,11 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                     </div>
 
                     {/* Quantitative Specs */}
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
                       {item.specs.slice(0, 2).map((sp, sIdx) => (
-                        <div key={sIdx} className="flex items-center justify-between text-slate-600">
-                          <span className="text-slate-500">{sp.label}:</span>
-                          <span className="font-semibold text-slate-900 font-mono tabular-nums">{sp.value}</span>
+                        <div key={sIdx} className="flex items-center justify-between text-slate-800">
+                          <span className="text-slate-700 font-semibold">{sp.label}:</span>
+                          <span className="font-bold text-slate-950 font-mono tabular-nums">{sp.value}</span>
                         </div>
                       ))}
                     </div>

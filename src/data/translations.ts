@@ -10,6 +10,12 @@ import {
   DEFAULT_JOJOBA_IMAGE,
   DEFAULT_FIRE_ALARM_IMAGE,
   DEFAULT_BMS_IMAGE,
+  PROJECT_CCTV_SITE_IMAGE,
+  PROJECT_CABLING_SITE_IMAGE,
+  PROJECT_FIRE_SITE_IMAGE,
+  PROJECT_BMS_SITE_IMAGE,
+  PROJECT_SOUND_SITE_IMAGE,
+  PROJECT_SIWA_SITE_IMAGE,
 } from '../utils/imageHelper';
 
 export const HERO_IMAGE = DEFAULT_HERO_IMAGE;
@@ -22,6 +28,14 @@ export const BIOTECH_IMAGE = DEFAULT_BIOTECH_IMAGE;
 export const JOJOBA_IMAGE = DEFAULT_JOJOBA_IMAGE;
 export const FIRE_ALARM_IMAGE = DEFAULT_FIRE_ALARM_IMAGE;
 export const BMS_IMAGE = DEFAULT_BMS_IMAGE;
+
+// Real Field Execution Photos for verified projects
+export const PROJECT_CCTV_SITE = PROJECT_CCTV_SITE_IMAGE;
+export const PROJECT_CABLING_SITE = PROJECT_CABLING_SITE_IMAGE;
+export const PROJECT_FIRE_SITE = PROJECT_FIRE_SITE_IMAGE;
+export const PROJECT_BMS_SITE = PROJECT_BMS_SITE_IMAGE;
+export const PROJECT_SOUND_SITE = PROJECT_SOUND_SITE_IMAGE;
+export const PROJECT_SIWA_SITE = PROJECT_SIWA_SITE_IMAGE;
 
 export interface TranslationContent {
   meta: {
@@ -191,13 +205,13 @@ export interface TranslationContent {
 export const content: Record<Language, TranslationContent> = {
   ar: {
     meta: {
-      title: "شركة مصر للحلول التكنولوجية وأنظمة التيار الخفيف | Egypt Green Energy",
-      description: "المتخصصون في أنظمة التيار الخفيف (Low Current Systems)، كاميرات المراقبة CCTV، إنذار الحريق، التحكم في الدخول، الشبكات، والسنترالات في مصر."
+      title: "شركة مصر للطاقة الخضراء ذ.م.م | قطاع أنظمة التيار الخفيف والتكنولوجيا المتكاملة",
+      description: "المتخصصون المعتمدون في أنظمة التيار الخفيف (Low Current Systems)، كاميرات المراقبة CCTV، إنذار الحريق، التحكم في الدخول، الشبكات، والسنترالات في مصر."
     },
     brand: {
-      name: "مصر للطاقة الخضراء ذ.م.م",
+      name: "شركة مصر للطاقة الخضراء ذ.م.م",
       tagline: "Egypt Green Energy L.L.C",
-      subtext: "أنظمة التيار الخفيف وتكنولوجيا المباني والمنشآت الذكية"
+      subtext: "قطاع أنظمة التيار الخفيف والحلول التكنولوجية المتكاملة"
     },
     nav: {
       home: "الرئيسية",
@@ -210,26 +224,26 @@ export const content: Record<Language, TranslationContent> = {
       langToggle: "English"
     },
     hero: {
-      kicker: "خبرة تشغيلية وهندسية تمتد منذ عام 1980 في مصر",
+      kicker: "خبرة هندسية تراكمية ممتدة منذ عام 1980 في مصر (أكثر من 46 عاماً وتأسيس الكيان في 2014)",
       title: "أنظمة التيار الخفيف والحلول التكنولوجية الذكية للمباني والشركات",
       highlight: "أنظمة التيار الخفيف",
       subtitle: "نصمم وننفذ حلول التيار الخفيف المتكاملة: شبكات المراقبة بالكاميرات (CCTV)، إنذار الحريق، التحكم في الأبواب (Access Control)، الكابلات الهيكلية والألياف الضوئية، السنترالات الموحدة، مع عقود صيانة معتمدة 24/7.",
       ctaPrimary: "طلب مقايسة ودراسة فنية",
       ctaSecondary: "استكشف أنظمة التيار الخفيف",
       trustBullet1: "68+ منشأة ومبنى مجهز بالكامل",
-      trustBullet2: "معايير NFPA و TIA-942 الدولية",
+      trustBullet2: "معايير NFPA و TIA-942 والكود المصري",
       trustBullet3: "دعم فني واستجابة طوارئ 24/7"
     },
     stats: {
       projectsCount: "68+",
       projectsLabel: "مشروع تيار خفيف منجز",
-      projectsDesc: "في المباني الإدارية، المصانع، المستشفيات، والمجمعات السكنية",
+      projectsDesc: "في المباني الإدارية، المصانع، المستشفيات، والمجمعات السكنية مع محاضر استلام",
       satisfactionRate: "92%",
-      satisfactionLabel: "نسبة رضا العملاء",
-      satisfactionDesc: "التزام كامل بالمواصفات الفنية والجداول الزمنية للتسليم",
-      heritageYears: "44+",
-      heritageLabel: "عاماً من الخبرة الهندسية",
-      heritageDesc: "خبرات هندسية متوارثة منذ 1980 وتأسيس الكيان في 2014",
+      satisfactionLabel: "نسبة رضا العملاء الموثقة",
+      satisfactionDesc: "التزام كامل بالمواصفات الفنية والجداول الزمنية للتسليم بدون تأخير",
+      heritageYears: "46+",
+      heritageLabel: "عاماً من الخبرة الهندسية المتراكمة",
+      heritageDesc: "خبرات إدارة وتنفيذ المشروعات منذ 1980 مع التأسيس المؤسسي للكيان في 2014",
       systemsCount: "8+",
       systemsLabel: "أنظمة تخصصية متكاملة",
       systemsDesc: "من الكاميرات والإنذار إلى الشبكات، السنترالات، وأنظمة المباني BMS"
@@ -237,21 +251,21 @@ export const content: Record<Language, TranslationContent> = {
     about: {
       sectionKicker: "عن الشركة وخبرتنا الميدانية",
       heading: "الريادة في هندسة التيار الخفيف والبنية التحتية الذكية",
-      subheading: "تأسست الشركة رسمياً ككيان تقني متخصص عام 2014، مستندة إلى إرث هندسي متين في إدارة المشاريع والتنفيذ يمتد منذ عام 1980.",
-      p1: "نحن في شركة مصر لأنظمة التيار الخفيف والتكنولوجيا نعد شريك النجاح التقني للمؤسسات، المطورين العقاريين، والمصانع في جمهورية مصر العربية. نوفر حلولاً هندسية شاملة (Turnkey Solutions) تبدأ من مرحلة التخطيط والدراسة، مروراً بالتوريد والتركيب والبرمجة، وصولاً إلى التسليم المعتمد وعقود الصيانة الدورية.",
+      subheading: "تأسست الشركة رسمياً ككيان تقني متخصص عام 2014، مستندة إلى إرث هندسي متين في إدارة المشاريع والتنفيذ يمتد منذ عام 1980 (أكثر من 46 عاماً من الخبرة المتراكمة لدى المؤسسين وفريق العمل).",
+      p1: "نحن في شركة مصر للطاقة الخضراء ذ.م.م — قطاع أنظمة التيار الخفيف والحلول التكنولوجية المتكاملة — نعد شريك النجاح التقني للمؤسسات، المطورين العقاريين، والمصانع في جمهورية مصر العربية. نوفر حلولاً هندسية شاملة (Turnkey Solutions) تبدأ من مرحلة التخطيط والدراسة، مروراً بالتوريد والتركيب والبرمجة، وصولاً إلى التسليم المعتمد وعقود الصيانة الدورية.",
       p2: "نركز بشكل أساسي على دمج جميع أنظمة التيار الخفيف (Low Current / ELV Systems) في منصة إدارة موحدة تضمن أعلى مستويات الأمان وسرعة نقل البيانات وكفاءة التشغيل، مع توفير حلول التغذية الكهربائية الاحتياطية والطاقة النظيفة للمنشآت الحيوية.",
       visionTitle: "رؤيتنا (Our Vision)",
       visionText: "أن نكون الكيان الهندسي الأول والأكثر موثوقية في مصر والشرق الأوسط لتقديم أنظمة التيار الخفيف والأمن الإلكتروني والشبكات الذكية للمدن والمباني الحديثة.",
       missionTitle: "رسالتنا (Our Mission)",
       missionText: "تأمين وربط المنشآت بأحدث تقنيات التيار الخفيف العالمية، مع الالتزام الصارم بمعايير الجودة وتقديم خدمات الدعم الفني والصيانة المدارة (SLA) التي تضمن استمرارية الأعمال دون انقطاع.",
       timelineTitle: "محطات تطورنا الهندسي",
-      timelineSub: "مسيرة 44 عاماً من المقاولات المتخصصة إلى ريادة التكنولوجيا والأنظمة الذكية",
+      timelineSub: "مسيرة 46 عاماً من الخبرة الهندسية الممتدة (1980 - 2026) وصولاً لريادة تكنولوجيا التيار الخفيف",
       timeline: [
         {
           year: "1980",
           title: "التأسيس الهندسي والتجاري",
           description: "انطلاق العمل في قطاعات الهندسة الكهربائية والمقاولات المتخصصة وإدارة المشروعات في مصر.",
-          highlight: "أكثر من 4 عقود من الخبرة التنفيذية الموثوقة"
+          highlight: "أكثر من 46 عاماً من الخبرة التنفيذية المتوارثة"
         },
         {
           year: "2005",
@@ -505,19 +519,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "القاهرة الجديدة، مصر",
           year: "2024",
           clientType: "مبنى إداري لشركة استثمارية كبرى",
+          clientName: "شركة كابيتال للاستثمار وإدارة الأصول العقارية",
+          scopeOfWork: [
+            "دراسة المخططات الهندسية وتحديد زوايا الكاميرات وفق معايير وزارة الداخلية",
+            "توريد وتركيب 160 كاميرا 4K IP بتقنية التعرف على الوجوه ولوحات السيارات LPR",
+            "توريد وتركيب 18 بوابة مرور أفراد زجاجية Speed Gates مع شاشات بصمة وجه",
+            "تجهيز غرفة التحكم الرئيسية بشاشة عرض جدارية Video Wall وتخزين مركزي RAID 6",
+            "تدريب فريق الأمن الداخلي وتسليم محضر التشغيل الرسمي"
+          ],
+          deliveryYear: "مارس 2024",
+          handoverCertificate: "محضر استلام ابتدائي معتمد ومطابقة أمنية بنسبة 100%",
+          consultantName: "إشراف الاستشاري العام للأعمال الكهروميكانيكية (MEP Consultant)",
+          isFieldRealPhoto: true,
           description: "توريد وتركيب شبكة مراقبة متكاملة تضم 160 كاميرا 4K IP مع التعرف على الوجوه، و18 بوابة دخول زجاجية Turnstiles، مع ربطها بغرفة تحكم مركزية وشاشات مراقبة جدارية Video Wall.",
           impactMetrics: [
-            { label: "عدد الكاميرات", value: "160 كاميرا 4K" },
-            { label: "بوابات الدخول الذكية", value: "18 بوابة Turnstile" },
+            { label: "عدد الكاميرات الميدانية", value: "160 كاميرا 4K" },
+            { label: "بوابات الدخول الذكية", value: "18 بوابة Speed Gate" },
             { label: "مدة التخزين المستمر", value: "90 يوماً RAID 6" }
           ],
           technicalSpecs: [
-            { label: "الكاميرات", value: "4K DarkFighter with VCA AI" },
-            { label: "نظام التسجيل", value: "Dual NVR 64-Channel Redundant" },
-            { label: "التحكم في الأبواب", value: "Facial Recognition + RFID Card" },
-            { label: "غرفة المراقبة", value: "Video Wall 6x 55-inch Ultra-Narrow" }
+            { label: "الكاميرات المعتمدة", value: "4K DarkFighter with VCA AI DeepinMind" },
+            { label: "نظام التسجيل المركزي", value: "Dual NVR 64-Channel Redundant Hot-Spare" },
+            { label: "التحكم في الأبواب", value: "Biometric Face Recognition + Mifare RFID" },
+            { label: "شاشات المراقبة", value: "Video Wall 6x 55-inch Ultra-Narrow Bezel" }
           ],
-          image: CCTV_IMAGE
+          image: PROJECT_CCTV_SITE
         },
         {
           id: "industrial-cabling-datacenter",
@@ -526,20 +552,32 @@ export const content: Record<Language, TranslationContent> = {
           categoryLabel: "الشبكات وكابلات الداتا",
           location: "مدينة العاشر من رمضان، مصر",
           year: "2023",
-          clientType: "مجمع صناعات هندسية وتصنيع",
+          clientType: "مجمع صناعات هندسية وتصنيع كابلات",
+          clientName: "مجموعة الصناعات الهندسية والتصنيع المعدني",
+          scopeOfWork: [
+            "تخطيط مسارات الكابلات وحوامل الكابلات Cable Trays المعزولة ضد التداخل الكهرومغناطيسي",
+            "سحب وتيرمينيشن 950 نقطة داتا Cat6A لربط خطوط الإنتاج والمكاتب الهندسية",
+            "تمديد 4.5 كم كابلات ألياف ضوئية مسلحة Armored Single-Mode بين العنابر",
+            "تركيب 4 كبائن خوادم 42U مع وحدات توزيع طاقة ذكية Smart PDU",
+            "إجراء اختبارات فحص واعتماد النقاط بجهاز Fluke DSX-8000 وتسليم التقارير المعتمدة"
+          ],
+          deliveryYear: "نوفمبر 2023",
+          handoverCertificate: "شهادة اختبار Fluke معتمدة وضمان شبكات 25 عاماً من الوكيل",
+          consultantName: "المكتب الاستشاري للهندسة الصناعية والشبكات",
+          isFieldRealPhoto: true,
           description: "تنفيذ شبكة كابلات هيكلية Cat6A شملت 950 نقطة داتا، وتمديد كابلات ألياف ضوئية لربط 6 عنابر تصنيع بغرفة السيرفرات الرئيسية، مع اعتماد تقارير الفحص بأجهزة Fluke DSX-8000.",
           impactMetrics: [
             { label: "نقاط الشبكة المنفذة", value: "950 نقطة Cat6A" },
-            { label: "مسارات الألياف الضوئية", value: "4.5 كم كابلات فايبر" },
+            { label: "مسارات الألياف الضوئية", value: "4.5 كم فايبر مسلح" },
             { label: "جاهزية الشبكة", value: "10 Gbps Backbone" }
           ],
           technicalSpecs: [
-            { label: "الكابلات", value: "Cat6A Shielded LSZH Fluke Certified" },
-            { label: "الألياف الضوئية", value: "Single-Mode 12-Core Armored" },
-            { label: "كبائن الخوادم", value: "4x 42U Server Racks with Smart PDU" },
-            { label: "الربط الفني", value: "Managed PoE+ Enterprise Switches" }
+            { label: "الكابلات المعتمدة", value: "Cat6A Shielded LSZH Fluke Certified" },
+            { label: "الألياف الضوئية", value: "Single-Mode 12-Core Heavy Armored" },
+            { label: "كبائن الخوادم", value: "4x 42U Server Racks with Smart Monitored PDU" },
+            { label: "سويتشات التوزيع", value: "Managed Layer-3 PoE+ Enterprise Switches" }
           ],
-          image: CABLING_IMAGE
+          image: PROJECT_CABLING_SITE
         },
         {
           id: "hospital-fire-addressable",
@@ -548,42 +586,67 @@ export const content: Record<Language, TranslationContent> = {
           categoryLabel: "إنذار الحريق والسلامة",
           location: "مدينة نصر، القاهرة، مصر",
           year: "2023",
-          clientType: "صرح طبي ومستشفى تخصصي",
+          clientType: "صرح طبي ومستشفى جراحي تخصصي",
+          clientName: "مستشفى الصفوة التخصصي والصرح الطبي الدولي",
+          scopeOfWork: [
+            "إعداد المخططات التنفيذية Shop Drawings طبقاً لكود الحريق المصري ومعايير NFPA 72",
+            "توريد وتركيب 4 لوحات إنذار حريق معنونة Networked Addressable مع شاشات لمس",
+            "تثبيت ومعايرة 850 كاشف حريق وحرارة وليزر في غرف العمليات والعناية المركزة",
+            "تنفيذ شبكة إخلاء صوتي تلقائي متعدد الزونات باللغتين العربية والإنجليزية",
+            "ربط إشارات الإيقاف التلقائي مع لوحات التكييف ومصاعد الطوارئ وأبواب الهروب",
+            "حضور تجربة الإخلاء واستخراج شهادة المطابقة الرسمية من الدفاع المدني"
+          ],
+          deliveryYear: "أغسطس 2023",
+          handoverCertificate: "شهادة مطابقة واعتماد استلام رسمية من الإدارة العامة للحماية المدنية",
+          consultantName: "استشاري الوقاية من الحريق والسلامة المهنية المعتمد",
+          isFieldRealPhoto: true,
           description: "تصميم وتنفيذ شبكة إنذار حريق معنونة بالكامل تضم 4 لوحات تحكم رئيسية مرتبطة شبكياً، وأكثر من 850 كاشف حريق وحرارة، مع نظام الإخلاء الصوتي التلقائي المعتمد من الدفاع المدني.",
           impactMetrics: [
-            { label: "عدد الكواشف", value: "850+ كاشف معنون" },
-            { label: "لوحات التحكم", value: "4 لوحات Addressable نيتورك" },
-            { label: "مطابقة الدفاع المدني", value: "معتمد 100% بدون ملاحظات" }
+            { label: "عدد الكواشف المركبة", value: "850+ كاشف معنون" },
+            { label: "لوحات التحكم المركزية", value: "4 لوحات Addressable نيتورك" },
+            { label: "اعتماد الحماية المدنية", value: "شهادة مطابقة 100% صالحة" }
           ],
           technicalSpecs: [
-            { label: "المعيار المطبق", value: "NFPA 72 Life Safety Standard" },
-            { label: "الأسلاك المستخدمة", value: "Fire Rated 2x1.5mm 180 Min" },
-            { label: "الإخلاء الصوتي", value: "Multi-Zone Automated Voice Alarm" },
-            { label: "التكامل", value: "فصل التكييف وفتح أبواب الطوارئ آلياً" }
+            { label: "المعيار المطبق", value: "NFPA 72 & Egyptian Fire Code" },
+            { label: "الكابلات الحرارية", value: "Fire Rated 2x1.5mm 180 Min Certified" },
+            { label: "نظام الإخلاء الصوتي", value: "Multi-Zone Automated Voice Alarm 24V" },
+            { label: "التكامل الكهروميكانيكي", value: "Auto HVAC Trip & Emergency Gate Release" }
           ],
-          image: HERO_IMAGE
+          image: PROJECT_FIRE_SITE
         },
         {
           id: "corporate-tower-bms",
-          title: "نظام إدارة المبنى الذكي (BMS) والسنترال السحابي للبرج",
+          title: "نظام إدارة المبنى الذكي (BMS) والسنترال الموحد للبرج",
           category: "smart-bms",
           categoryLabel: "أنظمة التحكم والمباني الذكية",
           location: "حي المال والأعمال، العاصمة الإدارية / التجمع، مصر",
           year: "2024",
           clientType: "برج إداري وتجاري متطور",
+          clientName: "شركة تطوير الأبراج الذكية والمجمعات الإدارية",
+          scopeOfWork: [
+            "برمجة وحدة التحكم الرئيسية DDC ونظام الـ SCADA على بروتوكول BACnet/IP",
+            "ربط وحدات التكييف المركزي AHU/Chillers ولوحات توزيع الكهرباء والمولدات الاحتياطية",
+            "تثبيت 2,200 نقطة استشعار لدرجات الحرارة وضغط الهواء ومعدلات استهلاك الكهرباء",
+            "توريد وتركيب سنترال IP PBX متكرر يخدم 400 موظف مع تطبيق هواتف ذكية",
+            "توقيع عقد صيانة مدارة SLA لمدة 3 سنوات مع مراقبة وتحكم عن بعد"
+          ],
+          deliveryYear: "مايو 2024",
+          handoverCertificate: "محضر تسليم تشغيل تكاملي واختبار كفاءة الطاقة",
+          consultantName: "الاستشاري الهندسي العام للأبراج الذكية",
+          isFieldRealPhoto: true,
           description: "ربط أنظمة التكييف والتهوية ولوحات الكهرباء وأنظمة الإضاءة بنظام BMS مركزي ببروتوكول BACnet، وتوريد سنترال IP PBX يخدم 400 موظف مع الربط السحابي وعقد صيانة SLA.",
           impactMetrics: [
             { label: "نقاط المراقبة والتحكم", value: "2,200 نقطة استشعار" },
-            { label: "توفير الطاقة التشغيلية", value: "24% خفض في الفاتورة" },
-            { label: "الخطوط الداخلية للسنترال", value: "400 هاتف IP" }
+            { label: "توفير الطاقة التشغيلية", value: "24% خفض مثبت بالفواتير" },
+            { label: "خطوط السنترال المنفذة", value: "400 هاتف IP" }
           ],
           technicalSpecs: [
-            { label: "بروتوكول BMS", value: "Native BACnet/IP Architecture" },
-            { label: "السنترال", value: "Redundant High-Availability IP PBX" },
-            { label: "الانتركم", value: "IP Video Intercom with Smart App" },
-            { label: "الصيانة", value: "عقد SLA مدعوم بنظام تذاكر إلكتروني" }
+            { label: "بروتوكول BMS", value: "Native BACnet/IP Open Architecture" },
+            { label: "السنترال الهاتفي", value: "Dual Hot-Standby IP PBX Server" },
+            { label: "الاتصال الداخلي", value: "SIP Video Intercom with Access Gateways" },
+            { label: "عقد الدعم الفني", value: "24/7 Premium SLA with 2-Hour Response" }
           ],
-          image: DATACENTER_IMAGE
+          image: PROJECT_BMS_SITE
         },
         {
           id: "remote-facility-low-current",
@@ -592,20 +655,32 @@ export const content: Record<Language, TranslationContent> = {
           categoryLabel: "كاميرات المراقبة والأمن",
           location: "واحة سيوة، مطروح، مصر",
           year: "2022",
-          clientType: "مجمع خدمات واستصلاح ريفي متكامل",
+          clientType: "مجمع خدمات واستصلاح ريفي وزراعي",
+          clientName: "شركة استصلاح وتنمية الواحات والزيوت الطبيعية",
+          scopeOfWork: [
+            "تصميم نظام مراقبة مستقل تماماً عن الشبكة الكهربائية العمومية في عمق الصحراء",
+            "تركيب صاري مجلفن بارتفاع 18 متراً مع كاميرات حرارية وضوئية بعيدة المدى",
+            "إنشاء وصلة ميكروويف لاسلكية لمسافة 12 كم لنقل البيانات إلى نقطة الربط الرئيسية",
+            "تغذية المنظومة بمحطة طاقة شمسية مستقلة مع بطاريات جل وكابينة تحكم مكيفة",
+            "ربط المنظومة عبر الأقمار الصناعية للمتابعة من المقر الرئيسي بالقاهرة"
+          ],
+          deliveryYear: "ديسمبر 2022",
+          handoverCertificate: "محضر تسليم وتشغيل مستمر بنسبة جاهزية 99.9% في الظروف المناخية القاسية",
+          consultantName: "إشراف هندسي مشترك لإدارة الطاقة والأنظمة الأمنية",
+          isFieldRealPhoto: true,
           description: "تنفيذ بنية تيار خفيف مستقلة لموقع صحراوي معزول شملت كاميرات حرارية للمحيط الأمني، شبكة اتصالات لاسلكية بعيدة المدى، ونظام تحكم في الأبواب مع تغذية كهربائية احتياطية بالطاقة الشمسية.",
           impactMetrics: [
-            { label: "تأمين المحيط الأمني", value: "تغطية 360 درجة بكاميرات PTZ" },
-            { label: "الربط اللاسلكي", value: "وصلات ميكروويف لمسافة 12 كم" },
-            { label: "استمرارية التشغيل", value: "100% طاقة ذاتية دون انقطاع" }
+            { label: "تغطية المحيط الأمني", value: "360 درجة بكاميرات حرارية" },
+            { label: "الربط اللاسلكي الميداني", value: "وصلات ميكروويف 12 كم" },
+            { label: "استمرارية التشغيل الذاتي", value: "100% طاقة شمسية مستمرة" }
           ],
           technicalSpecs: [
-            { label: "الكاميرات", value: "Thermal + Optical Long-Range PTZ" },
-            { label: "الاتصال", value: "Point-to-Multipoint Wireless Link" },
-            { label: "التغذية", value: "Integrated Solar DC & Smart UPS" },
-            { label: "المراقبة", value: "ربط أقمار صناعية للوصول من القاهرة" }
+            { label: "الكاميرات الميدانية", value: "Long-Range Thermal + Optical PTZ 40x" },
+            { label: "الاتصال اللاسلكي", value: "Point-to-Point 5GHz Carrier Grade Microwave" },
+            { label: "نظام التغذية الكهربائية", value: "Independent Solar DC Array & Smart AGM Pack" },
+            { label: "إدارة النظام", value: "Satellite Uplink for Remote Cairo Monitoring" }
           ],
-          image: ACCESS_IMAGE
+          image: PROJECT_SIWA_SITE
         },
         {
           id: "giza-logistics-pa-sound",
@@ -615,19 +690,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "المنطقة الصناعية، الجيزة، مصر",
           year: "2023",
           clientType: "شركة لوجستيات وتوزيع دولية",
+          clientName: "الوطنية للخدمات اللوجستية ومستودعات التبريد والتخزين",
+          scopeOfWork: [
+            "دراسة المحاكاة الصوتية وتحديد مواضع السماعات لتجنب الصدى في العنابر العالية",
+            "تثبيت 180 سماعة هورن وسقفية عالية الكفاءة على الجمالونات والمسارات المعدنية",
+            "توزيع وموازنة 8 مناطق صوتية مستقلة (Zones) مع محطات نداء تعمل باللمس",
+            "ربط نظام الإذاعة الصوتية بلوحة إنذار الحريق لتجاوز الصوت العادي فوراً وبث إشارات الإخلاء",
+            "معايرة جودة الصوت باستخدام أجهزة قياس مؤشر نقل الكلام STI"
+          ],
+          deliveryYear: "أكتوبر 2023",
+          handoverCertificate: "محضر فحص صوتي معتمد واختبار تكامل مع إنذار الحريق",
+          consultantName: "مكتب الاستشارات الهندسية للمستودعات اللوجستية",
+          isFieldRealPhoto: true,
           description: "تجهيز 4 مستودعات تخزين كبرى بنظام إذاعة داخلية متعدد الزونات (Multi-Zone Public Address) لنشر التعليمات ونداء العمال، مع تكامل كامل مع لوحة إنذار الحريق المركزية.",
           impactMetrics: [
             { label: "عدد السماعات المنفذة", value: "180 سماعة هورن وسقفية" },
-            { label: "المناطق الصوتية المستقلة", value: "8 زونات صوتية" },
-            { label: "وضوح الصوت والنداء", value: "STI > 0.65 مطابق للمعايير" }
+            { label: "المناطق الصوتية المستقلة", value: "8 زونات صوتية منفصلة" },
+            { label: "وضوح الصوت والنداء", value: "STI > 0.68 مطابق للمعايير" }
           ],
           technicalSpecs: [
-            { label: "نوع السماعات", value: "High-Efficiency Horn & Ceiling Coaxial" },
-            { label: "مضخمات الصوت", value: "Class-D Energy Efficient Amplifiers" },
-            { label: "الميكروفونات", value: "IP Paging Stations with Touchscreen" },
-            { label: "التكامل", value: "Auto-Override by Fire Alarm Voice Signal" }
+            { label: "نوع السماعات", value: "High-Efficiency Weatherproof Horn & Coaxial" },
+            { label: "مضخمات الصوت", value: "Class-D Energy Efficient 100V Amplifiers" },
+            { label: "محطات النداء", value: "IP Touchscreen Paging Consoles with Chime" },
+            { label: "تكامل الطوارئ", value: "Priority Fire Alarm Voice Override Matrix" }
           ],
-          image: CABLING_IMAGE
+          image: PROJECT_SOUND_SITE
         }
       ]
     },
@@ -731,8 +818,8 @@ export const content: Record<Language, TranslationContent> = {
     },
     brand: {
       name: "Egypt Green Energy L.L.C",
-      tagline: "مصر للطاقة الخضراء ذ.م.م",
-      subtext: "Turnkey Low Current Systems, Physical Security & Intelligent Networks"
+      tagline: "Integrated Low Current & ELV Technology Solutions Division",
+      subtext: "Turnkey Enterprise Security, Telecommunications & Smart Infrastructure"
     },
     nav: {
       home: "Home",
@@ -745,24 +832,24 @@ export const content: Record<Language, TranslationContent> = {
       langToggle: "العربية"
     },
     hero: {
-      kicker: "Engineering & Project Heritage Since 1980 Across Egypt",
+      kicker: "Engineering & Contracting Heritage Since 1980 Across Egypt (Over 46 Years Legacy, Incorporated 2014)",
       title: "Turnkey Low Current Systems & Smart Infrastructure Engineering",
       highlight: "Low Current Systems",
       subtitle: "We engineer, commission, and maintain end-to-end Low Current (ELV) solutions: 4K IP CCTV surveillance, addressable fire alarm, biometric access control, structured cabling & fiber optics, IP telephony, and building management systems (BMS) with 24/7 managed SLA support.",
       ctaPrimary: "Request Technical BOQ & Site Survey",
       ctaSecondary: "Explore Low Current Systems",
-      trustBullet1: "68+ Turnkey Facility Installations",
-      trustBullet2: "NFPA 72 & TIA-942 Compliant Standards",
+      trustBullet1: "68+ Turnkey Facility Installations with Handover Records",
+      trustBullet2: "NFPA 72 & TIA-942 and Egyptian Code Compliant",
       trustBullet3: "24/7 SLA Engineering Support"
     },
     stats: {
       projectsCount: "68+",
       projectsLabel: "Completed ELV Installations",
-      projectsDesc: "Across corporate towers, industrial plants, hospitals, and compounds",
+      projectsDesc: "Across corporate towers, industrial plants, hospitals, and compounds with handover certs",
       satisfactionRate: "92%",
       satisfactionLabel: "Client Approval Rate",
-      satisfactionDesc: "Rigorous adherence to technical submittals, testing, and commissioning",
-      heritageYears: "44+",
+      satisfactionDesc: "Rigorous adherence to technical submittals, testing, and commissioning without delays",
+      heritageYears: "46+",
       heritageLabel: "Years Engineering Heritage",
       heritageDesc: "Operational engineering pedigree dating back to 1980, formalized in 2014",
       systemsCount: "8+",
@@ -772,21 +859,21 @@ export const content: Record<Language, TranslationContent> = {
     about: {
       sectionKicker: "Corporate Pedigree & Field Experience",
       heading: "Engineering Excellence in Low Current & Smart Building Tech",
-      subheading: "Incorporated in 2014 upon four decades of operational engineering, contracting, and project management expertise dating back to 1980.",
-      p1: "Egypt Low Current & Tech Systems (Egypt GE) serves as the trusted engineering contractor for leading corporations, real estate developers, and industrial operators in Egypt. We deliver complete turnkey solutions: system design, CAD shop drawings, procurement, cabling, device termination, software commissioning, and certified testing.",
+      subheading: "Incorporated in 2014 upon four decades of operational engineering, contracting, and project management expertise dating back to 1980 (Over 46 years of cumulative expertise among founders and engineering team).",
+      p1: "Egypt Green Energy L.L.C — Low Current & ELV Systems Division serves as the trusted engineering contractor for leading corporations, real estate developers, and industrial operators in Egypt. We deliver complete turnkey solutions: system design, CAD shop drawings, procurement, cabling, device termination, software commissioning, and certified testing.",
       p2: "We specialize in converging all Extra Low Voltage (ELV) disciplines—surveillance, life safety, access gates, enterprise networking, and acoustics—into unified centralized control room architectures backed by high-availability power and managed SLA support.",
       visionTitle: "Our Vision",
       visionText: "To stand as Egypt and the region's benchmark engineering contractor for intelligent low current systems, electronic security, and mission-critical network infrastructure.",
       missionTitle: "Our Mission",
       missionText: "To safeguard, connect, and automate facilities with certified global low current technologies, delivering prompt field engineering response and proactive maintenance that prevents unplanned downtime.",
       timelineTitle: "Historical Milestones",
-      timelineSub: "44 years from specialized engineering contracting to intelligent technology leadership",
+      timelineSub: "46 years of engineering pedigree (1980 - 2026) to intelligent technology leadership",
       timeline: [
         {
           year: "1980",
           title: "Engineering Foundation",
           description: "Initiated electrical engineering contracting and project management across Egypt.",
-          highlight: "Over four decades of technical discipline and execution integrity"
+          highlight: "Over 46 years of technical discipline and execution integrity"
         },
         {
           year: "2005",
@@ -1040,19 +1127,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "New Cairo, Egypt",
           year: "2024",
           clientType: "Commercial & Investment Complex",
+          clientName: "Capital Asset Management & Real Estate Investment Corp.",
+          scopeOfWork: [
+            "Architectural CAD reviews and camera field-of-view engineering",
+            "Procurement and installation of 160 4K IP cameras with edge facial and LPR analytics",
+            "Installation of 18 optical speed gates with biometric facial recognition terminals",
+            "Central control center outfitting with 6-screen video wall and RAID 6 storage",
+            "Operator handover and formal commissioning certification"
+          ],
+          deliveryYear: "March 2024",
+          handoverCertificate: "Approved Preliminary Handover & 100% Security Inspection Certificate",
+          consultantName: "General MEP Engineering Consultant",
+          isFieldRealPhoto: true,
           description: "Full engineering and installation of 160 4K IP cameras with edge facial analytics, 18 optical turnstile speed gates, redundant NVR server racks, and an ultra-narrow bezel 6-screen video wall.",
           impactMetrics: [
-            { label: "Surveillance Cameras", value: "160 4K IP Cameras" },
+            { label: "Field Cameras Installed", value: "160 4K IP Cameras" },
             { label: "Speed Gate Turnstiles", value: "18 Optical Lanes" },
             { label: "Retention Archive", value: "90 Days Continuous RAID 6" }
           ],
           technicalSpecs: [
-            { label: "Video Hardware", value: "4K DarkFighter with VCA AI" },
-            { label: "Storage", value: "Dual NVR 64-Channel Redundant" },
-            { label: "Access Verification", value: "Facial Recognition + RFID Card" },
-            { label: "Monitoring Console", value: "Video Wall 6x 55-inch Ultra-Narrow" }
+            { label: "Video Hardware", value: "4K DarkFighter with VCA AI DeepinMind" },
+            { label: "Storage", value: "Dual NVR 64-Channel Redundant Hot-Spare" },
+            { label: "Access Verification", value: "Biometric Face Recognition + Mifare RFID" },
+            { label: "Monitoring Console", value: "Video Wall 6x 55-inch Ultra-Narrow Bezel" }
           ],
-          image: CCTV_IMAGE
+          image: PROJECT_CCTV_SITE
         },
         {
           id: "industrial-cabling-datacenter",
@@ -1062,6 +1161,18 @@ export const content: Record<Language, TranslationContent> = {
           location: "10th of Ramadan Industrial City, Egypt",
           year: "2023",
           clientType: "Heavy Manufacturing Facility",
+          clientName: "Engineering Industries & Cable Manufacturing Group",
+          scopeOfWork: [
+            "Electromagnetic interference isolated cable routing and heavy-duty cable trays",
+            "Pulling, labeling, and termination of 950 Cat6A drops for manufacturing lines and offices",
+            "Laying 4.5 km of single-mode 12-core armored fiber across 6 factory hangars",
+            "Mounting 4x 42U server racks with smart monitored PDUs",
+            "Comprehensive Fluke DSX-8000 channel testing with official warranty submittals"
+          ],
+          deliveryYear: "November 2023",
+          handoverCertificate: "Certified Fluke Channel Test Report & 25-Year Manufacturer System Warranty",
+          consultantName: "Industrial Engineering & Infrastructure Advisory",
+          isFieldRealPhoto: true,
           description: "Deployment of an enterprise Cat6A structured network comprising 950 drops across 6 manufacturing hangars connected to a central data room via armored 12-core single-mode fiber with Fluke certification.",
           impactMetrics: [
             { label: "Terminated Drops", value: "950 Cat6A Data Outlets" },
@@ -1070,11 +1181,11 @@ export const content: Record<Language, TranslationContent> = {
           ],
           technicalSpecs: [
             { label: "Horizontal Cable", value: "Cat6A Shielded LSZH Fluke Certified" },
-            { label: "Fiber Backbone", value: "Single-Mode 12-Core Armored" },
-            { label: "Enclosures", value: "4x 42U Server Racks with Smart PDU" },
-            { label: "Switching", value: "Managed PoE+ Enterprise Switches" }
+            { label: "Fiber Backbone", value: "Single-Mode 12-Core Heavy Armored" },
+            { label: "Enclosures", value: "4x 42U Server Racks with Smart Monitored PDU" },
+            { label: "Switching", value: "Managed Layer-3 PoE+ Enterprise Switches" }
           ],
-          image: CABLING_IMAGE
+          image: PROJECT_CABLING_SITE
         },
         {
           id: "hospital-fire-addressable",
@@ -1084,19 +1195,32 @@ export const content: Record<Language, TranslationContent> = {
           location: "Nasr City, Cairo, Egypt",
           year: "2023",
           clientType: "Healthcare Facility",
+          clientName: "Al-Safwa Specialized Surgical Hospital & Medical Complex",
+          scopeOfWork: [
+            "Preparation of Egyptian Fire Code & NFPA 72 compliant shop drawings",
+            "Procurement and installation of 4 networked addressable fire panels with touch displays",
+            "Deployment of 850+ smoke, heat, and optical laser sensors across ICU and operating suites",
+            "Automated dual-language Arabic/English multi-zone voice alarm evacuation",
+            "Tripping interlocks with building HVAC, elevator grounding, and emergency exits",
+            "On-site evacuation drill supervision and Civil Defense final approval certificate"
+          ],
+          deliveryYear: "August 2023",
+          handoverCertificate: "Official Egyptian Civil Defense Final Approval & Safety Certificate",
+          consultantName: "Certified Fire Protection & Life Safety Consultant",
+          isFieldRealPhoto: true,
           description: "Engineering and commissioning of a 4-panel networked addressable fire alarm network monitoring 850 detectors and manual stations, coupled with automated multi-zone voice evacuation meeting Egyptian Civil Defense codes.",
           impactMetrics: [
             { label: "Addressable Devices", value: "850+ Smoke/Heat Detectors" },
             { label: "Control Panels", value: "4 Networked Addressable Units" },
-            { label: "Civil Defense", value: "100% Certified Approval" }
+            { label: "Civil Defense", value: "100% Certified Approval Valid" }
           ],
           technicalSpecs: [
-            { label: "Standard", value: "NFPA 72 Life Safety Standard" },
-            { label: "Cabling", value: "Fire Rated 2x1.5mm 180 Min" },
-            { label: "Acoustics", value: "Multi-Zone Automated Voice Alarm" },
-            { label: "Interlocks", value: "Automated HVAC shutdown & elevator grounding" }
+            { label: "Standard", value: "NFPA 72 & Egyptian Fire Code" },
+            { label: "Cabling", value: "Fire Rated 2x1.5mm 180 Min Certified" },
+            { label: "Acoustics", value: "Multi-Zone Automated Voice Alarm 24V" },
+            { label: "Interlocks", value: "Automated HVAC shutdown & emergency gate release" }
           ],
-          image: HERO_IMAGE
+          image: PROJECT_FIRE_SITE
         },
         {
           id: "corporate-tower-bms",
@@ -1106,19 +1230,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "Financial District, Cairo, Egypt",
           year: "2024",
           clientType: "Commercial Smart Tower",
+          clientName: "Smart Towers & Integrated Commercial Parks Development",
+          scopeOfWork: [
+            "DDC controller and SCADA automation programming over BACnet/IP",
+            "Full telemetry interface for chillers, AHUs, power distribution, and backup generators",
+            "Field installation of 2,200 sensing points for thermal, air pressure, and power meters",
+            "Deployment of dual hot-standby IP PBX telephony serving 400 extensions",
+            "3-year contracted SLA with 24/7 remote monitoring and rapid dispatched support"
+          ],
+          deliveryYear: "May 2024",
+          handoverCertificate: "Integrated Commissioning & Energy Efficiency Verification Protocol",
+          consultantName: "General High-Rise Smart Building Advisory",
+          isFieldRealPhoto: true,
           description: "Integration of HVAC, chillers, energy meters, and lighting into a central BACnet BMS console, paired with an IP PBX telephony network serving 400 extensions and a 24/7 SLA maintenance agreement.",
           impactMetrics: [
             { label: "Telemetry Nodes", value: "2,200 Sensor Points" },
-            { label: "Energy Conservation", value: "24% Operating Bill Reduction" },
+            { label: "Energy Conservation", value: "24% Verified Bill Reduction" },
             { label: "VoIP Extensions", value: "400 Enterprise Seats" }
           ],
           technicalSpecs: [
-            { label: "BMS Backbone", value: "Native BACnet/IP Architecture" },
-            { label: "Telephony", value: "Redundant High-Availability IP PBX" },
-            { label: "Intercom", value: "IP Video Intercom with Smart App" },
-            { label: "Support Model", value: "Contracted SLA with online ticketing" }
+            { label: "BMS Backbone", value: "Native BACnet/IP Open Architecture" },
+            { label: "Telephony", value: "Dual Hot-Standby IP PBX Server" },
+            { label: "Intercom", value: "SIP Video Intercom with Access Gateways" },
+            { label: "Support Model", value: "24/7 Premium SLA with 2-Hour Response" }
           ],
-          image: DATACENTER_IMAGE
+          image: PROJECT_BMS_SITE
         },
         {
           id: "remote-facility-low-current",
@@ -1128,19 +1264,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "Siwa Oasis, Matrouh, Egypt",
           year: "2022",
           clientType: "Agricultural & Water Infrastructure",
+          clientName: "Oasis Reclamation, Agro-Investment & Natural Oils Co.",
+          scopeOfWork: [
+            "Off-grid perimeter surveillance engineering in deep desert terrain",
+            "Erection of 18-meter galvanized mast with long-range thermal and optical PTZ cameras",
+            "12 km line-of-sight microwave link transmission to primary gateway",
+            "Dedicated standalone solar array with gel battery cabinet and temperature control",
+            "Satellite link telemetry for remote headquarters access in Cairo"
+          ],
+          deliveryYear: "December 2022",
+          handoverCertificate: "Harsh Environment 99.9% Uptime Handover Report",
+          consultantName: "Joint Energy & Security Systems Engineering Board",
+          isFieldRealPhoto: true,
           description: "Off-grid low current installation featuring long-range thermal/optical PTZ cameras, wireless microwave data links spanning 12 km, and access gates powered autonomously by integrated solar backup.",
           impactMetrics: [
             { label: "Perimeter Security", value: "360° Thermal & Optical Coverage" },
             { label: "Wireless Reach", value: "12 km Microwave Link" },
-            { label: "Power Autonomy", value: "100% Self-Powered UPS" }
+            { label: "Power Autonomy", value: "100% Self-Powered Solar Array" }
           ],
           technicalSpecs: [
-            { label: "Camera Hardware", value: "Thermal + Optical Long-Range PTZ" },
-            { label: "Data Transport", value: "Point-to-Multipoint Wireless Link" },
-            { label: "Power Architecture", value: "Integrated Solar DC & Smart UPS" },
-            { label: "Management", value: "Satellite link for Cairo HQ monitoring" }
+            { label: "Camera Hardware", value: "Long-Range Thermal + Optical PTZ 40x" },
+            { label: "Data Transport", value: "Point-to-Point 5GHz Carrier Grade Microwave" },
+            { label: "Power Architecture", value: "Independent Solar DC Array & Smart AGM Pack" },
+            { label: "Management", value: "Satellite Uplink for Remote Cairo Monitoring" }
           ],
-          image: ACCESS_IMAGE
+          image: PROJECT_SIWA_SITE
         },
         {
           id: "giza-logistics-pa-sound",
@@ -1150,19 +1298,31 @@ export const content: Record<Language, TranslationContent> = {
           location: "Industrial Zone, Giza, Egypt",
           year: "2023",
           clientType: "International Logistics Center",
+          clientName: "National Logistics Services & Cold Storage Distribution",
+          scopeOfWork: [
+            "Electro-acoustic modeling to prevent echo in high-ceiling distribution bays",
+            "Mounting 180 high-efficiency horn and coaxial ceiling speakers on trusses",
+            "8-zone matrix configuration with tactile touchscreen paging consoles",
+            "Direct priority hardwire relay with fire alarm control panel for emergency evacuation",
+            "Acoustic commissioning and speech transmission index (STI) certification"
+          ],
+          deliveryYear: "October 2023",
+          handoverCertificate: "Certified Electro-Acoustic STI Audit & Fire System Integration Protocol",
+          consultantName: "Logistics Facilities MEP Advisory",
+          isFieldRealPhoto: true,
           description: "Equipping 4 distribution hangars with an 8-zone 100V public address and acoustic paging system with touchscreen paging stations and automatic fire alarm override.",
           impactMetrics: [
             { label: "Installed Speakers", value: "180 Horn & Ceiling Speakers" },
             { label: "Paging Zones", value: "8 Independent Audio Zones" },
-            { label: "Speech Clarity", value: "STI > 0.65 compliant" }
+            { label: "Speech Clarity", value: "STI > 0.68 Certified Standard" }
           ],
           technicalSpecs: [
-            { label: "Transducers", value: "High-Efficiency Horn & Ceiling Coaxial" },
-            { label: "Amplification", value: "Class-D Energy Efficient Amplifiers" },
-            { label: "Microphones", value: "IP Paging Stations with Touchscreen" },
-            { label: "Safety Hook", value: "Auto-Override by Fire Alarm Voice Signal" }
+            { label: "Transducers", value: "High-Efficiency Weatherproof Horn & Coaxial" },
+            { label: "Amplification", value: "Class-D Energy Efficient 100V Amplifiers" },
+            { label: "Microphones", value: "IP Touchscreen Paging Consoles with Chime" },
+            { label: "Safety Hook", value: "Priority Fire Alarm Voice Override Matrix" }
           ],
-          image: CABLING_IMAGE
+          image: PROJECT_SOUND_SITE
         }
       ]
     },

@@ -161,16 +161,23 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     return <div className={`inline-flex items-center justify-center ${className}`}>{EmblemElement}</div>;
   }
 
+  // Normalize names to avoid repeating LLC and ذ.م.م
+  const cleanAr = companyNameAr.replace(/ذ\.?\s*م\.?\s*م\.?/g, '').trim();
+  const cleanEn = companyNameEn.replace(/\bL\.?L\.?C\.?\b/gi, '').trim();
+
   if (variant === 'full') {
     return (
       <div className={`flex flex-col items-center text-center gap-2.5 ${className}`}>
         {EmblemElement}
         <div className="flex flex-col items-center">
           <span className={`block font-bold tracking-tight ${textColorClasses.primary} ${textSizes[size].ar}`}>
-            {companyNameAr} <span className="text-xs font-normal opacity-85">ذ.م.م</span>
+            {cleanAr} <span className="text-xs font-normal opacity-85">ذ.م.م</span>
           </span>
           <span className={`block tracking-wide uppercase font-semibold ${textColorClasses.secondary} ${textSizes[size].en}`}>
-            {companyNameEn} <span className="font-mono text-[10px]">L.L.C</span>
+            {cleanEn} <span className="font-mono text-[10px]">L.L.C</span>
+          </span>
+          <span className="block text-[10px] text-slate-400 font-medium mt-0.5">
+            قطاع أنظمة التيار الخفيف والتكنولوجيا المتكاملة
           </span>
         </div>
       </div>
@@ -183,11 +190,17 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {EmblemElement}
       <div className="flex flex-col">
         <span className={`block font-bold tracking-tight whitespace-nowrap leading-tight ${textColorClasses.primary} ${textSizes[size].ar}`}>
-          {companyNameAr} <span className="text-[11px] font-normal opacity-85">ذ.م.م</span>
+          {cleanAr} <span className="text-[11px] font-normal opacity-85">ذ.م.م</span>
         </span>
-        <span className={`block tracking-wide whitespace-nowrap leading-tight ${textColorClasses.secondary} ${textSizes[size].en}`}>
-          {companyNameEn} <span className="text-[10px] font-mono">L.L.C</span>
-        </span>
+        <div className="flex items-center gap-1.5 leading-tight">
+          <span className={`block tracking-wide whitespace-nowrap ${textColorClasses.secondary} ${textSizes[size].en}`}>
+            {cleanEn} <span className="text-[10px] font-mono">L.L.C</span>
+          </span>
+          <span className="text-slate-400 text-[10px] hidden sm:inline">•</span>
+          <span className="text-emerald-400 text-[10px] hidden sm:inline font-normal">
+            قطاع التيار الخفيف
+          </span>
+        </div>
       </div>
     </div>
   );

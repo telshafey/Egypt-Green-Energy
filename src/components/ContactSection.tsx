@@ -116,8 +116,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 
   const whatsappUrl = `https://wa.me/201007196485?text=${encodeURIComponent(
     currentLang === 'ar'
-      ? 'مرحباً شركة مصر للطاقة الخضراء، أود الاستفسار عن خدماتكم وحلول الطاقة والتكنولوجيا الحيوية.'
-      : 'Hello Egypt Green Energy, I would like to inquire about your renewable energy, biotechnology, and engineering services.'
+      ? 'مرحباً شركة مصر للطاقة الخضراء (قطاع أنظمة التيار الخفيف)، أود الاستفسار وطلب مقايسة فنية ومعاينة للمشروع.'
+      : 'Hello Egypt Green Energy (Low Current Division), I would like to request a technical BOQ and site survey for our project.'
   )}`;
 
   return (
@@ -156,7 +156,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <h4 className="text-sm font-bold text-slate-900 mb-1">
                     {t.officeTitle}
                   </h4>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
                     {activeAddress}
                   </p>
                 </div>
@@ -174,14 +174,14 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <div className="space-y-1">
                     <a
                       href={`tel:${activePhonePrimary.replace(/\s+/g, '')}`}
-                      className="block text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
+                      className="block text-xs sm:text-sm font-mono font-bold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
                     >
                       {activePhonePrimary}
                     </a>
                     {activePhoneSecondary && (
                       <a
                         href={`tel:${activePhoneSecondary.replace(/\s+/g, '')}`}
-                        className="block text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
+                        className="block text-xs sm:text-sm font-mono font-bold text-emerald-700 hover:text-emerald-800 dir-ltr text-start"
                       >
                         {activePhoneSecondary}
                       </a>
@@ -201,7 +201,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   </h4>
                   <a
                     href={`mailto:${activeEmail}`}
-                    className="text-xs sm:text-sm font-mono font-semibold text-emerald-700 hover:text-emerald-800"
+                    className="text-xs sm:text-sm font-mono font-bold text-emerald-700 hover:text-emerald-800"
                   >
                     {activeEmail}
                   </a>
@@ -217,7 +217,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <h4 className="text-sm font-bold text-slate-900 mb-1">
                     {t.hoursTitle}
                   </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
                     {activeHours}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
-              <p className="text-xs text-slate-500 mb-4">
+              <p className="text-xs text-slate-700 font-medium mb-4">
                 {t.mapDesc}
               </p>
 

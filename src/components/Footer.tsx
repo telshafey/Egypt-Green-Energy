@@ -9,11 +9,17 @@ import { SiteSettingsData } from '../services/firebaseService';
 interface FooterProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
-  onOpenAdmin?: () => void;
   customSettings?: SiteSettingsData | null;
+  sectionVisibility?: {
+    showAbout?: boolean;
+    showSystems?: boolean;
+    showProjects?: boolean;
+    showConfigurator?: boolean;
+    showContact?: boolean;
+  };
 }
 
-export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenAdmin, customSettings }) => {
+export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customSettings, sectionVisibility }) => {
   const t = content[currentLang];
   const activeAddress = customSettings?.address || t.contact.officeAddress;
   const activePhonePrimary = customSettings?.phonePrimary || t.contact.phonePrimary;
@@ -31,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
   )}`;
 
   return (
-    <footer className="bg-slate-950 text-slate-400 border-t border-slate-900 pt-16 pb-12">
+    <footer className="bg-slate-950 text-slate-300 border-t border-slate-900 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Grid */}
@@ -47,10 +53,10 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
               companyNameAr={customSettings?.companyNameAr}
               companyNameEn={customSettings?.companyNameEn}
             />
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
               {t.footer.about}
             </p>
-            <div className="text-xs text-slate-500 font-mono">
+            <div className="text-xs text-slate-400 font-mono">
               {t.footer.crNumber}
             </div>
           </div>
@@ -60,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
             <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
               {t.footer.quickLinks}
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm">
+            <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
               <li>
                 <button
                   onClick={() => onNavigate('home')}
@@ -69,46 +75,56 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
                   {t.nav.home}
                 </button>
               </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('about')}
-                  className="hover:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  {t.nav.about}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('systems')}
-                  className="hover:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  {t.nav.systems}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('projects')}
-                  className="hover:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  {t.nav.projects}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('configurator')}
-                  className="hover:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  {t.nav.configurator}
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('contact')}
-                  className="hover:text-emerald-400 transition-colors cursor-pointer"
-                >
-                  {t.nav.contact}
-                </button>
-              </li>
+              {sectionVisibility?.showAbout !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('about')}
+                    className="hover:text-emerald-400 transition-colors cursor-pointer"
+                  >
+                    {t.nav.about}
+                  </button>
+                </li>
+              )}
+              {sectionVisibility?.showSystems !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('systems')}
+                    className="hover:text-emerald-400 transition-colors cursor-pointer"
+                  >
+                    {t.nav.systems}
+                  </button>
+                </li>
+              )}
+              {sectionVisibility?.showProjects !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('projects')}
+                    className="hover:text-emerald-400 transition-colors cursor-pointer"
+                  >
+                    {t.nav.projects}
+                  </button>
+                </li>
+              )}
+              {sectionVisibility?.showConfigurator !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('configurator')}
+                    className="hover:text-emerald-400 transition-colors cursor-pointer"
+                  >
+                    {t.nav.configurator}
+                  </button>
+                </li>
+              )}
+              {sectionVisibility?.showContact !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('contact')}
+                    className="hover:text-emerald-400 transition-colors cursor-pointer"
+                  >
+                    {t.nav.contact}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -149,16 +165,6 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, onOpenA
         <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-3">
             <span>{t.footer.rights}</span>
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className="opacity-40 hover:opacity-100 transition-opacity text-slate-500 hover:text-emerald-400 flex items-center gap-1 cursor-pointer"
-                title="بوابة الإدارة"
-              >
-                <span>•</span>
-                <span className="text-[11px]">بوابة الإدارة</span>
-              </button>
-            )}
           </div>
           <button
             onClick={scrollToTop}

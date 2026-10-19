@@ -54,10 +54,10 @@ export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
                     {stat.value}
                   </span>
                 </div>
-                <span className="text-sm sm:text-base font-semibold text-slate-200 mb-1">
+                <span className="text-sm sm:text-base font-bold text-slate-100 mb-1">
                   {stat.label}
                 </span>
-                <span className="text-xs text-slate-400 leading-normal">
+                <span className="text-xs text-slate-300 leading-normal">
                   {stat.desc}
                 </span>
               </div>

@@ -70,18 +70,18 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
                 ? 'خبراتنا التأسيسية في الطاقة، المياه، والتكنولوجيا الحيوية'
                 : 'Our Foundation in Renewable Energy, Water & Biotechnology'}
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+            <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
               {isAr
                 ? 'إلى جانب ريادتنا في أنظمة التيار الخفيف وتكنولوجيا المباني، تستند شركة مصر للطاقة الخضراء إلى تاريخ طويل وسجل ميداني عريق في استصلاح الأراضي، محطات الطاقة المتجددة، وحلول المياه.'
                 : 'Alongside our core focus in low current systems, Egypt Green Energy L.L.C stands upon a rich technical history in renewable energy, groundwater engineering, and biological desert reclamation.'}
             </p>
           </div>
 
-          <div className="shrink-0 text-xs font-mono text-slate-500 bg-slate-50 border border-slate-200 rounded-lg p-3">
+          <div className="shrink-0 text-xs font-mono text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
             <span className="block font-bold text-slate-900">
               {isAr ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}
             </span>
-            <span className="block text-[11px] text-slate-500">
+            <span className="block text-[11px] text-slate-600 font-medium">
               {isAr ? 'تأسست 2014 | خبرات منذ 1980' : 'Est. 2014 | Heritage Since 1980'}
             </span>
           </div>
@@ -119,7 +119,7 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
                     <h3 className="text-base font-bold text-slate-900 mb-2">
                       {item.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed mb-4">
                       {item.desc}
                     </p>
                   </div>
@@ -127,8 +127,8 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
 
                 {/* Quiet Footer Metric */}
                 <div className="px-5 pb-5 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-mono text-emerald-800">
-                  <span className="font-semibold">{item.specs}</span>
-                  <span className="text-slate-400 text-[11px]">
+                  <span className="font-bold">{item.specs}</span>
+                  <span className="text-slate-600 text-[11px] font-medium">
                     {isAr ? 'سجل معتمد' : 'Verified Track Record'}
                   </span>
                 </div>

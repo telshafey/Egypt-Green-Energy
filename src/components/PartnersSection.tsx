@@ -30,8 +30,8 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'cctv',
       specialtyAr: 'كاميرات مراقبة 4K وذكاء اصطناعي VCA',
       specialtyEn: '4K IP Cameras & AI Analytics',
-      statusAr: 'شريك معتمد',
-      statusEn: 'Certified Partner',
+      statusAr: 'مُدمج أنظمة وحلول',
+      statusEn: 'System Integrator',
       renderLogo: () => (
         <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Hikvision">
           {/* Hikvision authentic stylized red + dark charcoal vector logo */}
@@ -51,8 +51,8 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'cctv',
       specialtyAr: 'أنظمة المراقبة والخوادم المرئية NVR',
       specialtyEn: 'Video Surveillance & NVR Systems',
-      statusAr: 'موزع معتمد',
-      statusEn: 'Authorized Distributor',
+      statusAr: 'توريد وبرمجة معتمدة',
+      statusEn: 'Authorized Solutions Integrator',
       renderLogo: () => (
         <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Dahua">
           {/* Dahua double red arcs emblem + typography */}
@@ -377,7 +377,7 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
                 </h3>
 
                 {/* 3. Specialty Description Underneath */}
-                <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-snug mt-1.5 line-clamp-2">
+                <p className="text-[11px] sm:text-xs text-slate-700 font-medium leading-snug mt-1.5 line-clamp-2">
                   {currentLang === 'ar' ? brand.specialtyAr : brand.specialtyEn}
                 </p>
               </div>
@@ -391,19 +391,27 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
           ))}
         </div>
 
-        {/* Standards Compliance Strip */}
-        <div className="mt-12 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-700 shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span className="font-medium">
-              {currentLang === 'ar'
-                ? 'جميع المهمات والمعدات الموردة بمشروعاتنا أصلية 100% معتمدة ومطابقة لاشتراطات الدفاع المدني والجهاز القومي لتنظيم الاتصالات (NTRA).'
-                : 'All supplied systems are 100% genuine Tier-1 hardware, fully compliant with Egyptian Civil Defense and NTRA standards.'}
+        {/* Engineering Integrity & System Integrator Transparency Box */}
+        <div className="mt-12 p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm sm:text-base font-bold text-slate-950">
+                {currentLang === 'ar' ? 'إقرار المصداقية والصفة التعاقدية (System Integrator)' : 'System Integrator Transparency & Warranty Protocol'}
+              </h3>
+            </div>
+            <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+              {currentLang === 'ar' ? 'ضمان رسمي 100% عبر الوكلاء في مصر' : '100% Genuine Authorized Agency Channels'}
             </span>
           </div>
-          <span className="text-xs font-mono font-semibold text-slate-500 shrink-0">
-            {currentLang === 'ar' ? 'ضمان رسمي معتمد' : 'Authorized OEM Warranty'}
-          </span>
+
+          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal">
+            {currentLang === 'ar'
+              ? 'توضح شركة مصر للطاقة الخضراء ذ.م.م (قطاع أنظمة التيار الخفيف) لعملائها الكرام وشركات المقاولات والاستشاريين أنها تعمل كـ مُدمج أنظمة وحلول هندسية متكاملة (System Integrator). نقوم بدراسة المخططات الهندسية وتصميم وتوريد وتركيب وبرمجة حلول هذه العلامات العالمية المرموقة، حيث يتم توريد كافة الأجهزة واللوحات والكابلات جديدة وأصلية بالكامل عبر الوكلاء والموزعين الرسميين المعتمدين في جمهورية مصر العربية، مشمولة بالضمان الرسمي المعتمد، شهادات المنشأ والاختبار، والدعم الفني المباشر وفقاً لاشتراطات الكود المصري والدفاع المدني والجهاز القومي لتنظيم الاتصالات (NTRA).'
+              : 'Egypt Green Energy L.L.C (Low Current & ELV Systems Division) explicitly declares to our clients, main contractors, and engineering consultants that we operate as a professional System Integrator. We engineer, procure, install, program, and maintain systems utilizing products from these world-class manufacturers. All hardware, panels, and cables are procured 100% genuine and factory-sealed through authorized distribution channels and official agents in Egypt, backed by manufacturer-authorized warranties, certificates of origin, and compliance with Egyptian Civil Defense and NTRA standards.'}
+          </p>
         </div>
 
       </div>

@@ -27,7 +27,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
           >
             {t.heading}
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-slate-700 leading-relaxed font-normal">
             {t.subheading}
           </p>
         </div>
@@ -47,7 +47,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                 <h3 className="text-base font-bold text-slate-900 mb-2">
                   {t.visionTitle}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   {t.visionText}
                 </p>
               </div>
@@ -59,7 +59,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                 <h3 className="text-base font-bold text-slate-900 mb-2">
                   {t.missionTitle}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   {t.missionText}
                 </p>
               </div>
@@ -81,13 +81,13 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                   <Award className="w-4 h-4" />
                   <span>1980 — 2026</span>
                 </div>
-                <h4 className="text-xl font-bold mb-2">
-                  {currentLang === 'ar' ? '44 عاماً من الريادة الهندسية' : '44 Years of Engineering Leadership'}
+                <h4 className="text-xl font-bold mb-2 text-white">
+                  {currentLang === 'ar' ? '46 عاماً من الخبرة الهندسية المتراكمة' : '46 Years of Engineering Legacy'}
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
                   {currentLang === 'ar'
-                    ? 'من المقاولات المتخصصة في الثمانينات إلى ريادة أنظمة التيار الخفيف والبنية التحتية التكنولوجية للمدن الذكية.'
-                    : 'From specialized contracting in the 1980s to turnkey low current and smart building technology.'}
+                    ? 'خبرات إدارة وتنفيذ المشروعات ممتدة منذ 1980 مع التأسيس المؤسسي للكيان في 2014، وصولاً للريادة في أنظمة التيار الخفيف وتكنولوجيا المنشآت الذكية.'
+                    : 'Project management legacy since 1980 with formal corporate incorporation in 2014, advancing turnkey low current and smart building technology.'}
                 </p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                   <CheckCircle2 className="w-5 h-5" />
                   <h4 className="text-base font-bold text-slate-900">{val.title}</h4>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   {val.desc}
                 </p>
               </div>

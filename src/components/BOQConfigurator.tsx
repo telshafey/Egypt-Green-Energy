@@ -213,10 +213,10 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
-                            <ModIcon className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-slate-500'}`} />
-                            <span className={isSelected ? 'text-white' : 'text-slate-300'}>{mod.label}</span>
+                            <ModIcon className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-slate-400'}`} />
+                            <span className={isSelected ? 'text-white' : 'text-slate-200'}>{mod.label}</span>
                           </div>
-                          <span className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 block">
+                          <span className="text-[11px] text-slate-300 line-clamp-1 mt-0.5 block">
                             {mod.desc}
                           </span>
                         </div>
@@ -228,7 +228,7 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
 
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed pt-5 border-t border-slate-800 mt-6">
+            <p className="text-xs text-slate-300 leading-relaxed pt-5 border-t border-slate-800 mt-6">
               {t.disclaimer}
             </p>
           </div>
@@ -247,55 +247,55 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
 
               {/* 4 Quantitative Output Metrics */}
               <div className="space-y-4 mb-8">
-                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 block mb-0.5">{t.estCameras}</span>
-                    <span className="text-xs text-slate-500">4K IP Indoor/Outdoor</span>
+                    <span className="text-xs text-slate-200 font-semibold block mb-0.5">{t.estCameras}</span>
+                    <span className="text-xs text-slate-400">4K IP Indoor/Outdoor</span>
                   </div>
                   <div className="text-end">
                     <span className="text-2xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">
                       ~{estCctv}
                     </span>
-                    <span className="text-xs text-emerald-400 block font-mono">كاميرا</span>
+                    <span className="text-xs text-emerald-400 block font-mono font-bold">كاميرا</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 block mb-0.5">{t.estCablingPoints}</span>
-                    <span className="text-xs text-slate-500">Cat6A Drops & Patch Racks</span>
+                    <span className="text-xs text-slate-200 font-semibold block mb-0.5">{t.estCablingPoints}</span>
+                    <span className="text-xs text-slate-400">Cat6A Drops & Patch Racks</span>
                   </div>
                   <div className="text-end">
                     <span className="text-2xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">
                       ~{estDrops}
                     </span>
-                    <span className="text-xs text-emerald-400 block font-mono">نقطة شبكة</span>
+                    <span className="text-xs text-emerald-400 block font-mono font-bold">نقطة شبكة</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 block mb-0.5">{t.estDoors}</span>
-                    <span className="text-xs text-slate-500">Facial & Magnetic Locks</span>
+                    <span className="text-xs text-slate-200 font-semibold block mb-0.5">{t.estDoors}</span>
+                    <span className="text-xs text-slate-400">Facial & Magnetic Locks</span>
                   </div>
                   <div className="text-end">
                     <span className="text-2xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">
                       ~{estDoorsCount}
                     </span>
-                    <span className="text-xs text-emerald-400 block font-mono">أبواب مؤمنة</span>
+                    <span className="text-xs text-emerald-400 block font-mono font-bold">أبواب مؤمنة</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-700/80 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-slate-400 block mb-0.5">{t.estTimeline}</span>
-                    <span className="text-xs text-slate-500">توريد وتركيب وبرمجة معتمدة</span>
+                    <span className="text-xs text-slate-200 font-semibold block mb-0.5">{t.estTimeline}</span>
+                    <span className="text-xs text-slate-400">توريد وتركيب وبرمجة معتمدة</span>
                   </div>
                   <div className="text-end">
                     <span className="text-2xl sm:text-3xl font-extrabold text-emerald-300 font-mono tabular-nums">
                       {baseWeeks}
                     </span>
-                    <span className="text-xs text-emerald-400 block font-mono">أسابيع عمل</span>
+                    <span className="text-xs text-emerald-400 block font-mono font-bold">أسابيع عمل</span>
                   </div>
                 </div>
               </div>

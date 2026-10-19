@@ -21,7 +21,13 @@ export interface ProjectItem {
   categoryLabel: string;
   location: string;
   year: string;
+  deliveryYear?: string;
   clientType: string;
+  clientName?: string;
+  scopeOfWork?: string[];
+  handoverCertificate?: string;
+  consultantName?: string;
+  isFieldRealPhoto?: boolean;
   description: string;
   impactMetrics: { label: string; value: string }[];
   technicalSpecs: { label: string; value: string }[];
