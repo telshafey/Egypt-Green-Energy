@@ -14,53 +14,52 @@ service cloud.firestore {
 
     function isAdmin() {
       return (
-        // Allow signed in primary admin
-        (isSignedIn() && (
+        isSignedIn() && (
           request.auth.token.email == "elshafey.tamer@gmail.com" ||
           (request.auth.token.email != null && request.auth.token.email.matches('.*admin.*')) ||
           request.auth.token.firebase.sign_in_provider == 'anonymous' ||
           exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        ))
+        )
       );
     }
 
     // Site Settings (Public Read for visitors, Admin and Portal Write)
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAdmin() || true;
+      allow write: if true;
     }
 
     // Systems / Light Current (Public Read for visitors, Admin and Portal Write)
     match /systems/{systemId} {
       allow read: if true;
-      allow write: if isAdmin() || true;
-    }
-
-    // Services (Legacy & Specialized units)
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if isAdmin() || true;
+      allow write: if true;
     }
 
     // Projects (Public Read for visitors, Admin and Portal Write)
     match /projects/{projectId} {
       allow read: if true;
-      allow write: if isAdmin() || true;
+      allow write: if true;
+    }
+
+    // Technology Brands / Vendors (Public Read for visitors, Admin and Portal Write)
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if true;
     }
 
     // Media Assets library (Public Read for visitors, Admin and Portal Write)
     match /media_assets/{assetId} {
       allow read: if true;
-      allow write: if isAdmin() || true;
-    }
-
-    // Admins directory & session tracking
-    match /admins/{adminId} {
-      allow read, write: if true;
+      allow write: if true;
     }
 
     // Authorized Admin Users & Team Access Management
     match /admin_users/{userId} {
+      allow read, write: if true;
+    }
+
+    // Security & Audit Logs (Admin audit trail)
+    match /audit_logs/{logId} {
       allow read, write: if true;
     }
 

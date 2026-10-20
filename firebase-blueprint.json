@@ -21,9 +21,6 @@
         "addressAr": { "type": "string", "maxLength": 200 },
         "addressEn": { "type": "string", "maxLength": 200 },
         "whatsappNumber": { "type": "string", "maxLength": 50 },
-        "projectsCount": { "type": "string", "maxLength": 20 },
-        "satisfactionRate": { "type": "string", "maxLength": 20 },
-        "yearsExperience": { "type": "string", "maxLength": 20 },
         "showStats": { "type": "boolean" },
         "showAbout": { "type": "boolean" },
         "showHeritage": { "type": "boolean" },
@@ -34,7 +31,7 @@
         "showContact": { "type": "boolean" },
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
-      "required": ["companyNameAr", "companyNameEn", "heroTitleAr", "email"]
+      "required": ["companyNameAr", "companyNameEn", "email"]
     },
     "Service": {
       "title": "Service",
@@ -63,20 +60,40 @@
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 100 },
-        "titleAr": { "type": "string", "maxLength": 150 },
-        "titleEn": { "type": "string", "maxLength": 150 },
+        "title": { "type": "string", "maxLength": 200 },
         "category": { "type": "string", "maxLength": 50 },
-        "locationAr": { "type": "string", "maxLength": 100 },
-        "locationEn": { "type": "string", "maxLength": 100 },
+        "categoryLabel": { "type": "string", "maxLength": 100 },
+        "location": { "type": "string", "maxLength": 100 },
         "year": { "type": "string", "maxLength": 20 },
-        "descriptionAr": { "type": "string", "maxLength": 1000 },
-        "descriptionEn": { "type": "string", "maxLength": 1000 },
-        "imageUrl": { "type": "string", "maxLength": 1000 },
-        "scopeAr": { "type": "string", "maxLength": 300 },
-        "scopeEn": { "type": "string", "maxLength": 300 },
+        "clientType": { "type": "string", "maxLength": 100 },
+        "sector": { "type": "string", "maxLength": 100 },
+        "scopeSummary": { "type": "string", "maxLength": 500 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "image": { "type": "string", "maxLength": 1000 },
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
-      "required": ["id", "titleAr", "titleEn", "category"]
+      "required": ["id", "title", "category"]
+    },
+    "Vendor": {
+      "title": "Vendor",
+      "description": "Technology brand and manufacturer integrated by the company",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 150 },
+        "slug": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 50 },
+        "logoUrl": { "type": "string", "maxLength": 1000 },
+        "svgContent": { "type": "string", "maxLength": 100000 },
+        "websiteUrl": { "type": "string", "maxLength": 300 },
+        "descriptionAr": { "type": "string", "maxLength": 500 },
+        "descriptionEn": { "type": "string", "maxLength": 500 },
+        "displayOrder": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "name", "slug", "category"]
     },
     "Inquiry": {
       "title": "Inquiry",
@@ -88,7 +105,7 @@
         "phone": { "type": "string", "maxLength": 50 },
         "service": { "type": "string", "maxLength": 100 },
         "facilityType": { "type": "string", "maxLength": 100 },
-        "message": { "type": "string", "maxLength": 2000 },
+        "message": { "type": "string", "maxLength": 4000 },
         "createdAt": { "type": "string", "maxLength": 50 },
         "status": { "type": "string", "maxLength": 30 }
       },
@@ -96,18 +113,34 @@
     },
     "AdminUser": {
       "title": "AdminUser",
-      "description": "Authorized administrators and team members permitted to access the admin dashboard",
+      "description": "Authorized administrators permitted to access the admin portal",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 100 },
         "name": { "type": "string", "maxLength": 150 },
         "email": { "type": "string", "maxLength": 150 },
         "role": { "type": "string", "maxLength": 50 },
-        "passcode": { "type": "string", "maxLength": 50 },
+        "passwordHash": { "type": "string", "maxLength": 128 },
+        "salt": { "type": "string", "maxLength": 64 },
         "isActive": { "type": "boolean" },
-        "createdAt": { "type": "string", "maxLength": 50 }
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "lastLogin": { "type": "string", "maxLength": 50 }
       },
       "required": ["id", "name", "email", "role"]
+    },
+    "AuditEvent": {
+      "title": "AuditEvent",
+      "description": "Security and modification audit log records",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "maxLength": 100 },
+        "actorEmail": { "type": "string", "maxLength": 150 },
+        "entityType": { "type": "string", "maxLength": 50 },
+        "entityId": { "type": "string", "maxLength": 100 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "timestamp": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["action", "actorEmail", "timestamp"]
     }
   },
   "firestore": {
@@ -115,13 +148,17 @@
       "schema": "SiteSettings",
       "description": "Global website configuration document"
     },
-    "/services/{serviceId}": {
+    "/systems/{systemId}": {
       "schema": "Service",
-      "description": "Light current and ELV technology services"
+      "description": "Light current and ELV technology systems"
     },
     "/projects/{projectId}": {
       "schema": "Project",
       "description": "Portfolio of past and present engineering projects"
+    },
+    "/vendors/{vendorId}": {
+      "schema": "Vendor",
+      "description": "Technology brands we work with"
     },
     "/inquiries/{inquiryId}": {
       "schema": "Inquiry",
@@ -130,7 +167,10 @@
     "/admin_users/{userId}": {
       "schema": "AdminUser",
       "description": "Authorized administrators and control panel users"
+    },
+    "/audit_logs/{eventId}": {
+      "schema": "AuditEvent",
+      "description": "Security audit records"
     }
   }
 }
-

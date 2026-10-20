@@ -58,8 +58,8 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
               <History className="w-4 h-4" />
               <span>
                 {isAr
-                  ? 'سجل الخبرات الممتدة منذ 1980'
-                  : 'Historical Engineering Foundations Since 1980'}
+                  ? 'سجل المشروعات في الطاقة النظيفة والبيئة'
+                  : 'Projects Record in Clean Energy & Environment'}
               </span>
             </div>
             <h2
@@ -67,13 +67,13 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
               className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-3"
             >
               {isAr
-                ? 'خبراتنا التأسيسية في الطاقة، المياه، والتكنولوجيا الحيوية'
+                ? 'مشروعاتنا التأسيسية في الطاقة المتجددة، المياه، والتكنولوجيا الحيوية'
                 : 'Our Foundation in Renewable Energy, Water & Biotechnology'}
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed font-normal">
               {isAr
-                ? 'إلى جانب ريادتنا في أنظمة التيار الخفيف وتكنولوجيا المباني، تستند شركة مصر للطاقة الخضراء إلى تاريخ طويل وسجل ميداني عريق في استصلاح الأراضي، محطات الطاقة المتجددة، وحلول المياه.'
-                : 'Alongside our core focus in low current systems, Egypt Green Energy L.L.C stands upon a rich technical history in renewable energy, groundwater engineering, and biological desert reclamation.'}
+                ? 'إلى جانب نشاطنا الأساسي في قطاع أنظمة التيار الخفيف وتكنولوجيا المباني، تمتلك شركة مصر للطاقة الخضراء سجلاً ميدانياً موثقاً في محطات الطاقة الشمسية، وحلول ضخ وتحلية المياه، والمشروعات البيئية.'
+                : 'Alongside our core specialization in Low Current systems, Egypt Green Energy L.L.C possesses documented project execution in solar power arrays, water desalination, and environmental technologies.'}
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export const HeritageOverview: React.FC<HeritageOverviewProps> = ({ currentLang 
               {isAr ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}
             </span>
             <span className="block text-[11px] text-slate-600 font-medium">
-              {isAr ? 'تأسست 2014 | خبرات منذ 1980' : 'Est. 2014 | Heritage Since 1980'}
+              {isAr ? 'تأسست الشركة عام 2014' : 'Established in 2014'}
             </span>
           </div>
         </div>

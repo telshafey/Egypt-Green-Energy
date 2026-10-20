@@ -1,7 +1,7 @@
 import React from 'react';
 import { Language } from '../types';
 import { content } from '../data/translations';
-import { CheckCircle2, TrendingUp, History, Cpu } from 'lucide-react';
+import { Compass, ShieldCheck, Wrench, Clock } from 'lucide-react';
 
 interface StatsStripProps {
   currentLang: Language;
@@ -10,39 +10,39 @@ interface StatsStripProps {
 export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
   const t = content[currentLang].stats;
 
-  const stats = [
+  const pillars = [
     {
-      value: t.projectsCount,
+      title: t.projectsCount,
       label: t.projectsLabel,
       desc: t.projectsDesc,
-      icon: CheckCircle2,
+      icon: Compass,
     },
     {
-      value: t.satisfactionRate,
+      title: t.satisfactionRate,
       label: t.satisfactionLabel,
       desc: t.satisfactionDesc,
-      icon: TrendingUp,
+      icon: ShieldCheck,
     },
     {
-      value: t.heritageYears,
+      title: t.heritageYears,
       label: t.heritageLabel,
       desc: t.heritageDesc,
-      icon: History,
+      icon: Wrench,
     },
     {
-      value: t.systemsCount,
+      title: t.systemsCount,
       label: t.systemsLabel,
       desc: t.systemsDesc,
-      icon: Cpu,
+      icon: Clock,
     },
   ];
 
   return (
     <section className="bg-slate-950 border-b border-slate-800 text-white py-10 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10">
-          {stats.map((stat, idx) => {
-            const Icon = stat.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+          {pillars.map((pillar, idx) => {
+            const Icon = pillar.icon;
             return (
               <div
                 key={idx}
@@ -50,15 +50,15 @@ export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Icon className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight tabular-nums font-mono">
-                    {stat.value}
+                  <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                    {pillar.title}
                   </span>
                 </div>
-                <span className="text-sm sm:text-base font-bold text-slate-100 mb-1">
-                  {stat.label}
+                <span className="text-sm font-bold text-emerald-400 mb-1">
+                  {pillar.label}
                 </span>
-                <span className="text-xs text-slate-300 leading-normal">
-                  {stat.desc}
+                <span className="text-xs text-slate-300 leading-relaxed font-normal">
+                  {pillar.desc}
                 </span>
               </div>
             );

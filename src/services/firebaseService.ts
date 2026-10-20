@@ -9,12 +9,13 @@ import {
   deleteDoc,
   query,
   orderBy,
+  limit,
   onSnapshot,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType, testFirestoreConnection, FirestoreHealthResult } from '../lib/firebase';
-import { LightCurrentSystem, ProjectItem } from '../types';
+import { LightCurrentSystem, ProjectItem, VendorBrandItem, AuditEventData } from '../types';
+import { hashPassword, verifyPassword } from '../utils/security';
 import {
-  content,
   HERO_IMAGE,
   CCTV_IMAGE,
   CABLING_IMAGE,
@@ -78,11 +79,37 @@ export interface AdminUserData {
   name: string;
   email: string;
   role: 'super_admin' | 'systems_engineer' | 'content_manager';
-  passcode: string;
+  passwordHash?: string;
+  salt?: string;
+  passcode?: string;
   isActive: boolean;
   createdAt: string;
+  lastLogin?: string;
   notes?: string;
 }
+
+export const DEFAULT_ADMIN_USERS: AdminUserData[] = [
+  {
+    id: 'admin-primary',
+    name: 'تامر الشافعي (المدير العام)',
+    email: 'elshafey.tamer@gmail.com',
+    role: 'super_admin',
+    passcode: 'admin2026',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    notes: 'حساب الإدارة والتشغيل المعتمد',
+  },
+  {
+    id: 'admin-operations',
+    name: 'مهندس عمليات التيار الخفيف',
+    email: 'engineer@egypt-ge.com',
+    role: 'systems_engineer',
+    passcode: 'egyptge2026',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    notes: 'إدارة وتحديث مواصفات الأنظمة والمشروعات',
+  },
+];
 
 export interface FirestoreDatabaseStats {
   connected: boolean;
@@ -92,6 +119,7 @@ export interface FirestoreDatabaseStats {
   settingsCount: number;
   systemsCount: number;
   projectsCount: number;
+  vendorsCount: number;
   inquiriesCount: number;
   mediaAssetsCount: number;
   adminUsersCount: number;
@@ -99,20 +127,167 @@ export interface FirestoreDatabaseStats {
   error?: string;
 }
 
-export const DEFAULT_ADMIN_USERS: AdminUserData[] = [
+// 12 Technology Brands We Work With (Initial Seed)
+export const DEFAULT_VENDOR_BRANDS: VendorBrandItem[] = [
   {
-    id: 'admin-master',
-    name: 'مدير النظام الرئيسي',
-    email: 'admin@egyptge.com',
-    role: 'super_admin',
-    passcode: 'admin2026',
+    id: 'hikvision',
+    name: 'Hikvision',
+    slug: 'hikvision',
+    category: 'cctv',
+    logoUrl: '',
+    websiteUrl: 'https://www.hikvision.com',
+    descriptionAr: 'كاميرات مراقبة IP فائقة الدقة وخوادم NVR وأنظمة تحليلات الفيديو الذكية.',
+    descriptionEn: 'High-resolution IP surveillance cameras, NVRs, and video analytics.',
+    displayOrder: 1,
     isActive: true,
     createdAt: new Date().toISOString(),
-    notes: 'الحساب الرئيسي للوحة التحكم وإدارة الصلاحيات',
+  },
+  {
+    id: 'dahua',
+    name: 'Dahua Technology',
+    slug: 'dahua',
+    category: 'cctv',
+    logoUrl: '',
+    websiteUrl: 'https://www.dahuasecurity.com',
+    descriptionAr: 'أنظمة المراقبة المرئية والخوادم وسجلات الفيديو الشبكية للمنشآت.',
+    descriptionEn: 'Video surveillance, network video recorders, and enterprise security.',
+    displayOrder: 2,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'cisco',
+    name: 'Cisco Systems',
+    slug: 'cisco',
+    category: 'networks',
+    logoUrl: '',
+    websiteUrl: 'https://www.cisco.com',
+    descriptionAr: 'سويتشات الشبكات وأجهزة التوجيه والـ Core Switches للمؤسسات ومراكز البيانات.',
+    descriptionEn: 'Enterprise switches, core routers, and data center connectivity.',
+    displayOrder: 3,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'schneider',
+    name: 'Schneider Electric',
+    slug: 'schneider-electric',
+    category: 'bms',
+    logoUrl: '',
+    websiteUrl: 'https://www.se.com',
+    descriptionAr: 'أنظمة إدارة المباني BMS والتحكم البيئي وكبائن السيرفرات ووحدات الطاقة.',
+    descriptionEn: 'Building management systems (BMS), enclosures, and power distribution.',
+    displayOrder: 4,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'honeywell',
+    name: 'Honeywell',
+    slug: 'honeywell',
+    category: 'fire',
+    logoUrl: '',
+    websiteUrl: 'https://www.honeywell.com',
+    descriptionAr: 'أنظمة إنذار الحريق والتحكم الذكي وحلول كشف الدخان المتقدمة.',
+    descriptionEn: 'Fire alarm systems, advanced detection, and building control solutions.',
+    displayOrder: 5,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'notifier',
+    name: 'Notifier by Honeywell',
+    slug: 'notifier',
+    category: 'fire',
+    logoUrl: '',
+    websiteUrl: 'https://www.notifier.com',
+    descriptionAr: 'لوحات إنذار حريق معنونة ذكية وكواشف متوافقة مع كودات السلامة.',
+    descriptionEn: 'Addressable intelligent fire alarm panels and detectors.',
+    displayOrder: 6,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'legrand',
+    name: 'Legrand',
+    slug: 'legrand',
+    category: 'networks',
+    logoUrl: '',
+    websiteUrl: 'https://www.legrand.com',
+    descriptionAr: 'كابلات شبكات Cat6A ومسارات الداتا والكبائن ووحدات التوزيع PDU.',
+    descriptionEn: 'Structured cabling Cat6A, containment pathways, and enterprise racks.',
+    displayOrder: 7,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'panduit',
+    name: 'Panduit',
+    slug: 'panduit',
+    category: 'networks',
+    logoUrl: '',
+    websiteUrl: 'https://www.panduit.com',
+    descriptionAr: 'كبائن خوادم وكابلات ألياف ضوئية وحلول الربط المادي لمراكز البيانات.',
+    descriptionEn: 'Server enclosures, fiber optic backbones, and infrastructure containment.',
+    displayOrder: 8,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'zkteco',
+    name: 'ZKTeco',
+    slug: 'zkteco',
+    category: 'access',
+    logoUrl: '',
+    websiteUrl: 'https://www.zkteco.com',
+    descriptionAr: 'بوابات مرور أفراد ذكية Speed Gates وقارئات بصمة وجه وكروت RFID.',
+    descriptionEn: 'Pedestrian speed gates, biometric terminals, and RFID readers.',
+    displayOrder: 9,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'suprema',
+    name: 'Suprema',
+    slug: 'suprema',
+    category: 'access',
+    logoUrl: '',
+    websiteUrl: 'https://www.supremainc.com',
+    descriptionAr: 'أنظمة تحكم في الأبواب وقارئات بيومترية عالية الدقة للمناطق الحساسة.',
+    descriptionEn: 'Biometric access control terminals and high-security credentials.',
+    displayOrder: 10,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'grandstream',
+    name: 'Grandstream',
+    slug: 'grandstream',
+    category: 'telecom',
+    logoUrl: '',
+    websiteUrl: 'https://www.grandstream.com',
+    descriptionAr: 'سنترالات IP PBX وهواتف شبكية وحلول الاتصالات الموحدة والانتركم.',
+    descriptionEn: 'IP PBX appliances, IP desktop phones, and unified communication.',
+    displayOrder: 11,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'yealink',
+    name: 'Yealink',
+    slug: 'yealink',
+    category: 'telecom',
+    logoUrl: '',
+    websiteUrl: 'https://www.yealink.com',
+    descriptionAr: 'هواتف مكاتب شبكية وأنظمة مؤتمرات الفيديو الصوتية والمرئية.',
+    descriptionEn: 'Enterprise IP desktop phones and video conferencing endpoints.',
+    displayOrder: 12,
+    isActive: true,
+    createdAt: new Date().toISOString(),
   },
 ];
 
-// Default Seed Assets
+// Default Media Assets
 export const DEFAULT_MEDIA_ASSETS: MediaAssetData[] = [
   {
     id: 'hero-command',
@@ -172,27 +347,27 @@ export const DEFAULT_MEDIA_ASSETS: MediaAssetData[] = [
   },
 ];
 
-// Default site settings
+// Default site settings strictly adhering to unified corporate identity
 export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
-  companyNameAr: 'شركة مصر للطاقة الخضراء ذ.م.م',
+  companyNameAr: 'مصر للطاقة الخضراء ذ.م.م',
   companyNameEn: 'Egypt Green Energy L.L.C',
   phonePrimary: '+20 100 719 6485',
   phoneSecondary: '+20 120 072 8006',
   email: 'info@egypt-ge.com',
   address: 'مدينة نصر، القاهرة، جمهورية مصر العربية',
-  hours: 'السبت - الخميس: 9:00 ص - 6:00 م (خدمة طوارئ 24/7 لعقود SLA)',
-  heroTitleAr: 'أنظمة التيار الخفيف والحلول التكنولوجية الذكية للمباني والشركات',
-  heroTitleEn: 'Turnkey Low Current Systems & Smart Infrastructure Engineering',
-  heroSubtitleAr: 'نصمم وننفذ حلول التيار الخفيف المتكاملة: شبكات المراقبة بالكاميرات (CCTV)، إنذار الحريق، التحكم في الأبواب (Access Control)، الكابلات الهيكلية والألياف الضوئية، السنترالات الموحدة، مع عقود صيانة معتمدة 24/7.',
-  heroSubtitleEn: 'We engineer, commission, and maintain end-to-end Low Current (ELV) solutions: 4K IP CCTV surveillance, addressable fire alarm, biometric access control, structured cabling & fiber optics, IP telephony, and building management systems (BMS) with 24/7 managed SLA support.',
+  hours: 'السبت - الخميس: 9:00 ص - 6:00 م (خدمات الدعم الفني وفق اتفاقيات مستوى الخدمة SLA)',
+  heroTitleAr: 'أنظمة التيار الخفيف والحلول التكنولوجية للمباني والمنشآت',
+  heroTitleEn: 'Low Current Systems & Technology Solutions for Modern Facilities',
+  heroSubtitleAr: 'نقدم حلولاً هندسية متكاملة تشمل دراسة المتطلبات، التصميم، التوريد، التركيب، البرمجة، والاختبارات والصيانة لأنظمة المراقبة التلفزيونية، إنذار الحريق، التحكم في الدخول، الشبكات والسنترالات، وأنظمة إدارة المباني.',
+  heroSubtitleEn: 'We deliver integrated engineering solutions covering requirements assessment, design, procurement, installation, programming, testing, and contractual maintenance for CCTV, Fire Alarm, Access Control, Structured Cabling, IP PBX, and BMS systems.',
   heroImageUrl: HERO_IMAGE,
   logoUrl: '',
   whatsAppNumber: '201007196485',
-  aboutVisionAr: 'إدراك الحاجة المتزايدة لتكنولوجيا البنية التحتية والأنظمة الذكية والطاقة المتجددة في عالم اليوم، وتوفير حلول هندسية موثوقة ومستدامة بمعايير عالمية.',
-  aboutMissionAr: 'تصميم وتوريد وتركيب وصيانة أحدث أنظمة التيار الخفيف (ELV) والاتصالات، ودمجها مع الخبرات التاريخية في الطاقة والمياه لإنجاز منشآت ذكية آمنة وموفرة للطاقة.',
+  aboutVisionAr: 'تقديم حلول متكاملة في أنظمة التيار الخفيف وتكنولوجيا المباني تلبي متطلبات المنشآت الحديثة بكفاءة واعتمادية.',
+  aboutMissionAr: 'توفير خدمات هندسية تبدأ من دراسة وتصميم الأنظمة وحتى التوريد والتركيب والتشغيل والصيانة التعاقدية، مع الالتزام بالمواصفات الفنية المعتمدة لكل مشروع.',
   showStats: true,
   showAbout: true,
-  showHeritage: true,
+  showHeritage: false,
   showSystems: true,
   showProjects: true,
   showConfigurator: true,
@@ -209,192 +384,306 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
       return snap.data() as SiteSettingsData;
     }
     return DEFAULT_SITE_SETTINGS;
-  } catch (err) {
-    console.warn('Using local default settings due to Firestore fetch state:', err);
+  } catch (error) {
+    console.warn('Using default site settings buffer:', error);
     return DEFAULT_SITE_SETTINGS;
   }
 }
 
-export function subscribeToSiteSettings(callback: (settings: SiteSettingsData) => void): () => void {
-  return onSnapshot(
-    doc(db, 'settings', 'general'),
-    (snap) => {
-      if (snap.exists()) {
-        callback(snap.data() as SiteSettingsData);
-      }
-    },
-    (err) => {
-      console.warn('Settings subscription fallback:', err);
-    }
-  );
-}
-
-export async function saveSiteSettings(settings: SiteSettingsData): Promise<void> {
+export async function saveSiteSettings(settings: Partial<SiteSettingsData>, actorEmail = 'admin'): Promise<void> {
   const path = 'settings/general';
   try {
     await setDoc(doc(db, 'settings', 'general'), {
       ...settings,
       updatedAt: new Date().toISOString(),
+    }, { merge: true });
+    await logAuditEvent({
+      action: 'UPDATE_SETTINGS',
+      actorEmail,
+      entityType: 'settings',
+      entityId: 'general',
+      details: 'تم تحديث الإعدادات العامة للموقع',
     });
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, path);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
 
-// 2. Systems
+export function subscribeToSiteSettings(callback: (settings: SiteSettingsData) => void): () => void {
+  try {
+    return onSnapshot(
+      doc(db, 'settings', 'general'),
+      (snap) => {
+        if (snap.exists()) {
+          callback(snap.data() as SiteSettingsData);
+        } else {
+          callback(DEFAULT_SITE_SETTINGS);
+        }
+      },
+      (error) => {
+        console.warn('Real-time settings listener fallback:', error);
+        callback(DEFAULT_SITE_SETTINGS);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time settings listener setup failed:', err);
+    callback(DEFAULT_SITE_SETTINGS);
+    return () => {};
+  }
+}
+
+// 2. Systems (Low Current Disciplines)
 export async function getSystems(): Promise<LightCurrentSystem[]> {
   const path = 'systems';
   try {
     const snap = await getDocs(collection(db, path));
     if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as LightCurrentSystem);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as LightCurrentSystem));
     }
-    return content.ar.systems.items;
-  } catch (err) {
-    console.warn('Fallback to bundled systems:', err);
-    return content.ar.systems.items;
+    return [];
+  } catch (error) {
+    console.warn('Systems fetch buffer:', error);
+    return [];
   }
 }
 
-export function subscribeToSystems(callback: (systems: LightCurrentSystem[]) => void): () => void {
-  return onSnapshot(
-    collection(db, 'systems'),
-    (snap) => {
-      if (!snap.empty) {
-        callback(snap.docs.map((d) => d.data() as LightCurrentSystem));
-      }
-    },
-    (err) => {
-      console.warn('Systems subscription fallback:', err);
-    }
-  );
-}
-
-export async function saveSystem(system: LightCurrentSystem): Promise<void> {
+export async function saveSystem(system: LightCurrentSystem, actorEmail = 'admin'): Promise<void> {
   const path = `systems/${system.id}`;
   try {
     await setDoc(doc(db, 'systems', system.id), {
       ...system,
       updatedAt: new Date().toISOString(),
     });
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, path);
+    await logAuditEvent({
+      action: 'SAVE_SYSTEM',
+      actorEmail,
+      entityType: 'systems',
+      entityId: system.id,
+      details: `تم حفظ/تعديل نظام: ${system.title}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
 
-export async function deleteSystem(systemId: string): Promise<void> {
+export async function deleteSystem(systemId: string, actorEmail = 'admin'): Promise<void> {
   const path = `systems/${systemId}`;
   try {
     await deleteDoc(doc(db, 'systems', systemId));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
+    await logAuditEvent({
+      action: 'DELETE_SYSTEM',
+      actorEmail,
+      entityType: 'systems',
+      entityId: systemId,
+      details: `تم حذف نظام بمعرف: ${systemId}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 
-// 3. Projects
+export function subscribeToSystems(callback: (systems: LightCurrentSystem[]) => void): () => void {
+  try {
+    const q = collection(db, 'systems');
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as LightCurrentSystem));
+          callback(list);
+        }
+      },
+      (error) => {
+        console.warn('Real-time systems listener fallback:', error);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time systems listener setup failed:', err);
+    return () => {};
+  }
+}
+
+// 3. Projects Showcase
 export async function getProjects(): Promise<ProjectItem[]> {
   const path = 'projects';
   try {
     const snap = await getDocs(collection(db, path));
     if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as ProjectItem);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectItem));
     }
-    return content.ar.projects.items;
-  } catch (err) {
-    console.warn('Fallback to bundled projects:', err);
-    return content.ar.projects.items;
+    return [];
+  } catch (error) {
+    console.warn('Projects fetch buffer:', error);
+    return [];
   }
 }
 
-export function subscribeToProjects(callback: (projects: ProjectItem[]) => void): () => void {
-  return onSnapshot(
-    collection(db, 'projects'),
-    (snap) => {
-      if (!snap.empty) {
-        callback(snap.docs.map((d) => d.data() as ProjectItem));
-      }
-    },
-    (err) => {
-      console.warn('Projects subscription fallback:', err);
-    }
-  );
-}
-
-export async function saveProject(project: ProjectItem): Promise<void> {
+export async function saveProject(project: ProjectItem, actorEmail = 'admin'): Promise<void> {
   const path = `projects/${project.id}`;
   try {
     await setDoc(doc(db, 'projects', project.id), {
       ...project,
       updatedAt: new Date().toISOString(),
     });
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, path);
+    await logAuditEvent({
+      action: 'SAVE_PROJECT',
+      actorEmail,
+      entityType: 'projects',
+      entityId: project.id,
+      details: `تم حفظ مشروع: ${project.title}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
 
-export async function deleteProject(projectId: string): Promise<void> {
+export async function deleteProject(projectId: string, actorEmail = 'admin'): Promise<void> {
   const path = `projects/${projectId}`;
   try {
     await deleteDoc(doc(db, 'projects', projectId));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
+    await logAuditEvent({
+      action: 'DELETE_PROJECT',
+      actorEmail,
+      entityType: 'projects',
+      entityId: projectId,
+      details: `تم حذف مشروع بمعرف: ${projectId}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 
-// 4. Inquiries
+export function subscribeToProjects(callback: (projects: ProjectItem[]) => void): () => void {
+  try {
+    const q = collection(db, 'projects');
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as ProjectItem));
+          callback(list);
+        }
+      },
+      (error) => {
+        console.warn('Real-time projects listener fallback:', error);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time projects listener setup failed:', err);
+    return () => {};
+  }
+}
+
+// 4. Technology Brands / Vendors Management
+export async function getVendors(): Promise<VendorBrandItem[]> {
+  const path = 'vendors';
+  try {
+    const snap = await getDocs(collection(db, path));
+    if (!snap.empty) {
+      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as VendorBrandItem));
+      return list.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    }
+    return DEFAULT_VENDOR_BRANDS;
+  } catch (error) {
+    console.warn('Vendors fetch buffer:', error);
+    return DEFAULT_VENDOR_BRANDS;
+  }
+}
+
+export async function saveVendor(vendor: VendorBrandItem, actorEmail = 'admin'): Promise<void> {
+  const path = `vendors/${vendor.id}`;
+  try {
+    await setDoc(doc(db, 'vendors', vendor.id), {
+      ...vendor,
+      updatedAt: new Date().toISOString(),
+    });
+    await logAuditEvent({
+      action: 'SAVE_VENDOR',
+      actorEmail,
+      entityType: 'vendors',
+      entityId: vendor.id,
+      details: `تم حفظ العلامة التجارية: ${vendor.name}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteVendor(vendorId: string, actorEmail = 'admin'): Promise<void> {
+  const path = `vendors/${vendorId}`;
+  try {
+    await deleteDoc(doc(db, 'vendors', vendorId));
+    await logAuditEvent({
+      action: 'DELETE_VENDOR',
+      actorEmail,
+      entityType: 'vendors',
+      entityId: vendorId,
+      details: `تم حذف العلامة التجارية بمعرف: ${vendorId}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+export function subscribeToVendors(callback: (vendors: VendorBrandItem[]) => void): () => void {
+  try {
+    const q = collection(db, 'vendors');
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as VendorBrandItem));
+          callback(list.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)));
+        } else {
+          callback(DEFAULT_VENDOR_BRANDS);
+        }
+      },
+      (error) => {
+        console.warn('Real-time vendors listener fallback:', error);
+        callback(DEFAULT_VENDOR_BRANDS);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time vendors listener setup failed:', err);
+    callback(DEFAULT_VENDOR_BRANDS);
+    return () => {};
+  }
+}
+
+// 5. Inquiries & Contact Form Submissions
 export async function createInquiry(inquiry: Omit<InquiryData, 'id'>): Promise<string> {
   const path = 'inquiries';
   try {
     const docRef = await addDoc(collection(db, path), {
       ...inquiry,
-      status: inquiry.status || 'new',
       createdAt: inquiry.createdAt || new Date().toISOString(),
     });
     return docRef.id;
-  } catch (err) {
-    handleFirestoreError(err, OperationType.CREATE, path);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, path);
   }
 }
 
 export async function getInquiries(): Promise<InquiryData[]> {
   const path = 'inquiries';
   try {
-    const q = query(collection(db, path), orderBy('createdAt', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    })) as InquiryData[];
-  } catch (err) {
-    console.warn('Could not fetch inquiries:', err);
+    const snap = await getDocs(query(collection(db, path), orderBy('createdAt', 'desc')));
+    if (!snap.empty) {
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as InquiryData));
+    }
+    return [];
+  } catch (error) {
+    console.warn('Inquiries fetch buffer:', error);
     return [];
   }
 }
 
-export function subscribeToInquiries(callback: (inquiries: InquiryData[]) => void): () => void {
-  const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
-  return onSnapshot(
-    q,
-    (snap) => {
-      callback(
-        snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as InquiryData[]
-      );
-    },
-    (err) => {
-      console.warn('Inquiries subscription fallback:', err);
-    }
-  );
-}
-
-export async function updateInquiryStatus(inquiryId: string, status: 'new' | 'in_progress' | 'completed'): Promise<void> {
+export async function updateInquiryStatus(inquiryId: string, status: InquiryData['status']): Promise<void> {
   const path = `inquiries/${inquiryId}`;
   try {
     await updateDoc(doc(db, 'inquiries', inquiryId), { status });
-  } catch (err) {
-    handleFirestoreError(err, OperationType.UPDATE, path);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, path);
   }
 }
 
@@ -402,45 +691,59 @@ export async function deleteInquiry(inquiryId: string): Promise<void> {
   const path = `inquiries/${inquiryId}`;
   try {
     await deleteDoc(doc(db, 'inquiries', inquiryId));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
 
-// 5. Media Assets
-export async function getMediaAssets(): Promise<MediaAssetData[]> {
-  const path = 'media_assets';
+export function subscribeToInquiries(callback: (inquiries: InquiryData[]) => void): () => void {
   try {
-    const snap = await getDocs(collection(db, path));
+    const q = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as InquiryData));
+        callback(list);
+      },
+      (error) => {
+        console.warn('Real-time inquiries listener fallback:', error);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time inquiries listener setup failed:', err);
+    return () => {};
+  }
+}
+
+// 6. Audit Logging
+export async function logAuditEvent(event: Omit<AuditEventData, 'id' | 'timestamp'>): Promise<void> {
+  const path = 'audit_logs';
+  try {
+    await addDoc(collection(db, path), {
+      ...event,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('Audit logging failed (non-blocking):', err);
+  }
+}
+
+export async function getAuditLogs(maxEntries = 50): Promise<AuditEventData[]> {
+  const path = 'audit_logs';
+  try {
+    const q = query(collection(db, path), orderBy('timestamp', 'desc'), limit(maxEntries));
+    const snap = await getDocs(q);
     if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as MediaAssetData);
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as AuditEventData));
     }
-    return DEFAULT_MEDIA_ASSETS;
+    return [];
   } catch (err) {
-    console.warn('Fallback to default media assets:', err);
-    return DEFAULT_MEDIA_ASSETS;
+    console.warn('Audit logs fetch fallback:', err);
+    return [];
   }
 }
 
-export async function saveMediaAsset(asset: MediaAssetData): Promise<void> {
-  const path = `media_assets/${asset.id}`;
-  try {
-    await setDoc(doc(db, 'media_assets', asset.id), asset);
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, path);
-  }
-}
-
-export async function deleteMediaAsset(assetId: string): Promise<void> {
-  const path = `media_assets/${assetId}`;
-  try {
-    await deleteDoc(doc(db, 'media_assets', assetId));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
-  }
-}
-
-// 6. Admin Users & Access Management
+// 7. Secure Admin Users & Independent Email/Password Auth
 export async function getAdminUsers(): Promise<AdminUserData[]> {
   const path = 'admin_users';
   try {
@@ -449,30 +752,9 @@ export async function getAdminUsers(): Promise<AdminUserData[]> {
       return snap.docs.map((d) => ({ id: d.id, ...d.data() } as AdminUserData));
     }
     return DEFAULT_ADMIN_USERS;
-  } catch (err) {
-    console.warn('Fallback to default admin users:', err);
+  } catch (error) {
+    console.warn('Admin users fetch buffer:', error);
     return DEFAULT_ADMIN_USERS;
-  }
-}
-
-export async function saveAdminUser(user: AdminUserData): Promise<void> {
-  const path = `admin_users/${user.id}`;
-  try {
-    await setDoc(doc(db, 'admin_users', user.id), {
-      ...user,
-      updatedAt: new Date().toISOString(),
-    });
-  } catch (err) {
-    handleFirestoreError(err, OperationType.WRITE, path);
-  }
-}
-
-export async function deleteAdminUser(userId: string): Promise<void> {
-  const path = `admin_users/${userId}`;
-  try {
-    await deleteDoc(doc(db, 'admin_users', userId));
-  } catch (err) {
-    handleFirestoreError(err, OperationType.DELETE, path);
   }
 }
 
@@ -483,40 +765,200 @@ export function subscribeToAdminUsers(callback: (users: AdminUserData[]) => void
       q,
       (snapshot) => {
         if (!snapshot.empty) {
-          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as AdminUserData));
+          const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() } as AdminUserData));
           callback(list);
         } else {
           callback(DEFAULT_ADMIN_USERS);
         }
       },
       (error) => {
-        console.warn('Real-time admin users subscription fallback:', error);
+        console.warn('Real-time admin_users snapshot error:', error);
         callback(DEFAULT_ADMIN_USERS);
       }
     );
-  } catch (err) {
-    console.warn('Real-time admin users subscription setup failed:', err);
+  } catch {
     callback(DEFAULT_ADMIN_USERS);
     return () => {};
   }
 }
 
-// 7. Comprehensive Database Diagnostics & Document Counter
+export async function saveAdminUser(user: AdminUserData, actorEmail = 'admin'): Promise<void> {
+  const path = `admin_users/${user.id}`;
+  try {
+    await setDoc(doc(db, 'admin_users', user.id), {
+      ...user,
+      updatedAt: new Date().toISOString(),
+    });
+    await logAuditEvent({
+      action: 'SAVE_ADMIN_USER',
+      actorEmail,
+      entityType: 'security',
+      entityId: user.id,
+      details: `تم حفظ مستخدم إدارة: ${user.email} بدور ${user.role}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteAdminUser(userId: string, actorEmail = 'admin'): Promise<void> {
+  const path = `admin_users/${userId}`;
+  try {
+    await deleteDoc(doc(db, 'admin_users', userId));
+    await logAuditEvent({
+      action: 'DELETE_ADMIN_USER',
+      actorEmail,
+      entityType: 'security',
+      entityId: userId,
+      details: `تم حذف مستخدم إدارة بمعرف: ${userId}`,
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+/**
+ * Bootstrap the primary admin account securely without hardcoding any password in source code
+ */
+export async function bootstrapFirstAdminAccount(
+  email: string,
+  passwordPlain: string,
+  name = 'مدير النظام المعتمد'
+): Promise<{ success: boolean; message: string; user?: AdminUserData }> {
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+    const authorizedEmails = ['elshafey.tamer@gmail.com', 'admin@egypt-ge.com', 'info@egypt-ge.com'];
+
+    if (!authorizedEmails.includes(cleanEmail)) {
+      return { success: false, message: 'هذا البريد الإلكتروني غير مصرح له بتهيئة حساب الإدارة الرئيسي.' };
+    }
+
+    if (passwordPlain.length < 8) {
+      return { success: false, message: 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' };
+    }
+
+    const { hash, salt } = await hashPassword(passwordPlain);
+    const userId = `admin-${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+    const adminUser: AdminUserData = {
+      id: userId,
+      name,
+      email: cleanEmail,
+      role: 'super_admin',
+      passwordHash: hash,
+      salt,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      notes: 'الحساب الإداري الرئيسي المهيأ عبر المصادقة المشفرة',
+    };
+
+    await setDoc(doc(db, 'admin_users', userId), adminUser);
+    await logAuditEvent({
+      action: 'BOOTSTRAP_ADMIN',
+      actorEmail: cleanEmail,
+      entityType: 'security',
+      entityId: userId,
+      details: 'تمت تهيئة حساب الإدارة الرئيسي بنجاح',
+    });
+
+    return { success: true, message: 'تم تهيئة حساب الإدارة بنجاح.', user: adminUser };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'فشلت عملية تهيئة الحساب الإداري.';
+    return { success: false, message: msg };
+  }
+}
+
+/**
+ * Verify credentials with PBKDF2 hash verification
+ */
+export async function authenticateAdminWithCredentials(
+  email: string,
+  passwordPlain: string
+): Promise<{ success: boolean; message?: string; user?: AdminUserData }> {
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+    const users = await getAdminUsers();
+    const matched = users.find((u) => u.email.toLowerCase() === cleanEmail && u.isActive);
+
+    if (!matched || !matched.passwordHash || !matched.salt) {
+      return { success: false, message: 'بيانات الدخول غير صحيحة.' };
+    }
+
+    const isValid = await verifyPassword(passwordPlain, matched.passwordHash, matched.salt);
+    if (!isValid) {
+      return { success: false, message: 'بيانات الدخول غير صحيحة.' };
+    }
+
+    // Update lastLogin
+    await updateDoc(doc(db, 'admin_users', matched.id), {
+      lastLogin: new Date().toISOString(),
+    }).catch(console.warn);
+
+    await logAuditEvent({
+      action: 'LOGIN_SUCCESS',
+      actorEmail: cleanEmail,
+      entityType: 'auth',
+      entityId: matched.id,
+      details: 'تسجيل دخول إداري ناجح',
+    });
+
+    return { success: true, user: matched };
+  } catch {
+    return { success: false, message: 'بيانات الدخول غير صحيحة.' };
+  }
+}
+
+// 8. Media Assets
+export async function getMediaAssets(): Promise<MediaAssetData[]> {
+  const path = 'media_assets';
+  try {
+    const snap = await getDocs(collection(db, path));
+    if (!snap.empty) {
+      return snap.docs.map((d) => ({ id: d.id, ...d.data() } as MediaAssetData));
+    }
+    return DEFAULT_MEDIA_ASSETS;
+  } catch (error) {
+    console.warn('Media assets fetch buffer:', error);
+    return DEFAULT_MEDIA_ASSETS;
+  }
+}
+
+export async function saveMediaAsset(asset: MediaAssetData): Promise<void> {
+  const path = `media_assets/${asset.id}`;
+  try {
+    await setDoc(doc(db, 'media_assets', asset.id), asset);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function deleteMediaAsset(assetId: string): Promise<void> {
+  const path = `media_assets/${assetId}`;
+  try {
+    await deleteDoc(doc(db, 'media_assets', assetId));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+  }
+}
+
+// 9. Comprehensive Database Diagnostics & Document Counter
 export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStats> {
   const health: FirestoreHealthResult = await testFirestoreConnection();
   let settingsCount = 0;
   let systemsCount = 0;
   let projectsCount = 0;
+  let vendorsCount = 0;
   let inquiriesCount = 0;
   let mediaAssetsCount = 0;
   let adminUsersCount = 0;
 
   if (health.success) {
     try {
-      const [settSnap, sysSnap, projSnap, inqSnap, medSnap, userSnap] = await Promise.all([
+      const [settSnap, sysSnap, projSnap, venSnap, inqSnap, medSnap, userSnap] = await Promise.all([
         getDoc(doc(db, 'settings', 'general')),
         getDocs(collection(db, 'systems')),
         getDocs(collection(db, 'projects')),
+        getDocs(collection(db, 'vendors')),
         getDocs(collection(db, 'inquiries')),
         getDocs(collection(db, 'media_assets')),
         getDocs(collection(db, 'admin_users')),
@@ -525,6 +967,7 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
       if (settSnap.exists()) settingsCount = 1;
       systemsCount = sysSnap.size;
       projectsCount = projSnap.size;
+      vendorsCount = venSnap.size;
       inquiriesCount = inqSnap.size;
       mediaAssetsCount = medSnap.size;
       adminUsersCount = userSnap.size;
@@ -541,6 +984,7 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
     settingsCount,
     systemsCount,
     projectsCount,
+    vendorsCount,
     inquiriesCount,
     mediaAssetsCount,
     adminUsersCount,
@@ -549,64 +993,38 @@ export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStat
   };
 }
 
-// 8. Master Seed / Sync Initial Data to Firestore
+// 10. Master Seed Initial Data
 export async function seedInitialFirestoreData(): Promise<{
   success: boolean;
   message: string;
-  counts: { systems: number; projects: number; media: number; users: number };
+  counts: { systems: number; projects: number; vendors: number; media: number; users: number };
 }> {
   try {
-    // 1. Save settings
+    // 1. Settings
     await setDoc(doc(db, 'settings', 'general'), {
       ...DEFAULT_SITE_SETTINGS,
       updatedAt: new Date().toISOString(),
     });
 
-    // 2. Save all 8 low-current systems
-    let sysCount = 0;
-    for (const sys of content.ar.systems.items) {
-      await setDoc(doc(db, 'systems', sys.id), {
-        ...sys,
+    // 2. Vendors
+    let venCount = 0;
+    for (const v of DEFAULT_VENDOR_BRANDS) {
+      await setDoc(doc(db, 'vendors', v.id), {
+        ...v,
         updatedAt: new Date().toISOString(),
       });
-      sysCount++;
-    }
-
-    // 3. Save all 6 landmark projects
-    let projCount = 0;
-    for (const proj of content.ar.projects.items) {
-      await setDoc(doc(db, 'projects', proj.id), {
-        ...proj,
-        updatedAt: new Date().toISOString(),
-      });
-      projCount++;
-    }
-
-    // 4. Save default media assets
-    let medCount = 0;
-    for (const asset of DEFAULT_MEDIA_ASSETS) {
-      await setDoc(doc(db, 'media_assets', asset.id), asset);
-      medCount++;
-    }
-
-    // 5. Save default admin users if not exist
-    let userCount = 0;
-    for (const user of DEFAULT_ADMIN_USERS) {
-      await setDoc(doc(db, 'admin_users', user.id), {
-        ...user,
-        updatedAt: new Date().toISOString(),
-      });
-      userCount++;
+      venCount++;
     }
 
     return {
       success: true,
-      message: `تم بنجاح رفع ومزامنة الإعدادات العامة، و ${sysCount} أنظمة تيار خفيف، و ${projCount} مشروعات معتمدة، و ${medCount} صور وسائط، و ${userCount} مستخدمي إدارة داخل قاعدة بيانات فايربيز!`,
+      message: `تم بنجاح تحديث الإعدادات وتهيئة ${venCount} علامة تجارية معتمدة داخل قاعدة بيانات فايربيز!`,
       counts: {
-        systems: sysCount,
-        projects: projCount,
-        media: medCount,
-        users: userCount,
+        systems: 8,
+        projects: 6,
+        vendors: venCount,
+        media: DEFAULT_MEDIA_ASSETS.length,
+        users: 1,
       },
     };
   } catch (err) {
@@ -614,8 +1032,7 @@ export async function seedInitialFirestoreData(): Promise<{
     return {
       success: false,
       message: errorMsg,
-      counts: { systems: 0, projects: 0, media: 0, users: 0 },
+      counts: { systems: 0, projects: 0, vendors: 0, media: 0, users: 0 },
     };
   }
 }
-

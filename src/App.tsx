@@ -199,18 +199,18 @@ export default function App() {
           customLogoUrl={liveSettings?.logoUrl}
         />
 
-        {/* 2. Quantified Stats & Heritage Strip */}
+        {/* 2. Engineering Fundamentals Strip */}
         {liveSettings?.showStats !== false && (
           <StatsStrip currentLang={currentLang} />
         )}
 
-        {/* 3. About Us with 46-year Heritage & Interactive Timeline */}
+        {/* 3. About Us - Corporate Entity Established 2014 */}
         {liveSettings?.showAbout !== false && (
           <AboutSection currentLang={currentLang} />
         )}
 
-        {/* 4. Historical Track Record in Energy, Water & Biotechnology */}
-        {liveSettings?.showHeritage !== false && (
+        {/* 4. Optional Historical Projects (Off by default per Task 2, toggleable via Admin) */}
+        {liveSettings?.showHeritage === true && (
           <HeritageOverview currentLang={currentLang} />
         )}
 

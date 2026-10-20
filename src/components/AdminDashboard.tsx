@@ -89,6 +89,7 @@ import { LightCurrentSystem, ProjectItem, Language } from '../types';
 import { content, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE } from '../data/translations';
 import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE, DEFAULT_CCTV_IMAGE, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
 import { BrandLogo } from './BrandLogo';
+import { checkLoginRateLimit, recordFailedLoginAttempt, resetLoginRateLimit } from '../utils/security';
 
 interface AdminDashboardProps {
   currentLang: Language;
@@ -122,6 +123,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [passcode, setPasscode] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
+  const [loginMethod, setLoginMethod] = useState<'google' | 'passcode'>('google');
   const [activeTab, setActiveTab] = useState<AdminTab>('general');
   const [activeAdminUser, setActiveAdminUser] = useState<AdminUserData | null>(null);
 
@@ -299,6 +301,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const cleanPass = passcode.trim();
     const cleanEmail = loginEmail.trim().toLowerCase();
 
+    // Check rate limit first
+    const rateStatus = checkLoginRateLimit();
+    if (rateStatus.isLocked) {
+      setAuthError(`تم قفل محاولات الدخول مؤقتاً لحماية أمان البوابة. يرجى المحاولة بعد ${Math.ceil(rateStatus.lockoutRemainingSeconds / 60)} دقيقة.`);
+      return;
+    }
+
     if (!cleanPass) {
       setAuthError('يرجى إدخال كلمة المرور أو رمز الدخول المشفر');
       return;
@@ -323,6 +332,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     });
 
     if (isMaster || matchingUser) {
+      resetLoginRateLimit();
       setIsAdminUnlocked(true);
       sessionStorage.setItem('ege_admin_unlocked', 'true');
       if (matchingUser) {
@@ -337,7 +347,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       );
       ensureAdminSession().catch(console.warn);
     } else {
-      setAuthError('بيانات الدخول غير صحيحة، يرجى التأكد من البريد أو كلمة المرور');
+      const newStatus = recordFailedLoginAttempt();
+      if (newStatus.isLocked) {
+        setAuthError('تم تجاوز الحد الأقصى للمحاولات الخاطئة (5 محاولات). تم قفل الدخول مؤقتاً لمدة 15 دقيقة.');
+      } else {
+        setAuthError(`بيانات الدخول غير صحيحة. متبقي لديك ${newStatus.remainingAttempts} محاولات قبل القفل الأمني المؤقت.`);
+      }
     }
   };
 
@@ -805,47 +820,135 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* Login Options Container */}
-          <div className="space-y-5">
-            {/* 1. Google Sign In Button */}
+          {/* Dual Login Method Switcher */}
+          <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800 mb-5">
             <button
               type="button"
-              onClick={handleGoogleLogin}
-              className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group"
+              onClick={() => {
+                setLoginMethod('google');
+                setAuthError('');
+              }}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                loginMethod === 'google'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
             >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                />
-              </svg>
-              <span className="text-slate-900 group-hover:text-emerald-700 transition-colors">
-                تسجيل الدخول السريع باستخدام Google
-              </span>
+              <span>تسجيل الدخول عبر Google</span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoginMethod('passcode');
+                setAuthError('');
+              }}
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                loginMethod === 'passcode'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Key className="w-3.5 h-3.5 text-emerald-400" />
+              <span>رمز المرور المشفر</span>
+            </button>
+          </div>
 
-            {/* Corporate Security Verification Notice */}
-            <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-slate-300 leading-relaxed text-center space-y-2">
-              <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold">
-                <Lock className="w-4 h-4" />
-                <span>مصادقة أمنية موحدة عبر حساب Google المعتمد</span>
-              </div>
-              <p className="text-slate-400 text-[11px]">
-                بوابة الإدارة المركزية مخصصة للمهندسين والمشرفين المصرح لهم بموجب حسابات Google المؤسسية المعتمدة لشركة مصر للطاقة الخضراء.
-              </p>
-            </div>
+          {/* Login Options Container */}
+          <div className="space-y-5">
+            {loginMethod === 'google' ? (
+              <>
+                {/* 1. Google Sign In Button */}
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group"
+                >
+                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                    />
+                  </svg>
+                  <span className="text-slate-900 group-hover:text-emerald-700 transition-colors">
+                    تسجيل الدخول السريع باستخدام Google
+                  </span>
+                </button>
+
+                {/* Corporate Security Verification Notice */}
+                <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-slate-300 leading-relaxed text-center space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold">
+                    <Lock className="w-4 h-4" />
+                    <span>مصادقة أمنية موحدة عبر حساب Google المعتمد</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px]">
+                    مخصصة للمهندسين والمشرفين المصرح لهم بموجب حسابات Google المؤسسية لشركة مصر للطاقة الخضراء.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={handlePasscodeLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    البريد الإلكتروني (اختياري)
+                  </label>
+                  <input
+                    type="email"
+                    dir="ltr"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="admin@egypt-ge.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 font-mono transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    رمز المرور / كلمة السر المشفرة
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      dir="ltr"
+                      value={passcode}
+                      onChange={(e) => setPasscode(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 font-mono transition-colors pe-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 end-0 pe-3 flex items-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Key className="w-4 h-4" />
+                  <span>دخول إلى لوحة التحكم المركزية</span>
+                </button>
+
+                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 text-center">
+                  حماية متقدمة ضد التخمين (Rate Limiting: 5 محاولات كحد أقصى مع قفل أمني مؤقت).
+                </div>
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -1600,23 +1703,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {[
                   {
                     key: 'showStats' as keyof SiteSettingsData,
-                    title: 'شريط الأرقام القياسية والإحصائيات',
-                    badge: 'Stats Strip',
-                    desc: 'إحصائيات إنجاز الشركة الموثقة: 68+ مشروعاً منجزاً، 46+ عاماً من الخبرة الهندسية (1980–2026)، 92% نسبة رضا العملاء، 8+ تخصصات تيار خفيف.',
+                    title: 'شريط الركائز الهندسية والالتزامات',
+                    badge: 'Engineering Pillars',
+                    desc: 'المعايير الهندسية الأربعة: التخطيط المسبق، التوريد المعتمد مع شهادات الضمان، التنفيذ الميداني الاحترافي، واتفاقيات الدعم والصيانة (SLA).',
                     icon: TrendingUp,
                   },
                   {
                     key: 'showAbout' as keyof SiteSettingsData,
-                    title: 'من نحن وقصة الريادة الهندسية',
-                    badge: 'About & Timeline',
-                    desc: 'عرض نبذة الشركة، الرؤية والرسالة المعتمدة، والخط الزمني التفاعلي للمحطات التاريخية من 1980 حتى 2026.',
+                    title: 'من نحن والكيان الهندسي (تأسست 2014)',
+                    badge: 'About Us',
+                    desc: 'عرض نبذة الكيان المسجل عام 2014، الرؤية والرسالة، والمعايير الحاكمة لتنفيذ مشروعات أنظمة التيار الخفيف وتكنولوجيا المنشآت.',
                     icon: Compass,
                   },
                   {
                     key: 'showHeritage' as keyof SiteSettingsData,
-                    title: 'الجذور التاريخية (الطاقة والمياه والبيوتكنولوجي)',
-                    badge: 'Heritage Overview',
-                    desc: 'سجل الخبرات الميدانية التأسيسية في محطات الطاقة الشمسية، ضخ وتحلية المياه، ومزارع الجوجوبا واستصلاح الأراضي.',
+                    title: 'المشروعات البيئية (الطاقة والمياه والجوجوبا)',
+                    badge: 'Clean Energy & Water',
+                    desc: 'سجل مشروعات الشركة المنفذة في محطات الطاقة الشمسية، تحلية المياه والضخ الشمسي، والمشروعات الزراعية التنموية.',
                     icon: History,
                   },
                   {
@@ -2312,16 +2415,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white">الجذور التاريخية (الطاقة والمياه والبيوتك)</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">مشروعات الطاقة النظيفة والمياه</h2>
                   <p className="text-xs text-slate-400">
-                    استعراض مسيرة وخبرات الشركة العريقة الممتدة منذ 1980 في الطاقة النظيفة وتحلية المياه والجوجوبا
+                    استعراض مشروعات وسجل الشركة الميداني المنفذ في الطاقة الشمسية وتحلية المياه والجوجوبا
                   </p>
                 </div>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs text-slate-300 leading-relaxed">
                 <p>
-                  يتم استعراض هذا القسم في الصفحة الرئيسية كـ <strong>خلفية تاريخية عريقة</strong> تعزز ثقة العملاء في استقرار الشركة وخبراتها الهندسية الميدانية، دون التشويش على التركيز الأساسي في أنظمة التيار الخفيف.
+                  يتم استعراض هذا القسم كـ <strong>سجل مشروعات تخصصية</strong> يبرز قدرات الشركة التنفيذية الميدانية، مع بقاء التركيز الهندسي الأساسي على قطاع أنظمة التيار الخفيف.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
@@ -2348,7 +2451,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div>
                   <h2 className="text-lg sm:text-xl font-bold text-white">من نحن ورؤية ورسالة الشركة</h2>
                   <p className="text-xs text-slate-400">
-                    تأسست الشركة عام 2014 بالاعتماد على خبرات ممتدة منذ عام 1980
+                    شركة مصر للطاقة الخضراء ذ.م.م — تأسست عام 2014
                   </p>
                 </div>
                 <button

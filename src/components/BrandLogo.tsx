@@ -177,7 +177,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             {cleanEn} <span className="font-mono text-[10px]">L.L.C</span>
           </span>
           <span className="block text-[10px] text-slate-400 font-medium mt-0.5">
-            قطاع أنظمة التيار الخفيف والتكنولوجيا المتكاملة
+            قطاع أنظمة التيار الخفيف والحلول التكنولوجية
           </span>
         </div>
       </div>
@@ -198,7 +198,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           </span>
           <span className="text-slate-400 text-[10px] hidden sm:inline">•</span>
           <span className="text-emerald-400 text-[10px] hidden sm:inline font-normal">
-            قطاع التيار الخفيف
+            قطاع أنظمة التيار الخفيف والحلول التكنولوجية
           </span>
         </div>
       </div>
