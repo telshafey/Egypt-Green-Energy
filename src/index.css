@@ -2,8 +2,20 @@
 
 @layer base {
   :root {
-    --font-ar: 'Cairo', system-ui, -apple-system, sans-serif;
+    /* Integrated Bioluminescent Laboratory at Midnight Design Tokens */
+    --color-bioluminescent-lime: #cef79e;
+    --color-abyssal-ink: #222f30;
+    --color-bone-white: #f7f7f5;
+    --color-paper: #ffffff;
+    --color-graphite: #4d5757;
+    --color-lichen: #c9cbbe;
+    --color-tissue: #e7e8e1;
+    --color-frost: #eeeeee;
+    --color-void: #000000;
+
+    --font-ar: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif;
     --font-en: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
   }
 
   html[dir="rtl"] {
@@ -16,11 +28,36 @@
 
   html {
     scroll-behavior: smooth;
+    background-color: var(--color-abyssal-ink);
+    color: var(--color-abyssal-ink);
   }
 }
 
-/* Custom scrollbar and subtle selection */
+/* Custom scrollbar and bioluminescent selection */
 ::selection {
-  background-color: #059669;
-  color: #ffffff;
+  background-color: #cef79e;
+  color: #222f30;
+}
+
+/* Zero shadow discipline: completely flat architectural surfaces */
+.flat-card {
+  box-shadow: none !important;
+}
+
+/* Micro-surface 40x40 Arrow CTA */
+.btn-arrow-lime {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: #cef79e;
+  color: #222f30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.btn-arrow-lime:hover {
+  background-color: #bde88a;
+  transform: translateY(-1px);
 }

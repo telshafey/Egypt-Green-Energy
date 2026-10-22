@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 48" width="150" height="48">
+  <polygon points="10,36 24,10 38,36" fill="#005A9C" />
+  <polygon points="17,32 24,18 31,32" fill="#ffffff" />
+  <text x="46" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="19" font-weight="900" fill="#005A9C" letter-spacing="0.5">PANDUIT</text>
+</svg>

@@ -242,12 +242,12 @@ export const content: Record<Language, TranslationContent> = {
       projectsCount: "دراسة وتصميم",
       projectsLabel: "التخطيط الهندسي المسبق",
       projectsDesc: "إعداد المخططات وجداول الكميات بناءً على طبيعة المنشأة ومتطلبات العميل",
-      satisfactionRate: "توريد معتمد",
-      satisfactionLabel: "أجهزة ومكونات أصلية",
-      satisfactionDesc: "توريد مباشر من خلال الوكلاء والموزعين المعتمدين في مصر مع شهادات الضمان",
+      satisfactionRate: "توريد أصلي بضمان الوكيل",
+      satisfactionLabel: "مكونات وأجهزة أصلية",
+      satisfactionDesc: "توريد الأجهزة والكابلات من خلال الوكلاء والموزعين المعتمدين في مصر مع وثائق الضمان",
       heritageYears: "تركيب وبرمجة",
       heritageLabel: "تنفيذ ميداني احترافي",
-      heritageDesc: "تنفيذ التمديدات وإنهاء النهايات العصبية والبرمجة طبقاً للأصول الهندسية",
+      heritageDesc: "تنفيذ التمديدات وإنهاء وتوصيل أطراف الكابلات والبرمجة طبقاً للأصول الهندسية",
       systemsCount: "صيانة ودعم",
       systemsLabel: "اتفاقيات مستوى الخدمة (SLA)",
       systemsDesc: "زيارات فحص دورية ودعم فني مبرمج يضمن استقرار وكفاءة تشغيل الأنظمة"
@@ -306,7 +306,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "security",
           title: "أنظمة المراقبة التلفزيونية (CCTV)",
           subtitle: "كاميرات مراقبة شبكية IP وخوادم تسجيل رقمية NVR للمنشآت",
-          description: "دراسة وتصميم وتوريد وتركيب شبكات المراقبة التلفزيونية للمباني والمستودعات والمصانع. تشمل المنظومة الكاميرات الداخلية والخارجية، مسجلات الفيديو الشبكية، وسائط التخزين، وتجهيز غرف المراقبة المركزية.",
+          description: "تشمل خدماتنا في أنظمة المراقبة التلفزيونية دراسة المخططات المعمارية وتحديد زوايا الرؤية والتغطية المثلى للمنشآت الإدارية والصناعية والتجارية. نقوم بتوريد وتركيب كاميرات المراقبة الشبكية (IP Cameras) الداخلية والخارجية ذات الدقة المتوافقة مع احتياجات الموقع، إلى جانب وحدات التسجيل الشبكية (NVR) وخوادم التخزين وسويتشات نقل البيانات، مع تنظيم وتجهيز غرف المراقبة المركزية وإجراء الاختبارات التشغيلية لضمان استقرار البث والتسجيل الميداني.",
           features: [
             "دراسة زوايا الرؤية وتحديد مواقع الكاميرات وفق متطلبات التغطية الأمنية",
             "توريد كاميرات IP ثابتة ومتحركة (PTZ) مناسبة للظروف البيئية للموقع",
@@ -326,7 +326,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "safety",
           title: "أنظمة إنذار الحريق (Fire Alarm Systems)",
           subtitle: "لوحات تحكم معنونة وكواشف دخان وحرارة ومحطات إنذار صوتي",
-          description: "تصميم وتوريد وتركيب شبكات الكشف المبكر والإنذار عن الحريق لحماية المنشآت والأرواح. نراعي الكود المصري للحريق والمعايير الهندسية المنظمة لإجراءات السلامة.",
+          description: "نقوم بتصميم وتوريد وتركيب أنظمة إنذار الحريق الذكية والمعنونة لحماية المباني والمنشآت وفقًا لاشتراطات الكود المصري ومحددات السلامة العامة. يتضمن نطاق العمل توريد لوحات التحكم المعنونة، وتوزيع كواشف الدخان والحرارة، ومحطات النداء اليدوي، والسراين الصوتية والضوئية، وتمديد التوصيلات باستخدام كابلات مقاومة للحريق معتمدة، مع إمكانية ربط النظام مع المصاعد والتكييف المركزي لتطبيق إجراءات الطوارئ القياسية عند حدوث تنبيه.",
           features: [
             "لوحات إنذار حريق معنونة (Addressable) تتيح تحديد موقع التنبيه بدقة",
             "كواشف دخان، حرارة، وغازات متعددة الخصائص تلائم بيئات العمل المختلفة",
@@ -346,7 +346,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "security",
           title: "أنظمة التحكم في الدخول (Access Control)",
           subtitle: "بوابات مرور الأفراد وقارئات الكروت والبصمة والأقفال الكهرومغناطيسية",
-          description: "حلول تنظيم حركة الدخول والخروج وتأمين الأبواب والمناطق الحساسة بالمنشآت. تشمل المنظومة أقفال الأبواب، قارئات الدخول، بوابات المرور، وبرمجيات إدارة الصلاحيات.",
+          description: "نقدم حلولًا هندسية متكاملة للتحكم في الدخول وتنظيم حركة الأفراد والمركبات داخل المنشآت والمقرات الإدارية. يشمل نطاق العمل توريد وتركيب بوابات المرور السريعة (Speed Gates) والحواجز الدوارة، وأجهزة قراءة كروت الدخول المشفرة وقارئات البصمة، والأقفال الكهرومغناطيسية المناسبة لكافة الأبواب، مع تهيئة برمجيات الإدارة المركزية لضبط صلاحيات الدخول، ومتابعة سجلات الحركة، واستخراج التقارير التشغيلية المعتمدة لمديري المنشأة.",
           features: [
             "قارئات بصمة، كروت مشفرة RFID، ومحطات تعرف بيومترية",
             "أقفال كهرومغناطيسية ومغاليق كهربائية ملائمة لأنواع الأبواب المختلفة",
@@ -366,7 +366,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "connectivity",
           title: "أنظمة الكابلات الهيكلية والشبكات (Structured Cabling)",
           subtitle: "تمديدات شبكات البيانات Cat6 / Cat6A والروابط الضوئية وكبائن الخوادم",
-          description: "تأسيس البنية التحتية الفيزيائية لشبكات نقل البيانات والاتصالات داخل المنشآت. نقوم بتوريد وتمديد الكابلات، تنظيم وتجميع كبائن السيرفرات، واختبار نقاط الشبكة.",
+          description: "ننفذ البنية التحتية الفيزيائية لشبكات نقل البيانات والاتصالات بالمباني والمستودعات ومراكز البيانات. تتضمن الأعمال دراسة المسارات وحوامل الكابلات المعزولة، وتمديد كابلات الشبكات المعتمدة Cat6 و Cat6A، وتمديد ولحام كابلات الألياف الضوئية (Fiber Optic) للروابط الرئيسية، إلى جانب تركيب وتنظيم كبائن التوزيع والخوادم، وإنهاء وتوصيل أطراف الكابلات، وإجراء اختبارات القياس والاعتماد الفني لكل نقطة شبكة وتسليم نتائج الفحص الموثقة.",
           features: [
             "تمديد كابلات الشبكات النحاسية Cat6 و Cat6A المعتمدة داخل المسارات والمواسير",
             "تمديد ولحام كابلات الألياف الضوئية (Fiber Optic) للروابط العمودية والمسافات الطويلة",
@@ -386,7 +386,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "connectivity",
           title: "السنترالات والاتصالات الموحدة (IP PBX)",
           subtitle: "سنترالات IP للشركات وهواتف مكتبية شبكية وأنظمة الانتركم",
-          description: "حلول الاتصال الهاتفي الداخلي والخارجي للشركات والمؤسسات. توفير سنترالات شبكية تدعم الخطوط الأرضية والـ SIP Trunk، مع توزيع الهواتف المكتبية وبرمجة التحويلات.",
+          description: "نوفر حلول الاتصالات الهاتفية المؤسسية للمكاتب والشركات والمباني الإدارية عبر سنترالات رقمية حديثة تدعم بروتوكول SIP والربط الشبكي. يتضمن نطاق التوريد والتركيب وحدات السنترال الشبكي (IP PBX)، والهواتف المكتبية الرقمية، وأنظمة الانتركم الصوتي والمرئي للمداخل، مع برمجة شجرة الرد الآلي التفاعلي (IVR)، وتوزيع التحويلات الداخلية، وإعداد مجموعات الاتصال والبريد الصوتي، وربط الفروع البعيدة عبر قنوات الاتصال الآمنة.",
           features: [
             "سنترالات رقمية IP PBX تدعم التوسع وفق حجم العمل وعدد الموظفين",
             "هواتف مكتبية شبكية بشاشات عرض ومكبرات صوت رقمية واضحة",
@@ -406,7 +406,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "audio-bms",
           title: "أنظمة الإذاعة والنداء الداخلي (Public Address)",
           subtitle: "مكبرات صوت سقفية وحائطية، مضخمات صوت، ووحدات نداء متعددة المناطق",
-          description: "أنظمة الصوتيات المركزية للمباني الإدارية، المصانع، المستشفيات، والمجمعات التجارية لبث التعليمات والنداءات العامة، مع إمكانية الربط مع نظام إنذار الحريق لحالات الإخلاء.",
+          description: "نصمم وننفذ شبكات الإذاعة الداخلية والنداء الصوتي المركزي للمصانع والمستشفيات والمراكز اللوجستية والمباني متعددة الأدوار. تشمل الأعمال حسابات التوزيع الصوتي ومستويات الضوضاء لتحديد مواقع السماعات السقفية والحائطية وسماعات الهورن الخارجية، وتوريد مضخمات الصوت (Amplifiers) وخلاطات الإشارة وميكروفونات النداء المكتبي، مع إمكانية تقسيم المنشأة إلى مناطق صوتية مستقلة وربط النظام مع لوحة إنذار الحريق لإجراءات الإخلاء الصوتي المنظم.",
           features: [
             "توزيع سماعات سقفية وحائطية وهورن بحسب طبيعة كل فراغ ومستوى الضوضاء",
             "مكبرات صوت ومضخمات بقدرات تتناسب مع الأحمال الصوتية المحسوبة",
@@ -426,7 +426,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "audio-bms",
           title: "أنظمة إدارة المباني (BMS)",
           subtitle: "مراقبة والتحكم في التكييف والإنارة ولوحات التوزيع واستهلاك الطاقة",
-          description: "دمج ومراقبة الأنظمة الكهروميكانيكية في المنشأة عبر واجهة تحكم موحدة، بما يتيح متابعة تشغيل أجهزة التكييف والإنارة ومضخات المياه ولوحات الكهرباء، ورصد كفاءة استهلاك الطاقة.",
+          description: "تتيح حلول إدارة المباني (BMS) دمج ومراقبة الأنظمة الكهروميكانيكية للمنشأة عبر واجهة برمجية موحدة لمتابعة كفاءة التشغيل ورصد استهلاك الطاقة. يغطي نطاقنا توريد وبرمجة وحدات التحكم الرقمي المباشر (DDC)، وربط خطوط التكييف المركزي ووحدات مناولة الهواء، ومراقبة لوحات التوزيع الكهربائية ومضخات المياه، مع دعم البروتوكولات الهندسية القياسية مثل BACnet و Modbus لتوفير تنبيهات بالأعطال التشغيلية وتسهيل مهام فرق إدارة المرافق.",
           features: [
             "واجهة مراقبة رسومية توضح حالة المعدات والأدوار والإنذارات التشغيلية",
             "مراقبة قراءات درجات الحرارة والرطوبة ومستويات استهلاك الطاقة الكهربائية",
@@ -446,7 +446,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "maintenance",
           title: "عقود الصيانة واتفاقيات مستوى الخدمة (SLA)",
           subtitle: "صيانة وقائية دورية ودعم فني مبرمج لأنظمة التيار الخفيف",
-          description: "عقود صيانة سنوية مخصصة للمنشآت والشركات لضمان استقرار وجاهزية أنظمة التيار الخفيف. تشمل زيارات صيانة وقائية مجدولة، وفحص التوصيلات، والاستجابة للأعطال وفق شروط الاتفاقية.",
+          description: "نوفر عقود صيانة سنوية مخصصة للمنشآت والمؤسسات لضمان الجاهزية التشغيلية المستمرة لأنظمة التيار الخفيف بمختلف مكوناتها. يتضمن العقد تنفيذ زيارات صيانة وقائية مجدولة لفحص وتعديل الكاميرات وأجهزة التسجيل واللوحات، وتنظيف كواشف الدخان والعدسات، وفحص أطراف الكابلات، وتقديم الاستجابة الفنية لمعالجة الأعطال الطارئة وفق شروط وفترات اتفاقية مستوى الخدمة (SLA) المتفق عليها مع العميل، مع إصدار تقارير فنية موثقة لكل زيارة.",
           features: [
             "زيارات فحص دورية منتظمة للكاميرات واللوحات والكبائن والتوصيلات",
             "تنظيف الكواشف وعدسات الكاميرات وتحديث البرمجيات التشغيلية (Firmware)",
@@ -801,9 +801,9 @@ export const content: Record<Language, TranslationContent> = {
       projectsCount: "Engineering Design",
       projectsLabel: "Preliminary Project Planning",
       projectsDesc: "Preparing detailed layout drawings and BOQs tailored to facility nature and requirements",
-      satisfactionRate: "Genuine Sourcing",
+      satisfactionRate: "Genuine Sourcing with Warranty",
       satisfactionLabel: "Authorized Channels",
-      satisfactionDesc: "Equipment and cabling procured through authorized agents in Egypt with official warranties",
+      satisfactionDesc: "Equipment and cabling procured through authorized distribution channels in Egypt with official warranties",
       heritageYears: "Professional Delivery",
       heritageLabel: "Field Commissioning",
       heritageDesc: "Execution, cable termination, and programming performed according to engineering best practices",
@@ -865,7 +865,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "security",
           title: "Video Surveillance Systems (CCTV)",
           subtitle: "Network IP cameras, digital NVR recorders, and central control room equipment",
-          description: "Engineering design, procurement, installation, and commissioning of video surveillance networks for commercial towers, warehouses, and industrial plants. The scope covers indoor and outdoor cameras, NVRs, storage arrays, and control room monitors.",
+          description: "Our video surveillance engineering services encompass layout analysis and field-of-view planning to provide optimal monitoring coverage for administrative, industrial, and commercial facilities. We supply, install, and configure enterprise IP cameras, high-capacity Network Video Recorders (NVR), centralized storage arrays, and network distribution switches. The scope extends to equipping local control rooms, conducting functional handover testing, and providing operational staff training for seamless monitoring.",
           features: [
             "Site field-of-view assessment and camera placement based on surveillance requirements",
             "Fixed and PTZ IP cameras engineered for environmental site conditions",
@@ -885,7 +885,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "safety",
           title: "Fire Alarm Systems",
           subtitle: "Addressable control panels, smoke and heat detectors, and voice alarm sounders",
-          description: "Engineering design, supply, and installation of early detection fire alarm networks to safeguard lives and facilities, observing the Egyptian Fire Code and relevant life safety engineering standards.",
+          description: "We engineer, supply, and commission intelligent addressable fire alarm systems designed to protect facilities and life safety in compliance with Egyptian Fire Codes and regulatory standards. Our scope covers addressable main control panels, smoke and heat detectors, manual call points, audible and visual notification appliances, and fire-rated cabling infrastructure. We also integrate interface relays with HVAC dampers and elevators to execute automated safety shutdown sequences during emergency alerts.",
           features: [
             "Addressable fire alarm control panels identifying the precise location of alerts",
             "Multi-criteria smoke, thermal, and duct sensors suited to different facility zones",
@@ -905,7 +905,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "security",
           title: "Access Control Systems",
           subtitle: "Speed gates, RFID cards, biometric terminals, and electromagnetic locks",
-          description: "Solutions for managing facility ingress, egress, and securing sensitive zones (server rooms, executive suites, and archive vaults). The scope includes electronic locks, credential readers, turnstiles, and permission management software.",
+          description: "We provide comprehensive access control engineering solutions to regulate and monitor personnel and vehicle flow across commercial, corporate, and healthcare premises. Our scope covers speed gates, full-height turnstiles, RFID card readers, biometric terminals, and electromagnetic locks tailored to diverse architectural door types. All hardware integrates with centralized software platforms enabling administrative security teams to manage permission levels, audit entry logs, and generate compliant operational tracking reports.",
           features: [
             "Biometric facial recognition, fingerprint readers, and encrypted RFID credentials",
             "Electromagnetic locks, shear locks, and electric strikes suited for varied doors",
@@ -925,7 +925,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "connectivity",
           title: "Structured Cabling & Networks",
           subtitle: "Cat6/Cat6A copper data horizontal runs, vertical fiber backbones, and server racks",
-          description: "Deploying the physical Layer-1 network foundation for enterprise data transport and telecommunications. We engineer cable containment pathways, terminate data outlets, assemble distribution racks, and verify channel performance.",
+          description: "We construct structured cabling and physical network infrastructure for corporate offices, distribution warehouses, and server environments. Our technical team oversees pathway routing, cable tray isolation, and installation of certified copper Cat6 and Cat6A cables, alongside single-mode and multi-mode fiber optic backbones. Services include server rack assembly, cable termination and patching, cable dressing, and Fluke certification testing to deliver fully verified baseline transmission performance reports.",
           features: [
             "Pulling and terminating certified Cat6 and Cat6A UTP/FTP horizontal data cabling",
             "Laying and splicing single-mode and multi-mode fiber optic vertical backbones",
@@ -945,7 +945,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "connectivity",
           title: "IP PBX Telephony",
           subtitle: "Enterprise IP PBX appliances, IP desktop phones, and intercom gateways",
-          description: "Internal and external voice communication solutions for corporations, hotels, and campuses. We configure IP PBX servers supporting analog trunks and SIP lines, deploy IP handsets, and program dial plans.",
+          description: "We implement unified business telephony and enterprise communication networks utilizing scalable IP PBX platforms compatible with standard SIP architecture. The scope includes deploying enterprise PBX appliances, executive and staff IP desk phones, and video intercom stations for main access points. Our engineers configure multi-level interactive voice response (IVR) auto-attendants, extension routing rules, voicemail systems, call recording, and secure inter-branch voice connectivity across distributed sites.",
           features: [
             "Scalable IP PBX appliances tailored to organization seat count and trunk traffic",
             "High-definition voice desktop IP phones with color displays and programmable keys",
@@ -965,7 +965,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "audio-bms",
           title: "Public Address & Paging Systems",
           subtitle: "Ceiling and wall-mount speakers, amplifiers, and multi-zone acoustic paging",
-          description: "Centralized acoustic paging and background sound solutions for corporate headquarters, industrial plants, hospitals, and shopping centers, with emergency override integration linked to fire alarm panels.",
+          description: "We design and install centralized public address and acoustic paging networks tailored to the acoustic profiles of factories, logistics hubs, hospitals, and office complexes. Our engineering process assesses ambient noise levels to specify optimal placement of ceiling speakers, wall-mounted units, and outdoor horn projectors. Systems incorporate power amplifiers, zone selectors, and desktop paging microphones, with emergency override relays connecting directly to fire alarm systems for evacuation broadcasts.",
           features: [
             "Acoustic distribution utilizing ceiling, wall-mount, or weatherproof horn speakers",
             "Central 100V power amplifiers dimensioned to calculated acoustic speaker loads",
@@ -985,7 +985,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "audio-bms",
           title: "Building Management Systems (BMS)",
           subtitle: "Supervisory telemetry and control for HVAC, lighting, and power distribution",
-          description: "Converging electromechanical facility assets onto a single software management console, enabling facility engineers to monitor HVAC chillers, lighting schedules, water pumps, and track power efficiency.",
+          description: "Building Management Systems (BMS) consolidate building electromechanical services onto a centralized supervisory interface to track equipment performance and optimize energy efficiency. Our technical team engineers and programs Direct Digital Controllers (DDC) interfacing with central HVAC chillers, air handling units, lighting contactors, water pumps, and power metering panels. Operating on open BACnet and Modbus protocols, the system delivers real-time operational diagnostics, alarm notifications, and scheduling control for facilities engineers.",
           features: [
             "Graphical SCADA user interface displaying plant schematics, alarms, and temperatures",
             "Real-time monitoring of energy meters, diesel levels, and UPS battery backup banks",
@@ -1005,7 +1005,7 @@ export const content: Record<Language, TranslationContent> = {
           category: "maintenance",
           title: "SLA & Maintenance Contracts",
           subtitle: "Scheduled preventative inspections and dispatched technical support",
-          description: "Annual maintenance contracts customized for corporate facilities to ensure low-current infrastructure stability. The scope covers scheduled maintenance visits, cable inspections, and responsive support under agreed SLA terms.",
+          description: "We provide comprehensive annual maintenance contracts tailored for corporate facilities to preserve the stability and readiness of low-current infrastructure. Contractual coverage includes scheduled preventative maintenance visits to inspect cameras, recorders, and control panels, clean sensors and lenses, test cable terminations, and deploy technical field response for critical equipment faults strictly in accordance with agreed Service Level Agreement (SLA) terms. Every visit concludes with an official engineering report.",
           features: [
             "Regular preventative inspection visits for cameras, panels, racks, and terminations",
             "Sensor cleaning, camera lens realignment, and firmware security updates",

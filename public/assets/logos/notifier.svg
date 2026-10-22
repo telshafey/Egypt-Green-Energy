@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" width="160" height="48">
+  <path d="M12 28 C12 20 22 10 22 10 C22 10 32 20 32 28 C32 34 27 38 22 38 C17 38 12 34 12 28 Z" fill="#D32F2F" />
+  <path d="M18 30 C18 25 22 20 22 20 C22 20 26 25 26 30 C26 33 24 35 22 35 C20 35 18 33 18 30 Z" fill="#FFA000" />
+  <text x="40" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#0F172A" letter-spacing="0.5">NOTIFIER</text>
+</svg>

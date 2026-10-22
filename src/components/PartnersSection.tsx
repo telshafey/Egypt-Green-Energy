@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Language } from '../types';
+import { Language, VendorBrandItem } from '../types';
 import { content } from '../data/translations';
 import { Award, CheckCircle2, ShieldCheck, ExternalLink } from 'lucide-react';
 
 interface PartnersSectionProps {
   currentLang: Language;
+  customVendors?: VendorBrandItem[];
 }
 
 interface PartnerBrandItem {
@@ -15,26 +16,27 @@ interface PartnerBrandItem {
   specialtyEn: string;
   statusAr: string;
   statusEn: string;
+  logoUrl?: string;
   renderLogo: () => React.ReactNode;
 }
 
-export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang }) => {
+export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, customVendors }) => {
   const t = content[currentLang].partners;
   const isRtl = currentLang === 'ar';
   const [activeCategory, setActiveCategory] = useState<'all' | 'cctv' | 'fire' | 'networks' | 'access' | 'telecom'>('all');
 
-  const partners: PartnerBrandItem[] = [
+  const defaultPartners: PartnerBrandItem[] = [
     {
       id: 'hikvision',
       name: 'Hikvision',
       category: 'cctv',
-      specialtyAr: 'كاميرات مراقبة 4K وذكاء اصطناعي VCA',
-      specialtyEn: '4K IP Cameras & AI Analytics',
-      statusAr: 'مُدمج أنظمة وحلول',
-      statusEn: 'System Integrator',
+      specialtyAr: 'كاميرات مراقبة IP وخوادم NVR وتحليلات الفيديو',
+      specialtyEn: 'IP Cameras, NVRs & Video Analytics',
+      statusAr: 'أنظمة مراقبة مرئية',
+      statusEn: 'Video Surveillance',
+      logoUrl: '/assets/logos/hikvision.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Hikvision">
-          {/* Hikvision authentic stylized red + dark charcoal vector logo */}
+        <svg viewBox="0 0 160 48" className="h-8 w-auto max-w-[120px]" aria-label="Hikvision">
           <rect x="2" y="10" width="8" height="28" rx="2" fill="#D32F2F" />
           <path d="M18 10h6v11h14V10h6v28h-6V26H24v12h-6V10z" fill="#D32F2F" />
           <path d="M50 10h6v28h-6V10z" fill="#D32F2F" />
@@ -49,13 +51,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'dahua',
       name: 'Dahua Technology',
       category: 'cctv',
-      specialtyAr: 'أنظمة المراقبة والخوادم المرئية NVR',
-      specialtyEn: 'Video Surveillance & NVR Systems',
-      statusAr: 'توريد وبرمجة معتمدة',
-      statusEn: 'Authorized Solutions Integrator',
+      specialtyAr: 'أنظمة المراقبة والخوادم المرئية NVR للمنشآت',
+      specialtyEn: 'Video Surveillance & NVR Storage',
+      statusAr: 'مراقبة وخوادم NVR',
+      statusEn: 'Surveillance & Storage',
+      logoUrl: '/assets/logos/dahua.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Dahua">
-          {/* Dahua double red arcs emblem + typography */}
+        <svg viewBox="0 0 160 48" className="h-8 w-auto max-w-[120px]" aria-label="Dahua">
           <path d="M16 8 C28 8 36 16 36 24 C36 32 28 40 16 40 C10 40 4 36 2 30 C5 31 9 32 13 32 C21 32 27 27 27 24 C27 21 21 16 13 16 C9 16 5 17 2 18 C4 12 10 8 16 8 Z" fill="#E53935" />
           <circle cx="20" cy="24" r="5" fill="#E53935" />
           <text x="44" y="32" fontFamily="system-ui, -apple-system, sans-serif" fontSize="22" fontWeight="800" fill="#0F172A" letterSpacing="-0.5">
@@ -68,13 +70,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'cisco',
       name: 'Cisco Systems',
       category: 'networks',
-      specialtyAr: 'سويتشات الشبكات والـ Core Switches',
+      specialtyAr: 'سويتشات الشبكات وأجهزة التوجيه للشركات',
       specialtyEn: 'Enterprise Switches & Routing',
-      statusAr: 'حلول معتمدة',
-      statusEn: 'Enterprise Ready',
+      statusAr: 'شبكات وسويتشات',
+      statusEn: 'Enterprise Networks',
+      logoUrl: '/assets/logos/cisco.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 140 48" className="h-9 w-auto max-w-[115px]" aria-label="Cisco">
-          {/* Cisco iconic Bridge Soundwaves */}
+        <svg viewBox="0 0 140 48" className="h-8 w-auto max-w-[115px]" aria-label="Cisco">
           <g fill="#049FD9">
             <rect x="14" y="24" width="4" height="6" rx="2" />
             <rect x="24" y="16" width="4" height="14" rx="2" />
@@ -98,12 +100,12 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       name: 'Schneider Electric',
       category: 'networks',
       specialtyAr: 'أنظمة إدارة المباني BMS والكبائن',
-      specialtyEn: 'Smart BMS & Enterprise Racks',
-      statusAr: 'شريك تكاملي',
-      statusEn: 'Integration Partner',
+      specialtyEn: 'Smart BMS & Enterprise Enclosures',
+      statusAr: 'إدارة المباني BMS',
+      statusEn: 'Smart Building BMS',
+      logoUrl: '/assets/logos/schneider.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 170 48" className="h-9 w-auto max-w-[135px]" aria-label="Schneider Electric">
-          {/* Schneider Electric signature Green Flash + Typography */}
+        <svg viewBox="0 0 170 48" className="h-8 w-auto max-w-[130px]" aria-label="Schneider Electric">
           <circle cx="18" cy="24" r="14" fill="#3DCD58" />
           <path d="M14 14l8 10h-6l4 10-10-12h6z" fill="#ffffff" />
           <text x="38" y="22" fontFamily="system-ui, -apple-system, sans-serif" fontSize="13" fontWeight="bold" fill="#0F172A">
@@ -121,11 +123,11 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'fire',
       specialtyAr: 'أنظمة إنذار الحريق والتحكم الذكي',
       specialtyEn: 'Fire Alarm & Building Automation',
-      statusAr: 'معتمد دفاع مدني',
-      statusEn: 'Civil Defense Certified',
+      statusAr: 'أنظمة إنذار الحريق',
+      statusEn: 'Fire Alarm Systems',
+      logoUrl: '/assets/logos/honeywell.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Honeywell">
-          {/* Honeywell Bold Red Typography */}
+        <svg viewBox="0 0 160 48" className="h-8 w-auto max-w-[125px]" aria-label="Honeywell">
           <text x="80" y="33" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif" fontSize="24" fontWeight="900" fill="#EE3124" letterSpacing="-0.5">
             Honeywell
           </text>
@@ -136,13 +138,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'notifier',
       name: 'Notifier by Honeywell',
       category: 'fire',
-      specialtyAr: 'لوحات إنذار حريق معنونة ذكية',
-      specialtyEn: 'Addressable Fire Panels & NFPA 72',
-      statusAr: 'معتمد دولياً',
-      statusEn: 'NFPA 72 Rated',
+      specialtyAr: 'لوحات إنذار حريق معنونة وكواشف ذكية',
+      specialtyEn: 'Addressable Fire Panels & Detectors',
+      statusAr: 'إنذار حريق معنون',
+      statusEn: 'Addressable Fire Alarm',
+      logoUrl: '/assets/logos/notifier.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Notifier">
-          {/* Notifier Flame/Shield Emblem */}
+        <svg viewBox="0 0 160 48" className="h-8 w-auto max-w-[125px]" aria-label="Notifier">
           <path d="M12 28 C12 20 22 10 22 10 C22 10 32 20 32 28 C32 34 27 38 22 38 C17 38 12 34 12 28 Z" fill="#D32F2F" />
           <path d="M18 30 C18 25 22 20 22 20 C22 20 26 25 26 30 C26 33 24 35 22 35 C20 35 18 33 18 30 Z" fill="#FFA000" />
           <text x="40" y="31" fontFamily="system-ui, -apple-system, sans-serif" fontSize="18" fontWeight="800" fill="#0F172A" letterSpacing="0.5">
@@ -157,11 +159,11 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'networks',
       specialtyAr: 'كابلات شبكات Cat6A ومسارات الداتا',
       specialtyEn: 'Structured Cabling & Containment',
-      statusAr: 'مواصفة قياسية',
-      statusEn: 'TIA-568 Compliant',
+      statusAr: 'كابلات وبنية شبكات',
+      statusEn: 'Structured Cabling',
+      logoUrl: '/assets/logos/legrand.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 150 48" className="h-9 w-auto max-w-[120px]" aria-label="Legrand">
-          {/* Legrand Red Square Mark */}
+        <svg viewBox="0 0 150 48" className="h-8 w-auto max-w-[115px]" aria-label="Legrand">
           <rect x="8" y="10" width="28" height="28" rx="4" fill="#E53935" />
           <path d="M15 16h5v12h9v5H15V16z" fill="#ffffff" />
           <text x="44" y="32" fontFamily="system-ui, -apple-system, sans-serif" fontSize="20" fontWeight="bold" fill="#0F172A">
@@ -176,11 +178,11 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'networks',
       specialtyAr: 'كبائن خوادم وكابلات ألياف ضوئية',
       specialtyEn: 'Server Racks & Fiber Backbones',
-      statusAr: 'جاهزية الداتا سنتر',
-      statusEn: 'Data Center Grade',
+      statusAr: 'كبائن وروابط ألياف',
+      statusEn: 'Racks & Fiber',
+      logoUrl: '/assets/logos/panduit.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 150 48" className="h-9 w-auto max-w-[120px]" aria-label="Panduit">
-          {/* Panduit Corporate Triangle Logo */}
+        <svg viewBox="0 0 150 48" className="h-8 w-auto max-w-[115px]" aria-label="Panduit">
           <polygon points="10,36 24,10 38,36" fill="#005A9C" />
           <polygon points="17,32 24,18 31,32" fill="#ffffff" />
           <text x="46" y="32" fontFamily="system-ui, -apple-system, sans-serif" fontSize="19" fontWeight="900" fill="#005A9C" letterSpacing="0.5">
@@ -193,13 +195,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'zkteco',
       name: 'ZKTeco',
       category: 'access',
-      specialtyAr: 'بوابات مرور أفراد وبصمة وجه',
-      specialtyEn: 'Biometric Turnstiles & Access Control',
-      statusAr: 'توريد وتركيب معتمد',
-      statusEn: 'Turnkey Solution',
+      specialtyAr: 'بوابات مرور أفراد وقارئات تحكم بالدخول',
+      specialtyEn: 'Turnstiles & Access Control Readers',
+      statusAr: 'بوابات وتحكم بالدخول',
+      statusEn: 'Access & Turnstiles',
+      logoUrl: '/assets/logos/zkteco.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 150 48" className="h-9 w-auto max-w-[120px]" aria-label="ZKTeco">
-          {/* ZKTeco Green Shield Emblem */}
+        <svg viewBox="0 0 150 48" className="h-8 w-auto max-w-[115px]" aria-label="ZKTeco">
           <circle cx="20" cy="24" r="14" fill="#7CB342" />
           <path d="M13 24l5 5 10-10" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           <text x="42" y="31" fontFamily="system-ui, -apple-system, sans-serif" fontSize="20" fontWeight="bold" fill="#33691E">
@@ -212,13 +214,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'suprema',
       name: 'Suprema',
       category: 'access',
-      specialtyAr: 'أنظمة تحكم في الأبواب فائقة الدقة',
-      specialtyEn: 'High-Security Biometrics & RFID',
-      statusAr: 'أعلى اعتماد أمني',
-      statusEn: 'High Security Tier',
+      specialtyAr: 'أنظمة تحكم متطورة في الأبواب والمداخل',
+      specialtyEn: 'Biometric Access Control & RFID',
+      statusAr: 'أجهزة تحكم بيومترية',
+      statusEn: 'Biometric Access',
+      logoUrl: '/assets/logos/suprema.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 150 48" className="h-9 w-auto max-w-[120px]" aria-label="Suprema">
-          {/* Suprema Red Biometric Wave */}
+        <svg viewBox="0 0 150 48" className="h-8 w-auto max-w-[115px]" aria-label="Suprema">
           <circle cx="18" cy="24" r="12" fill="none" stroke="#D32F2F" strokeWidth="3" />
           <circle cx="18" cy="24" r="6" fill="#D32F2F" />
           <text x="36" y="32" fontFamily="system-ui, -apple-system, sans-serif" fontSize="19" fontWeight="800" fill="#0F172A" letterSpacing="0.5">
@@ -233,11 +235,11 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       category: 'telecom',
       specialtyAr: 'سنترالات IP PBX وهواتف شبكية',
       specialtyEn: 'IP PBX & Unified Communications',
-      statusAr: 'حلول اتصالات ذكية',
-      statusEn: 'VoIP Telecom Leader',
+      statusAr: 'سنترالات وهواتف IP',
+      statusEn: 'IP PBX Telephony',
+      logoUrl: '/assets/logos/grandstream.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 160 48" className="h-9 w-auto max-w-[130px]" aria-label="Grandstream">
-          {/* Grandstream Waves Emblem */}
+        <svg viewBox="0 0 160 48" className="h-8 w-auto max-w-[125px]" aria-label="Grandstream">
           <circle cx="18" cy="24" r="13" fill="#0288D1" />
           <path d="M12 24c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
           <circle cx="18" cy="24" r="2.5" fill="#ffffff" />
@@ -254,13 +256,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
       id: 'yealink',
       name: 'Yealink',
       category: 'telecom',
-      specialtyAr: 'هواتف المكاتب وأنظمة الفيديو كونفرانس',
-      specialtyEn: 'Enterprise IP Phones & Video Teams',
-      statusAr: 'معدات أصلية معتمدة',
-      statusEn: 'Enterprise Certified',
+      specialtyAr: 'هواتف المكاتب وأنظمة المؤتمرات الصوتية',
+      specialtyEn: 'Enterprise IP Phones & Conferencing',
+      statusAr: 'هواتف شبكية ومؤتمرات',
+      statusEn: 'IP Telephony',
+      logoUrl: '/assets/logos/yealink.svg',
       renderLogo: () => (
-        <svg viewBox="0 0 150 48" className="h-9 w-auto max-w-[120px]" aria-label="Yealink">
-          {/* Yealink Green Mark */}
+        <svg viewBox="0 0 150 48" className="h-8 w-auto max-w-[115px]" aria-label="Yealink">
           <circle cx="16" cy="20" r="5" fill="#43A047" />
           <circle cx="28" cy="28" r="5" fill="#43A047" />
           <line x1="16" y1="20" x2="28" y2="28" stroke="#43A047" strokeWidth="2.5" />
@@ -272,145 +274,121 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang })
     },
   ];
 
+  // Merge custom vendors from Firestore if available
+  const activeCustomVendors = customVendors ? customVendors.filter((v) => v.isActive !== false) : [];
+
+  const effectivePartners = activeCustomVendors.length > 0
+    ? activeCustomVendors.map((cv) => {
+        const fallback = defaultPartners.find((dp) => dp.id === cv.id || dp.name.toLowerCase() === cv.name.toLowerCase());
+        return {
+          id: cv.id,
+          name: cv.name,
+          category: (cv.category as PartnerBrandItem['category']) || 'cctv',
+          specialtyAr: cv.descriptionAr || fallback?.specialtyAr || 'حلول وأنظمة متكاملة',
+          specialtyEn: cv.descriptionEn || fallback?.specialtyEn || 'Integrated Systems',
+          statusAr: fallback?.statusAr || 'أنظمة تيار خفيف',
+          statusEn: fallback?.statusEn || 'Low Current Systems',
+          logoUrl: cv.logoUrl || fallback?.logoUrl || `/assets/logos/${cv.id}.svg`,
+          renderLogo: fallback?.renderLogo || (() => (
+            <span className="text-sm font-bold text-slate-700">{cv.name}</span>
+          )),
+        };
+      })
+    : defaultPartners;
+
   const filteredPartners = activeCategory === 'all'
-    ? partners
-    : partners.filter((p) => p.category === activeCategory);
+    ? effectivePartners
+    : effectivePartners.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="py-16 sm:py-20 bg-slate-50/50 border-b border-slate-200 overflow-hidden">
+    <section className="py-16 sm:py-20 bg-[#f7f7f5] text-[#222f30] border-b border-[#c9cbbe] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">
-            <Award className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-medium text-[#4d5757] uppercase tracking-wider mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
             <span>{t.sectionKicker}</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-3">
+          <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#222f30] mb-3">
             {t.heading}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-[#4d5757] leading-relaxed font-normal">
             {t.subheading}
           </p>
         </div>
 
-        {/* Filter Segmented Controls */}
-        <div className="flex items-center justify-center flex-wrap gap-2 mb-10">
-          <button
-            onClick={() => setActiveCategory('all')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'all'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'جميع الشركاء (12)' : 'All Partners (12)'}
-          </button>
-          <button
-            onClick={() => setActiveCategory('cctv')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'cctv'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'المراقبة والأمن' : 'CCTV & Security'}
-          </button>
-          <button
-            onClick={() => setActiveCategory('fire')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'fire'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'إنذار الحريق' : 'Fire Alarm'}
-          </button>
-          <button
-            onClick={() => setActiveCategory('networks')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'networks'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'الشبكات والـ BMS' : 'Networks & BMS'}
-          </button>
-          <button
-            onClick={() => setActiveCategory('access')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'access'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'التحكم بالدخول' : 'Access Control'}
-          </button>
-          <button
-            onClick={() => setActiveCategory('telecom')}
-            className={`px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-all cursor-pointer ${
-              activeCategory === 'telecom'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-            }`}
-          >
-            {currentLang === 'ar' ? 'السنترالات والاتصالات' : 'IP Telephony'}
-          </button>
+        {/* Filter Segmented Controls: On #e7e8e1 with #c9cbbe border */}
+        <div className="flex items-center justify-center flex-wrap gap-1.5 mb-10">
+          {[
+            { id: 'all', label: currentLang === 'ar' ? 'جميع العلامات التجارية' : 'All Brands' },
+            { id: 'cctv', label: currentLang === 'ar' ? 'المراقبة والأمن' : 'CCTV & Security' },
+            { id: 'fire', label: currentLang === 'ar' ? 'إنذار الحريق' : 'Fire Alarm' },
+            { id: 'networks', label: currentLang === 'ar' ? 'الشبكات والـ BMS' : 'Networks & BMS' },
+            { id: 'access', label: currentLang === 'ar' ? 'التحكم بالدخول' : 'Access Control' },
+            { id: 'telecom', label: currentLang === 'ar' ? 'السنترالات والاتصالات' : 'IP Telephony' },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id as any)}
+              className={`px-3.5 py-1.5 text-xs font-mono font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                activeCategory === cat.id
+                  ? 'bg-white text-[#222f30] font-semibold border border-[#c9cbbe]'
+                  : 'bg-[#e7e8e1] text-[#4d5757] hover:text-[#222f30] border border-transparent'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
 
-        {/* Brand Grid: LOGO STRICTLY POSITIONED ON TOP, NAME UNDERNEATH */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
+        {/* Brand Grid: Flat Paper White Cards with 1px #c9cbbe hairline border */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {filteredPartners.map((brand) => (
             <div
               key={brand.id}
-              className="flex flex-col items-center justify-between p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition-all group text-center"
+              className="flex flex-col items-center justify-between p-4 sm:p-5 rounded-2xl bg-white border border-[#c9cbbe] hover:border-[#4d5757] transition-all flat-card text-center"
             >
-              {/* 1. TOP ELEMENT: Crisp, Clean Logo Box Centered On Top */}
-              <div className="w-full h-16 sm:h-18 flex items-center justify-center p-2 rounded-xl bg-slate-50 group-hover:bg-emerald-50/50 border border-slate-100 group-hover:border-emerald-200 transition-colors mb-3.5 overflow-hidden">
-                {brand.renderLogo()}
+              {/* 1. Uniform Neutral Logo Box - Object Fit Contain */}
+              <div className="w-full h-16 sm:h-18 flex items-center justify-center p-2 rounded-xl bg-[#f7f7f5] border border-[#c9cbbe] mb-3.5 overflow-hidden">
+                {'logoUrl' in brand && brand.logoUrl ? (
+                  <img
+                    src={brand.logoUrl}
+                    alt={brand.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                ) : (
+                  brand.renderLogo()
+                )}
               </div>
 
-              {/* 2. MIDDLE ELEMENT: Brand Name Positioned Directly Below Logo */}
+              {/* 2. Brand Name */}
               <div className="w-full">
-                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors tracking-tight">
+                <h3 className="text-xs sm:text-sm font-semibold text-[#222f30] tracking-tight">
                   {brand.name}
                 </h3>
 
-                {/* 3. Specialty Description Underneath */}
-                <p className="text-[11px] sm:text-xs text-slate-700 font-medium leading-snug mt-1.5 line-clamp-2">
+                {/* 3. Specialty Description */}
+                <p className="text-[11px] text-[#4d5757] font-normal leading-snug mt-1.5 line-clamp-2">
                   {currentLang === 'ar' ? brand.specialtyAr : brand.specialtyEn}
                 </p>
               </div>
 
-              {/* 4. Verified Tier Tag At Bottom */}
-              <div className="mt-3.5 pt-2.5 border-t border-slate-100 w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-emerald-700">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+              {/* 4. Category Tag At Bottom */}
+              <div className="mt-3.5 pt-2.5 border-t border-[#c9cbbe] w-full flex items-center justify-center gap-1 text-[10px] font-mono text-[#4d5757]">
                 <span>{currentLang === 'ar' ? brand.statusAr : brand.statusEn}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Engineering Integrity & System Integrator Transparency Box */}
-        <div className="mt-12 p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-800 shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-950">
-                {currentLang === 'ar' ? 'إقرار المصداقية والصفة التعاقدية (System Integrator)' : 'System Integrator Transparency & Warranty Protocol'}
-              </h3>
-            </div>
-            <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-              {currentLang === 'ar' ? 'ضمان رسمي 100% عبر الوكلاء في مصر' : '100% Genuine Authorized Agency Channels'}
-            </span>
-          </div>
-
-          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal">
+        {/* Concise Vendor Integration Statement (P0-5) */}
+        <div className="mt-10 p-5 sm:p-6 rounded-2xl bg-white border border-[#c9cbbe] flat-card text-center">
+          <p className="text-xs sm:text-sm text-[#4d5757] leading-relaxed font-normal max-w-3xl mx-auto">
             {currentLang === 'ar'
-              ? 'توضح شركة مصر للطاقة الخضراء ذ.م.م (قطاع أنظمة التيار الخفيف) لعملائها الكرام وشركات المقاولات والاستشاريين أنها تعمل كـ مُدمج أنظمة وحلول هندسية متكاملة (System Integrator). نقوم بدراسة المخططات الهندسية وتصميم وتوريد وتركيب وبرمجة حلول هذه العلامات العالمية المرموقة، حيث يتم توريد كافة الأجهزة واللوحات والكابلات جديدة وأصلية بالكامل عبر الوكلاء والموزعين الرسميين المعتمدين في جمهورية مصر العربية، مشمولة بالضمان الرسمي المعتمد، شهادات المنشأ والاختبار، والدعم الفني المباشر وفقاً لاشتراطات الكود المصري والدفاع المدني والجهاز القومي لتنظيم الاتصالات (NTRA).'
-              : 'Egypt Green Energy L.L.C (Low Current & ELV Systems Division) explicitly declares to our clients, main contractors, and engineering consultants that we operate as a professional System Integrator. We engineer, procure, install, program, and maintain systems utilizing products from these world-class manufacturers. All hardware, panels, and cables are procured 100% genuine and factory-sealed through authorized distribution channels and official agents in Egypt, backed by manufacturer-authorized warranties, certificates of origin, and compliance with Egyptian Civil Defense and NTRA standards.'}
+              ? 'نعمل على اختيار وتوريد ودمج أنظمة من علامات تجارية متنوعة وفق المتطلبات الفنية لكل مشروع، مع مراعاة توافر المنتجات وشروط الضمان الخاصة بالموردين.'
+              : 'We select, procure, and integrate systems from various brands according to each project\'s technical requirements, taking into account product availability and suppliers\' warranty terms.'}
           </p>
         </div>
 

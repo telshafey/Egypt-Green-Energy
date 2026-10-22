@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" width="170" height="48">
+  <circle cx="18" cy="24" r="14" fill="#3DCD58" />
+  <path d="M14 14l8 10h-6l4 10-10-12h6z" fill="#ffffff" />
+  <text x="38" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="bold" fill="#0F172A">Schneider</text>
+  <text x="38" y="34" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#3DCD58" letter-spacing="1">Electric</text>
+</svg>

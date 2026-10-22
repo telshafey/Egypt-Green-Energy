@@ -25,8 +25,10 @@ import {
   subscribeToSystems,
   getProjects,
   subscribeToProjects,
+  getVendors,
+  subscribeToVendors,
 } from './services/firebaseService';
-import { LightCurrentSystem, ProjectItem } from './types';
+import { LightCurrentSystem, ProjectItem, VendorBrandItem } from './types';
 
 // Obscure, non-guessable admin portal slug without any hash
 export const ADMIN_SECRET_SLUG = 'portal-ege-8492';
@@ -41,6 +43,7 @@ export default function App() {
   const [liveSettings, setLiveSettings] = useState<SiteSettingsData | null>(null);
   const [liveSystems, setLiveSystems] = useState<LightCurrentSystem[] | null>(null);
   const [liveProjects, setLiveProjects] = useState<ProjectItem[] | null>(null);
+  const [liveVendors, setLiveVendors] = useState<VendorBrandItem[] | null>(null);
 
   // Path routing without hash - check on initial load & popstate
   useEffect(() => {
@@ -84,6 +87,7 @@ export default function App() {
     getSiteSettings().then(setLiveSettings).catch(console.warn);
     getSystems().then((s) => s.length > 0 && setLiveSystems(s)).catch(console.warn);
     getProjects().then((p) => p.length > 0 && setLiveProjects(p)).catch(console.warn);
+    getVendors().then((v) => v.length > 0 && setLiveVendors(v)).catch(console.warn);
 
     // Real-time Firestore subscriptions
     const unsubSettings = subscribeToSiteSettings((s) => setLiveSettings(s));
@@ -93,11 +97,15 @@ export default function App() {
     const unsubProjects = subscribeToProjects((projs) => {
       if (projs && projs.length > 0) setLiveProjects(projs);
     });
+    const unsubVendors = subscribeToVendors((vens) => {
+      if (vens && vens.length > 0) setLiveVendors(vens);
+    });
 
     return () => {
       unsubSettings();
       unsubSystems();
       unsubProjects();
+      unsubVendors();
     };
   }, []);
 
@@ -245,7 +253,10 @@ export default function App() {
 
         {/* 8. Technology Partners & Certified Vendors */}
         {liveSettings?.showPartners !== false && (
-          <PartnersSection currentLang={currentLang} />
+          <PartnersSection
+            currentLang={currentLang}
+            customVendors={liveVendors || undefined}
+          />
         )}
 
         {/* 9. Engineering Contact Section with Validation, WhatsApp, and Nasr City Location */}

@@ -84,8 +84,13 @@ import {
   subscribeToInquiries,
   subscribeToSystems,
   subscribeToProjects,
+  getVendors,
+  saveVendor,
+  deleteVendor,
+  subscribeToVendors,
+  DEFAULT_VENDOR_BRANDS,
 } from '../services/firebaseService';
-import { LightCurrentSystem, ProjectItem, Language } from '../types';
+import { LightCurrentSystem, ProjectItem, Language, VendorBrandItem } from '../types';
 import { content, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE } from '../data/translations';
 import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE, DEFAULT_CCTV_IMAGE, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
 import { BrandLogo } from './BrandLogo';
@@ -102,6 +107,7 @@ type AdminTab =
   | 'visibility'
   | 'systems'
   | 'projects'
+  | 'vendors'
   | 'heritage'
   | 'about'
   | 'media'
@@ -178,6 +184,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newMediaTitle, setNewMediaTitle] = useState<string>('');
   const [newMediaCategory, setNewMediaCategory] = useState<string>('cctv');
 
+  // Vendor Brands Management States
+  const [vendors, setVendors] = useState<VendorBrandItem[]>(DEFAULT_VENDOR_BRANDS);
+  const [editingVendor, setEditingVendor] = useState<VendorBrandItem | null>(null);
+  const [isAddingVendor, setIsAddingVendor] = useState<boolean>(false);
+  const [vendorCategoryFilter, setVendorCategoryFilter] = useState<string>('all');
+  const [newVendorForm, setNewVendorForm] = useState<{
+    name: string;
+    category: VendorBrandItem['category'];
+    logoUrl: string;
+    websiteUrl: string;
+    descriptionAr: string;
+    descriptionEn: string;
+    displayOrder: number;
+    isActive: boolean;
+  }>({
+    name: '',
+    category: 'cctv',
+    logoUrl: '',
+    websiteUrl: '',
+    descriptionAr: '',
+    descriptionEn: '',
+    displayOrder: 1,
+    isActive: true,
+  });
+
   // Live Database Diagnostics State
   const [dbStats, setDbStats] = useState<FirestoreDatabaseStats | null>(null);
   const [isPingingDb, setIsPingingDb] = useState<boolean>(false);
@@ -240,6 +271,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   useEffect(() => {
     let unsubInquiries: (() => void) | undefined;
     let unsubUsers: (() => void) | undefined;
+    let unsubVendors: (() => void) | undefined;
 
     async function loadData() {
       setIsLoading(true);
@@ -250,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         // Fetch live database statistics
         getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
 
-        const [loadedSettings, loadedSystems, loadedProjects, loadedMedia, loadedInquiries, loadedUsers] =
+        const [loadedSettings, loadedSystems, loadedProjects, loadedMedia, loadedInquiries, loadedUsers, loadedVendors] =
           await Promise.all([
             getSiteSettings(),
             getSystems(),
@@ -258,6 +290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             getMediaAssets(),
             getInquiries(),
             getAdminUsers(),
+            getVendors(),
           ]);
 
         setSettings(loadedSettings);
@@ -268,6 +301,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         if (loadedMedia.length > 0) setMediaAssets(loadedMedia);
         setInquiries(loadedInquiries);
         if (loadedUsers.length > 0) setAdminUsers(loadedUsers);
+        if (loadedVendors.length > 0) setVendors(loadedVendors);
 
         // Subscribe to live incoming customer inquiries
         unsubInquiries = subscribeToInquiries((inqs) => {
@@ -277,6 +311,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         // Subscribe to live admin users list
         unsubUsers = subscribeToAdminUsers((uList) => {
           if (uList.length > 0) setAdminUsers(uList);
+        });
+
+        // Subscribe to live vendor brands list
+        unsubVendors = subscribeToVendors((vList) => {
+          if (vList.length > 0) setVendors(vList);
         });
       } catch (err) {
         console.warn('Admin: Fallback to bundled data:', err);
@@ -292,6 +331,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return () => {
       if (unsubInquiries) unsubInquiries();
       if (unsubUsers) unsubUsers();
+      if (unsubVendors) unsubVendors();
     };
   }, [isAdminUnlocked]);
 
@@ -305,6 +345,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const rateStatus = checkLoginRateLimit();
     if (rateStatus.isLocked) {
       setAuthError(`تم قفل محاولات الدخول مؤقتاً لحماية أمان البوابة. يرجى المحاولة بعد ${Math.ceil(rateStatus.lockoutRemainingSeconds / 60)} دقيقة.`);
+      return;
+    }
+
+    if (!cleanEmail) {
+      setAuthError('يرجى إدخال البريد الإلكتروني الإداري المعتمد');
       return;
     }
 
@@ -477,6 +522,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const msg = err instanceof Error ? err.message : 'تعذر حذف المشروع';
       showToast(msg, 'error');
     }
+  };
+
+  // 3.5 Vendor Brands Handlers
+  const handleSaveVendor = async (vendorToSave: VendorBrandItem) => {
+    setIsSaving(true);
+    try {
+      await saveVendor(vendorToSave, activeAdminUser?.email || 'admin');
+      setVendors((prev) => {
+        const exists = prev.some((v) => v.id === vendorToSave.id);
+        if (exists) {
+          return prev.map((v) => (v.id === vendorToSave.id ? vendorToSave : v));
+        }
+        return [...prev, vendorToSave];
+      });
+      setEditingVendor(null);
+      setIsAddingVendor(false);
+      showToast(`تم حفظ العلامة التجارية: ${vendorToSave.name} بنجاح`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ العلامة التجارية';
+      showToast(msg, 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    try {
+      await deleteVendor(id, activeAdminUser?.email || 'admin');
+      setVendors((prev) => prev.filter((v) => v.id !== id));
+      showToast('تم حذف العلامة التجارية بنجاح');
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حذف العلامة التجارية';
+      showToast(msg, 'error');
+    }
+  };
+
+  const handleToggleVendorActive = async (v: VendorBrandItem) => {
+    const updated = { ...v, isActive: !v.isActive };
+    try {
+      await saveVendor(updated, activeAdminUser?.email || 'admin');
+      setVendors((prev) => prev.map((item) => (item.id === v.id ? updated : item)));
+      showToast(updated.isActive ? `تم تفعيل عرض: ${v.name}` : `تم إيقاف عرض: ${v.name}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر تغيير حالة العلامة';
+      showToast(msg, 'error');
+    }
+  };
+
+  const handleCreateNewVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVendorForm.name.trim()) {
+      showToast('يرجى إدخال اسم العلامة التجارية', 'error');
+      return;
+    }
+    const slug = newVendorForm.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+    const newVendor: VendorBrandItem = {
+      id: slug || `vendor-${Date.now()}`,
+      name: newVendorForm.name.trim(),
+      slug: slug || `vendor-${Date.now()}`,
+      category: newVendorForm.category || 'cctv',
+      logoUrl: newVendorForm.logoUrl.trim() || `/assets/logos/${slug}.svg`,
+      websiteUrl: newVendorForm.websiteUrl.trim(),
+      descriptionAr: newVendorForm.descriptionAr.trim() || 'أنظمة وحلول متكاملة',
+      descriptionEn: newVendorForm.descriptionEn.trim() || 'Integrated Systems & Solutions',
+      displayOrder: Number(newVendorForm.displayOrder) || vendors.length + 1,
+      isActive: newVendorForm.isActive !== false,
+      createdAt: new Date().toISOString(),
+    };
+    await handleSaveVendor(newVendor);
+    setNewVendorForm({
+      name: '',
+      category: 'cctv',
+      logoUrl: '',
+      websiteUrl: '',
+      descriptionAr: '',
+      descriptionEn: '',
+      displayOrder: vendors.length + 2,
+      isActive: true,
+    });
   };
 
   // Delete Inquiry
@@ -820,91 +946,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* Dual Login Method Switcher */}
-          <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800 mb-5">
-            <button
-              type="button"
-              onClick={() => {
-                setLoginMethod('google');
-                setAuthError('');
-              }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                loginMethod === 'google'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <span>تسجيل الدخول عبر Google</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLoginMethod('passcode');
-                setAuthError('');
-              }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                loginMethod === 'passcode'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Key className="w-3.5 h-3.5 text-emerald-400" />
-              <span>رمز المرور المشفر</span>
-            </button>
-          </div>
-
-          {/* Login Options Container */}
+          {/* Secure Admin Credentials Login Form (No Google OAuth) */}
           <div className="space-y-5">
-            {loginMethod === 'google' ? (
-              <>
-                {/* 1. Google Sign In Button */}
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  className="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 cursor-pointer group"
-                >
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                    />
-                  </svg>
-                  <span className="text-slate-900 group-hover:text-emerald-700 transition-colors">
-                    تسجيل الدخول السريع باستخدام Google
-                  </span>
-                </button>
-
-                {/* Corporate Security Verification Notice */}
-                <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 text-xs text-slate-300 leading-relaxed text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold">
-                    <Lock className="w-4 h-4" />
-                    <span>مصادقة أمنية موحدة عبر حساب Google المعتمد</span>
-                  </div>
-                  <p className="text-slate-400 text-[11px]">
-                    مخصصة للمهندسين والمشرفين المصرح لهم بموجب حسابات Google المؤسسية لشركة مصر للطاقة الخضراء.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <form onSubmit={handlePasscodeLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    البريد الإلكتروني (اختياري)
-                  </label>
+            <form onSubmit={handlePasscodeLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  البريد الإلكتروني المعتمد للمسؤول <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
                   <input
                     type="email"
+                    required
                     dir="ltr"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -912,43 +964,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 font-mono transition-colors"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    رمز المرور / كلمة السر المشفرة
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      dir="ltr"
-                      value={passcode}
-                      onChange={(e) => setPasscode(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 font-mono transition-colors pe-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute inset-y-0 end-0 pe-3 flex items-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  كلمة المرور / رمز الدخول المشفر <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    dir="ltr"
+                    value={passcode}
+                    onChange={(e) => setPasscode(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500 font-mono transition-colors pe-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 end-0 pe-3 flex items-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Key className="w-4 h-4" />
-                  <span>دخول إلى لوحة التحكم المركزية</span>
-                </button>
+              <button
+                type="submit"
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-bold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Key className="w-4 h-4" />
+                <span>دخول آمن إلى لوحة التحكم المركزية</span>
+              </button>
 
-                <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 text-center">
-                  حماية متقدمة ضد التخمين (Rate Limiting: 5 محاولات كحد أقصى مع قفل أمني مؤقت).
+              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 text-center space-y-1">
+                <div className="flex items-center justify-center gap-1.5 text-emerald-400 font-medium">
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>تسجيل دخول مشفر بالبريد وكلمة المرور فقط</span>
                 </div>
-              </form>
-            )}
+                <div>حماية متقدمة ضد التخمين (Rate Limiting: 5 محاولات كحد أقصى مع قفل أمني مؤقت).</div>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -1195,6 +1252,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               setActiveTab('projects');
               setEditingSystem(null);
               setEditingProject(null);
+              setEditingVendor(null);
             }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'projects'
@@ -1207,6 +1265,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <span>المشروعات وسابقة الأعمال</span>
               <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
                 {projects.length}
+              </span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('vendors');
+              setEditingSystem(null);
+              setEditingProject(null);
+              setEditingVendor(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'vendors'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Award className="w-4 h-4" />
+            <div className="flex-1 flex items-center justify-between">
+              <span>العلامات والموردين (Vendors)</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                {vendors.length}
               </span>
             </div>
           </button>
@@ -2406,6 +2486,664 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </p>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: VENDOR BRANDS MANAGEMENT */}
+          {activeTab === 'vendors' && (
+            <div className="space-y-6">
+              {/* Header Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">العلامات التجارية المعتمدة وموردو الأنظمة</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    إدارة العلامات التجارية للتيار الخفيف، وربط ملفات الشعارات الرسمية (.svg / .png)، وتحديد الفئات وروابط المصنعين وحالة التفعيل
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingVendor(null);
+                      setIsAddingVendor(!isAddingVendor);
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>{isAddingVendor ? 'إغلاق نموذج الإضافة' : 'إضافة علامة تجارية جديدة'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Summary Stats Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col">
+                  <span className="text-[11px] text-slate-400">إجمالي العلامات</span>
+                  <span className="text-xl font-bold text-white font-mono mt-1">{vendors.length}</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col">
+                  <span className="text-[11px] text-slate-400">العلامات النشطة المعروضة</span>
+                  <span className="text-xl font-bold text-emerald-400 font-mono mt-1">
+                    {vendors.filter((v) => v.isActive !== false).length}
+                  </span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col">
+                  <span className="text-[11px] text-slate-400">شعارات متصلة بملفات</span>
+                  <span className="text-xl font-bold text-blue-400 font-mono mt-1">
+                    {vendors.filter((v) => v.logoUrl).length}
+                  </span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col">
+                  <span className="text-[11px] text-slate-400">تخصصات مغطاة</span>
+                  <span className="text-xl font-bold text-amber-400 font-mono mt-1">
+                    {new Set(vendors.map((v) => v.category)).size} تخصصات
+                  </span>
+                </div>
+              </div>
+
+              {/* Add New Brand Form Modal / Card */}
+              {isAddingVendor && (
+                <div className="p-6 rounded-2xl bg-slate-900 border-2 border-emerald-500/40 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-emerald-400" />
+                      <span>إضافة علامة تجارية ومورد جديد للأنظمة</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingVendor(false)}
+                      className="text-xs text-slate-400 hover:text-white"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleCreateNewVendor} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          اسم العلامة التجارية (English) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="مثال: Hikvision, Honeywell, Legrand"
+                          value={newVendorForm.name}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, name: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          تصنيف التخصص والأنظمة *
+                        </label>
+                        <select
+                          value={newVendorForm.category}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, category: e.target.value as VendorBrandItem['category'] })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                          <option value="cctv">المراقبة والأمن المرئي (CCTV)</option>
+                          <option value="fire">إنذار الحريق والسلامة (Fire Alarm)</option>
+                          <option value="networks">الكابلات والشبكات (Structured Cabling)</option>
+                          <option value="access">التحكم في الدخول (Access Control)</option>
+                          <option value="telecom">السنترالات والاتصالات (IP Telephony)</option>
+                          <option value="bms">إدارة المباني الذكية (BMS)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          الترتيب الرقمي في العرض
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="99"
+                          value={newVendorForm.displayOrder}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, displayOrder: parseInt(e.target.value) || 1 })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Logo URL & File Upload */}
+                    <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        ملف الشعار (Logo File / URL)
+                      </label>
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <input
+                          type="text"
+                          placeholder="/assets/logos/hikvision.svg أو رابط صورة مباشر"
+                          value={newVendorForm.logoUrl}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, logoUrl: e.target.value })}
+                          className="flex-1 w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 cursor-pointer whitespace-nowrap">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>رفع ملف شعار (.svg / .png)</span>
+                          <input
+                            type="file"
+                            accept="image/*,.svg"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (loadEvt) => {
+                                  const res = loadEvt.target?.result as string;
+                                  if (res) {
+                                    setNewVendorForm((prev) => ({ ...prev, logoUrl: res }));
+                                    showToast('تم تحميل ملف الشعار بنجاح');
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Quick Logo Presets */}
+                      <div className="flex items-center gap-2 overflow-x-auto py-1">
+                        <span className="text-[10px] text-slate-500 shrink-0">شعارات جاهزة:</span>
+                        {[
+                          'hikvision', 'dahua', 'cisco', 'schneider',
+                          'honeywell', 'notifier', 'legrand', 'panduit',
+                          'zkteco', 'suprema', 'grandstream', 'yealink'
+                        ].map((slug) => (
+                          <button
+                            key={slug}
+                            type="button"
+                            onClick={() => setNewVendorForm((prev) => ({ ...prev, logoUrl: `/assets/logos/${slug}.svg` }))}
+                            className="px-2 py-1 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[10px] font-mono text-slate-300 shrink-0 hover:border-emerald-500 transition-colors"
+                          >
+                            {slug}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Preview Box */}
+                      {newVendorForm.logoUrl && (
+                        <div className="flex items-center gap-3 pt-2 border-t border-slate-900">
+                          <span className="text-[10px] text-slate-400">معاينة الشعار:</span>
+                          <div className="w-28 h-12 rounded-lg bg-white p-1.5 flex items-center justify-center border border-slate-200">
+                            <img
+                              src={newVendorForm.logoUrl}
+                              alt="Logo Preview"
+                              className="max-h-full max-w-full object-contain"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          وصف التخصص (بالعربية)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="مثال: كاميرات مراقبة IP وخوادم NVR وتحليلات الفيديو"
+                          value={newVendorForm.descriptionAr}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, descriptionAr: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          وصف التخصص (بالإنجليزية)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. IP Cameras, NVRs & Video Analytics"
+                          value={newVendorForm.descriptionEn}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, descriptionEn: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          رابط الموقع الرسمي للشركة المصنعة
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://www.example.com"
+                          value={newVendorForm.websiteUrl}
+                          onChange={(e) => setNewVendorForm({ ...newVendorForm, websiteUrl: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-6">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={newVendorForm.isActive !== false}
+                            onChange={(e) => setNewVendorForm({ ...newVendorForm, isActive: e.target.checked })}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-slate-950 border-slate-800 cursor-pointer"
+                          />
+                          <span>تفعيل وعرض العلامة التجارية في قسم الشركاء بالموقع</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingVendor(false)}
+                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 transition-colors"
+                      >
+                        إلغاء
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                        <span>{isSaving ? 'جاري الحفظ...' : 'حفظ العلامة التجارية'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Edit Brand Inline Modal / Card */}
+              {editingVendor && (
+                <div className="p-6 rounded-2xl bg-slate-900 border-2 border-emerald-500/50 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <Edit3 className="w-4 h-4 text-emerald-400" />
+                      <span>تعديل بيانات العلامة التجارية: {editingVendor.name}</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setEditingVendor(null)}
+                      className="text-xs text-slate-400 hover:text-white"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveVendor(editingVendor);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          اسم العلامة التجارية (English) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editingVendor.name}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, name: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          تصنيف التخصص والأنظمة *
+                        </label>
+                        <select
+                          value={editingVendor.category}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, category: e.target.value as VendorBrandItem['category'] })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                          <option value="cctv">المراقبة والأمن المرئي (CCTV)</option>
+                          <option value="fire">إنذار الحريق والسلامة (Fire Alarm)</option>
+                          <option value="networks">الكابلات والشبكات (Structured Cabling)</option>
+                          <option value="access">التحكم في الدخول (Access Control)</option>
+                          <option value="telecom">السنترالات والاتصالات (IP Telephony)</option>
+                          <option value="bms">إدارة المباني الذكية (BMS)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          الترتيب الرقمي في العرض
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="99"
+                          value={editingVendor.displayOrder || 1}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, displayOrder: parseInt(e.target.value) || 1 })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Logo URL & File Upload */}
+                    <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        ملف الشعار (Logo File / URL)
+                      </label>
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <input
+                          type="text"
+                          value={editingVendor.logoUrl || ''}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, logoUrl: e.target.value })}
+                          className="flex-1 w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 cursor-pointer whitespace-nowrap">
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>تغيير ملف الشعار (.svg / .png)</span>
+                          <input
+                            type="file"
+                            accept="image/*,.svg"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (loadEvt) => {
+                                  const res = loadEvt.target?.result as string;
+                                  if (res) {
+                                    setEditingVendor((prev) => (prev ? { ...prev, logoUrl: res } : null));
+                                    showToast('تم تحديث ملف الشعار بنجاح');
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Preview Box */}
+                      {editingVendor.logoUrl && (
+                        <div className="flex items-center gap-3 pt-2 border-t border-slate-900">
+                          <span className="text-[10px] text-slate-400">معاينة الشعار:</span>
+                          <div className="w-28 h-12 rounded-lg bg-white p-1.5 flex items-center justify-center border border-slate-200">
+                            <img
+                              src={editingVendor.logoUrl}
+                              alt={editingVendor.name}
+                              className="max-h-full max-w-full object-contain"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          وصف التخصص (بالعربية)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingVendor.descriptionAr || ''}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, descriptionAr: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          وصف التخصص (بالإنجليزية)
+                        </label>
+                        <input
+                          type="text"
+                          value={editingVendor.descriptionEn || ''}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, descriptionEn: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          رابط الموقع الرسمي للشركة المصنعة
+                        </label>
+                        <input
+                          type="url"
+                          value={editingVendor.websiteUrl || ''}
+                          onChange={(e) => setEditingVendor({ ...editingVendor, websiteUrl: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-6">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-300">
+                          <input
+                            type="checkbox"
+                            checked={editingVendor.isActive !== false}
+                            onChange={(e) => setEditingVendor({ ...editingVendor, isActive: e.target.checked })}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-slate-950 border-slate-800 cursor-pointer"
+                          />
+                          <span>تفعيل وعرض العلامة التجارية في قسم الشركاء بالموقع</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setEditingVendor(null)}
+                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 transition-colors"
+                      >
+                        إلغاء
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-md transition-all cursor-pointer"
+                      >
+                        <Save className="w-3.5 h-3.5" />
+                        <span>{isSaving ? 'جاري الحفظ...' : 'حفظ التعديلات'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Category Filter Controls */}
+              <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'all'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  الكل ({vendors.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('cctv')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'cctv'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  المراقبة (CCTV)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('fire')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'fire'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  إنذار الحريق (Fire)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('networks')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'networks'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  الشبكات والكابلات (Networks)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('access')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'access'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  التحكم بالدخول (Access)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('telecom')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'telecom'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  السنترالات (IP PBX)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVendorCategoryFilter('bms')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                    vendorCategoryFilter === 'bms'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-900 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  إدارة المباني (BMS)
+                </button>
+              </div>
+
+              {/* Grid of Brand Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {vendors
+                  .filter((v) => vendorCategoryFilter === 'all' || v.category === vendorCategoryFilter)
+                  .map((vendor) => {
+                    const isEditing = editingVendor?.id === vendor.id;
+                    return (
+                      <div
+                        key={vendor.id}
+                        className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                          isEditing
+                            ? 'bg-slate-900 border-emerald-500 ring-2 ring-emerald-500/30'
+                            : vendor.isActive === false
+                            ? 'bg-slate-950/60 border-slate-800 opacity-60'
+                            : 'bg-slate-900/90 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div>
+                          {/* Logo Box */}
+                          <div className="w-full h-16 rounded-xl bg-white p-2.5 flex items-center justify-center border border-slate-200 mb-3 overflow-hidden">
+                            {vendor.logoUrl ? (
+                              <img
+                                src={vendor.logoUrl}
+                                alt={vendor.name}
+                                className="max-h-full max-w-full object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <span className="text-xs font-bold text-slate-700 font-mono">{vendor.name}</span>
+                            )}
+                          </div>
+
+                          {/* Brand Info */}
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <h4 className="text-sm font-bold text-white tracking-tight">{vendor.name}</h4>
+                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-mono uppercase">
+                              {vendor.category}
+                            </span>
+                          </div>
+
+                          {/* Description */}
+                          <p className="text-xs text-slate-400 leading-snug line-clamp-2 mb-2">
+                            {vendor.descriptionAr || vendor.descriptionEn}
+                          </p>
+
+                          {/* Official Website Link */}
+                          {vendor.websiteUrl && (
+                            <a
+                              href={vendor.websiteUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 font-mono mb-2"
+                            >
+                              <span>الموقع الرسمي</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Card Footer Actions */}
+                        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                          {/* Toggle Active Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleVendorActive(vendor)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
+                              vendor.isActive !== false
+                                ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-900/50'
+                                : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            {vendor.isActive !== false ? 'مفعل بالموقع' : 'معطل'}
+                          </button>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsAddingVendor(false);
+                                setEditingVendor(vendor);
+                              }}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                              title="تعديل بيانات العلامة"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`هل أنت متأكد من حذف العلامة التجارية: ${vendor.name}؟`)) {
+                                  handleDeleteVendor(vendor.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-950 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                              title="حذف العلامة"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}

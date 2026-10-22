@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 48" width="150" height="48">
+  <circle cx="16" cy="20" r="5" fill="#43A047" />
+  <circle cx="28" cy="28" r="5" fill="#43A047" />
+  <line x1="16" y1="20" x2="28" y2="28" stroke="#43A047" stroke-width="2.5" />
+  <text x="38" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="21" font-weight="bold" fill="#0F172A">Yealink</text>
+</svg>

@@ -25,15 +25,15 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#222f30]/85 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-slate-900 transition-all animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-3xl bg-white rounded-2xl flat-card border border-[#c9cbbe] overflow-hidden text-[#222f30] transition-all animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with image */}
-        <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden bg-slate-900">
+        <div className="relative aspect-video sm:aspect-[21/9] w-full overflow-hidden bg-[#222f30]">
           <img
             src={resolveImageUrl(project.image, DEFAULT_CABLING_IMAGE)}
             alt={project.title}
@@ -41,22 +41,23 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             onError={handleImageError(DEFAULT_CABLING_IMAGE)}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#222f30] via-[#222f30]/40 to-transparent" />
 
           {/* Close button */}
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 end-4 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md transition-colors cursor-pointer"
+            className="absolute top-4 end-4 w-9 h-9 flex items-center justify-center rounded-lg bg-[#222f30]/80 hover:bg-[#222f30] text-white border border-[#4d5757] transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
 
           {/* Overlay Info */}
           <div className="absolute bottom-4 start-6 end-6 text-white">
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600/90 text-white mb-2 inline-block">
-              {project.categoryLabel}
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#222f30]/90 border border-[#4d5757] text-xs font-mono text-white mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e]" />
+              <span>{project.categoryLabel}</span>
+            </div>
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
               {project.title}
             </h3>
@@ -66,56 +67,56 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         {/* Content body */}
         <div className="p-6 sm:p-8 space-y-6 max-h-[60vh] overflow-y-auto">
           {/* Metadata badges */}
-          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-600 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-1.5 font-medium">
-              <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-[#4d5757] pb-4 border-b border-[#c9cbbe]/60 font-mono">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-4 h-4 text-[#222f30] shrink-0" />
               <span>{project.location}</span>
             </div>
-            <div className="flex items-center gap-1.5 font-medium">
-              <Calendar className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="font-mono">{project.year}</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-[#222f30] shrink-0" />
+              <span>{project.year}</span>
             </div>
-            <div className="flex items-center gap-1.5 font-medium">
-              <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-[#222f30] shrink-0" />
               <span>{project.clientType}</span>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 font-mono">
+            <h4 className="text-xs font-semibold text-[#4d5757] uppercase tracking-wider mb-2 font-mono">
               {currentLang === 'ar' ? 'نطاق الأعمال والمواصفات' : 'Scope of Work & Engineering'}
             </h4>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+            <p className="text-sm sm:text-base text-[#222f30] leading-relaxed">
               {project.description}
             </p>
           </div>
 
           {/* Technical Specs & Impact */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-100">
-              <h5 className="text-xs font-bold text-emerald-950 uppercase tracking-wider mb-3">
+            <div className="p-4 rounded-xl bg-[#f7f7f5] border border-[#c9cbbe] flat-card">
+              <h5 className="text-xs font-semibold text-[#222f30] uppercase tracking-wider mb-3 font-mono">
                 {currentLang === 'ar' ? 'مؤشرات الأداء والإنجاز' : 'Impact & Metrics'}
               </h5>
               <div className="space-y-2">
                 {project.impactMetrics.map((m, idx) => (
                   <div key={idx} className="flex justify-between items-center text-xs">
-                    <span className="text-emerald-900">{m.label}</span>
-                    <span className="font-bold text-emerald-800 font-mono">{m.value}</span>
+                    <span className="text-[#4d5757]">{m.label}</span>
+                    <span className="font-semibold text-[#222f30] font-mono">{m.value}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">
+            <div className="p-4 rounded-xl bg-[#f7f7f5] border border-[#c9cbbe] flat-card">
+              <h5 className="text-xs font-semibold text-[#222f30] uppercase tracking-wider mb-3 font-mono">
                 {currentLang === 'ar' ? 'المعايير الهندسية المطبقة' : 'Engineering Standards'}
               </h5>
               <div className="space-y-2">
                 {project.technicalSpecs.map((s, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>{s.label}: <strong>{s.value}</strong></span>
+                  <div key={idx} className="flex items-center gap-2 text-xs text-[#222f30]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#222f30] shrink-0" />
+                    <span>{s.label}: <strong className="font-mono">{s.value}</strong></span>
                   </div>
                 ))}
               </div>
@@ -124,12 +125,12 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         </div>
 
         {/* Footer actions */}
-        <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+        <div className="p-5 bg-[#f7f7f5] border-t border-[#c9cbbe] flex flex-wrap items-center justify-between gap-4">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-colors cursor-pointer"
+            className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#4d5757] hover:text-[#222f30] transition-colors cursor-pointer"
           >
-            {currentLang === 'ar' ? 'إغلاق' : 'Close'}
+            {currentLang === 'ar' ? 'إغلاق النافذة' : 'Close'}
           </button>
 
           <button
@@ -137,10 +138,14 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               onInquire(project.title);
               onClose();
             }}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            className="group inline-flex items-center overflow-hidden rounded-lg bg-[#222f30] hover:bg-[#1a2425] text-white transition-colors cursor-pointer"
           >
-            <span>{currentLang === 'ar' ? 'طلب مقايسة لهذا النوع من المشروعات' : 'Request Proposal For Similar Project'}</span>
-            <ArrowIcon className="w-4 h-4 rtl:rotate-0" />
+            <span className="py-2.5 px-5 font-semibold text-xs sm:text-sm">
+              {currentLang === 'ar' ? 'طلب مقايسة لهذا المشروع' : 'Request Proposal For Similar Project'}
+            </span>
+            <span className="w-10 h-10 bg-[#cef79e] text-[#222f30] flex items-center justify-center shrink-0 group-hover:bg-[#d8f9b2] transition-colors">
+              <ArrowIcon className="w-4 h-4 rtl:rotate-0" />
+            </span>
           </button>
         </div>
       </div>

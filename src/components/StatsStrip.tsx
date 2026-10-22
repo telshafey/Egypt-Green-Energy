@@ -38,7 +38,7 @@ export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
   ];
 
   return (
-    <section className="bg-slate-950 border-b border-slate-800 text-white py-10 lg:py-12">
+    <section className="bg-[#222f30] border-b border-[#4d5757]/60 text-white py-10 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
           {pillars.map((pillar, idx) => {
@@ -46,18 +46,18 @@ export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
             return (
               <div
                 key={idx}
-                className="flex flex-col border-s border-slate-800 ps-6 first:border-s-0 first:ps-0"
+                className="flex flex-col border-s border-[#4d5757]/60 ps-6 first:border-s-0 first:ps-0"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Icon className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                  <Icon className="w-4 h-4 text-[#cef79e] shrink-0" />
+                  <span className="text-xl sm:text-2xl font-bold text-[#cef79e] font-mono tabular-nums tracking-tight">
                     {pillar.title}
                   </span>
                 </div>
-                <span className="text-sm font-bold text-emerald-400 mb-1">
+                <span className="text-xs font-semibold text-white mb-1 tracking-wide">
                   {pillar.label}
                 </span>
-                <span className="text-xs text-slate-300 leading-relaxed font-normal">
+                <span className="text-xs text-[#c9cbbe] leading-relaxed font-normal">
                   {pillar.desc}
                 </span>
               </div>
