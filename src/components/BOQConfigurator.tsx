@@ -132,13 +132,13 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
   const facLabel = t.facilityTypes.find((f) => f.id === facilityType)?.label || facilityType;
 
   return (
-    <section id="configurator" className="py-20 lg:py-28 bg-[#222f30] text-white border-b border-[#4d5757]/60">
+    <section id="configurator" className="py-20 lg:py-28 bg-[#0a1122] text-white border-b border-[#1e2e50]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="max-w-3xl mb-14">
-          <div className="flex items-center gap-2 text-xs font-mono font-medium text-[#c9cbbe] uppercase tracking-wider mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
+          <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
             <span>{t.sectionKicker}</span>
           </div>
           <h2
@@ -147,7 +147,7 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
           >
             {t.heading}
           </h2>
-          <p className="text-base sm:text-lg text-[#c9cbbe] leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
             {t.subheading}
           </p>
         </div>
@@ -156,12 +156,12 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
           {/* Left Column: Interactive Inputs & Module Selector */}
-          <div className="lg:col-span-7 bg-[#222f30] border border-[#4d5757] rounded-2xl p-6 sm:p-8 flex flex-col justify-between flat-card">
+          <div className="lg:col-span-7 bg-[#0f1a34] border border-[#1e2e50] rounded-2xl p-6 sm:p-8 flex flex-col justify-between flat-card">
             <div className="space-y-6">
               
               {/* Facility Type Selector */}
               <div>
-                <label className="block text-xs font-mono font-medium uppercase tracking-wider text-[#c9cbbe] mb-2.5">
+                <label className="block text-xs font-mono font-medium uppercase tracking-wider text-slate-300 mb-2.5">
                   {t.facilityTypeLabel}
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -172,8 +172,8 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                       onClick={() => setFacilityType(type.id)}
                       className={`p-3 text-xs font-medium rounded-xl text-left rtl:text-right transition-colors cursor-pointer border ${
                         facilityType === type.id
-                          ? 'bg-[#2a3a3b] border-[#cef79e] text-white font-semibold'
-                          : 'bg-[#1c2728] border-[#4d5757] text-[#c9cbbe] hover:border-[#c9cbbe]'
+                          ? 'bg-[#132347] border-[#22c55e] text-white font-semibold'
+                          : 'bg-[#070d1a] border-[#1e2e50] text-slate-300 hover:border-slate-500'
                       }`}
                     >
                       {type.label}
@@ -185,10 +185,10 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
               {/* Floor Area Slider & Numeric Input */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs sm:text-sm font-medium text-[#c9cbbe]">
+                  <label className="text-xs sm:text-sm font-medium text-slate-300">
                     {t.scaleLabel}
                   </label>
-                  <div className="flex items-center gap-1.5 bg-[#1c2728] px-2.5 py-1 rounded-lg border border-[#4d5757]">
+                  <div className="flex items-center gap-1.5 bg-[#070d1a] px-2.5 py-1 rounded-lg border border-[#1e2e50]">
                     <input
                       type="number"
                       min="100"
@@ -199,9 +199,9 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                         const val = Math.max(100, Math.min(25000, Number(e.target.value) || 0));
                         setFloorArea(val);
                       }}
-                      className="w-20 bg-transparent text-sm sm:text-base font-bold text-[#cef79e] font-mono tabular-nums text-end focus:outline-none"
+                      className="w-20 bg-transparent text-sm sm:text-base font-bold text-[#22c55e] font-mono tabular-nums text-end focus:outline-none"
                     />
-                    <span className="text-xs font-mono text-[#c9cbbe]">م²</span>
+                    <span className="text-xs font-mono text-slate-400">م²</span>
                   </div>
                 </div>
                 <input
@@ -211,9 +211,9 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   step="100"
                   value={Math.min(10000, floorArea)}
                   onChange={(e) => setFloorArea(Number(e.target.value))}
-                  className="w-full accent-[#cef79e] bg-[#1c2728] h-2 rounded-lg cursor-pointer"
+                  className="w-full accent-[#22c55e] bg-[#070d1a] h-2 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between text-[11px] text-[#c9cbbe] font-mono mt-1">
+                <div className="flex justify-between text-[11px] text-slate-400 font-mono mt-1">
                   <span>200 م²</span>
                   <span>5,000 م²</span>
                   <span>10,000+ م²</span>
@@ -223,10 +223,10 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
               {/* Low Current Disciplines Checklist */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-xs font-mono font-medium uppercase tracking-wider text-[#c9cbbe]">
+                  <label className="text-xs font-mono font-medium uppercase tracking-wider text-slate-300">
                     {t.modulesTitle}
                   </label>
-                  <span className="text-xs text-[#cef79e] font-mono">
+                  <span className="text-xs text-[#38bdf8] font-mono">
                     {selectedModules.length} {currentLang === 'ar' ? 'أنظمة محددة' : 'systems selected'}
                   </span>
                 </div>
@@ -248,25 +248,25 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                         }}
                         className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
                           isSelected
-                            ? 'bg-[#2a3a3b] border-[#cef79e] text-white'
-                            : 'bg-[#1c2728] border-[#4d5757] text-[#c9cbbe] hover:border-[#c9cbbe]'
+                            ? 'bg-[#132347] border-[#22c55e] text-white'
+                            : 'bg-[#070d1a] border-[#1e2e50] text-slate-300 hover:border-slate-500'
                         }`}
                       >
                         <div
                           className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 border ${
                             isSelected
-                              ? 'bg-[#cef79e] border-[#cef79e] text-[#222f30]'
-                              : 'border-[#4d5757] bg-[#222f30]'
+                              ? 'bg-[#22c55e] border-[#22c55e] text-[#0a1122]'
+                              : 'border-[#1e2e50] bg-[#0a1122]'
                           }`}
                         >
                           {isSelected && <Check className="w-3.5 h-3.5" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold">
-                            <ModIcon className={`w-4 h-4 ${isSelected ? 'text-[#cef79e]' : 'text-[#c9cbbe]'}`} />
-                            <span className={isSelected ? 'text-white' : 'text-[#c9cbbe]'}>{mod.label}</span>
+                            <ModIcon className={`w-4 h-4 ${isSelected ? 'text-[#38bdf8]' : 'text-slate-400'}`} />
+                            <span className={isSelected ? 'text-white' : 'text-slate-300'}>{mod.label}</span>
                           </div>
-                          <span className="text-[11px] text-[#c9cbbe]/80 line-clamp-1 mt-0.5 block">
+                          <span className="text-[11px] text-slate-400 line-clamp-1 mt-0.5 block">
                             {mod.desc}
                           </span>
                         </div>
@@ -278,21 +278,21 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
 
             </div>
 
-            <p className="text-xs text-[#c9cbbe] leading-relaxed pt-5 border-t border-[#4d5757]/60 mt-6 flex items-start gap-2">
-              <Info className="w-4 h-4 text-[#cef79e] shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-400 leading-relaxed pt-5 border-t border-[#1e2e50] mt-6 flex items-start gap-2">
+              <Info className="w-4 h-4 text-[#38bdf8] shrink-0 mt-0.5" />
               <span>{t.disclaimer}</span>
             </p>
           </div>
 
           {/* Right Column: Calculated BOQ Scope Card */}
-          <div className="lg:col-span-5 bg-[#1c2728] border border-[#4d5757] rounded-2xl p-6 sm:p-8 flex flex-col justify-between flat-card">
+          <div className="lg:col-span-5 bg-[#070d1a] border border-[#1e2e50] rounded-2xl p-6 sm:p-8 flex flex-col justify-between flat-card">
             <div>
-              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#4d5757]/60">
+              <div className="flex items-center justify-between pb-4 mb-6 border-b border-[#1e2e50]">
                 <div>
                   <h3 className="text-base sm:text-lg font-medium text-white">
                     {t.resultTitle}
                   </h3>
-                  <span className="text-xs text-[#c9cbbe] font-mono">
+                  <span className="text-xs text-[#38bdf8] font-mono">
                     {facLabel} — {floorArea.toLocaleString()} م²
                   </span>
                 </div>
@@ -300,17 +300,17 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   type="button"
                   onClick={handlePrint}
                   title={currentLang === 'ar' ? 'طباعة أو تنزيل الملخص الفني (PDF)' : 'Print or Export Summary (PDF)'}
-                  className="p-2 rounded-lg bg-[#222f30] hover:bg-[#2a3a3b] text-[#c9cbbe] hover:text-white border border-[#4d5757] transition-colors cursor-pointer"
+                  className="p-2 rounded-lg bg-[#0f1a34] hover:bg-[#132347] text-slate-300 hover:text-white border border-[#1e2e50] transition-colors cursor-pointer"
                 >
-                  <Printer className="w-4 h-4 text-[#cef79e]" />
+                  <Printer className="w-4 h-4 text-[#38bdf8]" />
                 </button>
               </div>
 
               {/* Quantitative Metrics */}
               {selectedModules.length === 0 ? (
-                <div className="p-6 rounded-xl bg-[#222f30] border border-[#4d5757] text-center space-y-2 mb-8">
-                  <Sliders className="w-8 h-8 text-[#4d5757] mx-auto" />
-                  <p className="text-xs sm:text-sm text-[#c9cbbe]">
+                <div className="p-6 rounded-xl bg-[#0f1a34] border border-[#1e2e50] text-center space-y-2 mb-8">
+                  <Sliders className="w-8 h-8 text-slate-500 mx-auto" />
+                  <p className="text-xs sm:text-sm text-slate-400">
                     {currentLang === 'ar'
                       ? 'يرجى تحديد نظام واحد على الأقل من القائمة لحساب المؤشرات الاسترشادية.'
                       : 'Please select at least one system to display preliminary scope metrics.'}
@@ -319,18 +319,18 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
               ) : (
                 <div className="space-y-3 mb-8">
                   {selectedModules.includes('cctv') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">{t.estCameras}</span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'كاميرات مراقبة IP داخلية/خارجية' : 'Network IP Cameras'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estCctv}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'كاميرا' : 'cameras'}
                         </span>
                       </div>
@@ -338,18 +338,18 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('cabling') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">{t.estCablingPoints}</span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'كابلات Cat6A وكبائن Racks' : 'Cat6A Drops & Racks'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estDrops}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'نقطة شبكة' : 'data points'}
                         </span>
                       </div>
@@ -357,18 +357,18 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('access') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">{t.estDoors}</span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'قارئات وأقفال كهرومغناطيسية' : 'Card / Biometric Readers & Locks'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estDoorsCount}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'أبواب مؤمنة' : 'secured doors'}
                         </span>
                       </div>
@@ -376,20 +376,20 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('fire') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">
                           {currentLang === 'ar' ? 'كواشف إنذار الحريق المقدرة' : 'Estimated Fire Detectors'}
                         </span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'كواشف دخان وحرارة ومحطات إنذار' : 'Smoke, Heat & Manual Stations'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estFireDevices}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'عنصر إنذار' : 'devices'}
                         </span>
                       </div>
@@ -397,20 +397,20 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('pa') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">
                           {currentLang === 'ar' ? 'السماعات ومكبرات الصوت' : 'Acoustic Speakers'}
                         </span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'سماعات سقفية وحائطية وهورن' : 'Ceiling / Wall / Horn Speakers'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estSpeakers}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'سماعة' : 'speakers'}
                         </span>
                       </div>
@@ -418,20 +418,20 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('bms') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">
                           {currentLang === 'ar' ? 'نقاط التحكم والمراقبة BMS' : 'BMS Supervisory Points'}
                         </span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'نقاط تكييف وإنارة وطاقة I/O' : 'HVAC, Lighting & Power I/O'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                        <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                           ~{estBmsPoints}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'نقطة I/O' : 'points'}
                         </span>
                       </div>
@@ -439,20 +439,20 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {selectedModules.includes('sla') && (
-                    <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                    <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-white font-medium block mb-0.5">
                           {currentLang === 'ar' ? 'خطة الصيانة الدورية (SLA)' : 'Preventative SLA Plan'}
                         </span>
-                        <span className="text-[11px] text-[#c9cbbe]">
+                        <span className="text-[11px] text-slate-400">
                           {currentLang === 'ar' ? 'زيارات فحص دورية ودعم فني تعاقدي' : 'Periodic visits & contractual support'}
                         </span>
                       </div>
                       <div className="text-end">
-                        <span className="text-lg font-bold text-[#cef79e] font-mono">
+                        <span className="text-lg font-bold text-[#22c55e] font-mono">
                           {currentLang === 'ar' ? 'عقد دوري' : 'Periodic'}
                         </span>
-                        <span className="text-xs text-[#c9cbbe] block font-mono">
+                        <span className="text-xs text-slate-400 block font-mono">
                           {currentLang === 'ar' ? 'زيارات ربع سنوية' : 'Quarterly'}
                         </span>
                       </div>
@@ -460,20 +460,20 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   )}
 
                   {/* Indicative Timeline */}
-                  <div className="p-3.5 rounded-xl bg-[#222f30] border border-[#4d5757] flex items-center justify-between">
+                  <div className="p-3.5 rounded-xl bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-between">
                     <div>
                       <span className="text-xs text-white font-medium block mb-0.5">{t.estTimeline}</span>
-                      <span className="text-[11px] text-[#c9cbbe]">
+                      <span className="text-[11px] text-slate-400">
                         {currentLang === 'ar'
                           ? 'مدة استرشادية وفق جدول الأعمال المتفق عليه'
                           : 'Indicative duration based on schedule'}
                       </span>
                     </div>
                     <div className="text-end">
-                      <span className="text-2xl font-bold text-[#cef79e] font-mono tabular-nums">
+                      <span className="text-2xl font-bold text-[#22c55e] font-mono tabular-nums">
                         {baseWeeks}
                       </span>
-                      <span className="text-xs text-[#c9cbbe] block font-mono">
+                      <span className="text-xs text-slate-400 block font-mono">
                         {currentLang === 'ar' ? 'أسابيع عمل' : 'working weeks'}
                       </span>
                     </div>
@@ -482,12 +482,12 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
               )}
             </div>
 
-            {/* Direct Conversion CTA Button: White button paired with 40x40 lime arrow */}
+            {/* Direct Conversion CTA Button */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleApplyBOQ}
-                className="flex-1 py-3.5 px-6 font-semibold text-xs sm:text-sm text-[#222f30] bg-white hover:bg-[#f7f7f5] rounded-lg transition-all cursor-pointer whitespace-nowrap text-center"
+                className="flex-1 py-3.5 px-6 font-semibold text-xs sm:text-sm text-white bg-[#22c55e] hover:bg-[#16a34a] rounded-lg transition-all cursor-pointer whitespace-nowrap text-center"
               >
                 <span>{t.applyCta}</span>
               </button>
@@ -495,7 +495,7 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                 type="button"
                 onClick={handleApplyBOQ}
                 aria-label="Submit summary"
-                className="btn-arrow-lime cursor-pointer"
+                className="w-11 h-11 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
               >
                 <ArrowIcon className="w-4 h-4 rtl:rotate-0" />
               </button>

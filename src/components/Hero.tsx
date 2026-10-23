@@ -30,8 +30,8 @@ export const Hero: React.FC<HeroProps> = ({
   const displaySubtitle = customSubtitle || t.hero.subtitle;
 
   return (
-    <section className="relative overflow-hidden bg-[#222f30] text-white min-h-[600px] lg:min-h-[680px] flex items-center border-b border-[#4d5757]/60">
-      {/* Photographic Background with Abyssal Ink Scrim */}
+    <section className="relative overflow-hidden bg-[#0a1122] text-white min-h-[600px] lg:min-h-[680px] flex items-center border-b border-[#1e2e50]">
+      {/* Photographic Background with Tech Midnight Scrim */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroImageSrc}
@@ -42,21 +42,21 @@ export const Hero: React.FC<HeroProps> = ({
               e.currentTarget.src = DEFAULT_HERO_IMAGE;
             }
           }}
-          className="w-full h-full object-cover object-center scale-105 transform motion-safe:transition-transform motion-safe:duration-1000 opacity-30"
+          className="w-full h-full object-cover object-center scale-105 transform motion-safe:transition-transform motion-safe:duration-1000 opacity-25"
         />
-        {/* Measured dark green scrim for high-contrast WCAG AA legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#222f30] via-[#222f30]/95 to-[#222f30]/80 rtl:bg-gradient-to-l" />
+        {/* Measured dark navy scrim for high-contrast WCAG AA legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1122] via-[#0a1122]/95 to-[#0a1122]/80 rtl:bg-gradient-to-l" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 w-full">
         <div className="max-w-3xl">
           
-          {/* Quiet Unboxed Kicker Metadata with 6px Bioluminescent Lime Dot */}
-          <div className="flex items-center gap-2.5 text-xs font-mono text-[#c9cbbe] mb-5 tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
+          {/* Quiet Unboxed Kicker Metadata with Brand Green Dot */}
+          <div className="flex items-center gap-2.5 text-xs font-mono text-slate-300 mb-5 tracking-wide">
+            <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
             <span className="uppercase tracking-wider font-semibold text-white">{t.hero.kicker}</span>
-            <span aria-hidden="true" className="text-[#4d5757]">·</span>
-            <span className="text-[#c9cbbe]">{currentLang === 'ar' ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
+            <span aria-hidden="true" className="text-[#1e2e50]">·</span>
+            <span className="text-[#38bdf8] font-mono">{currentLang === 'ar' ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
           </div>
 
           {/* Refined Display Headline: Architectural flat weight with tight leading */}
@@ -68,23 +68,23 @@ export const Hero: React.FC<HeroProps> = ({
           </h1>
 
           {/* High-legibility value proposition prose */}
-          <p className="text-base sm:text-lg text-[#c9cbbe] leading-relaxed font-normal mb-8 max-w-2xl">
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal mb-8 max-w-2xl">
             {displaySubtitle}
           </p>
 
-          {/* Action Points: Exactly Two Actions — White primary with 40x40 Lime arrow + Ghost button */}
+          {/* Action Points: Exactly Two Actions — White/Green primary with 40x40 Tech Blue arrow + Ghost button */}
           <div className="flex flex-wrap items-center gap-3.5 mb-10">
             <div className="inline-flex items-center gap-2">
               <button
                 onClick={() => onNavigate('contact')}
-                className="inline-flex items-center justify-center px-6 py-3.5 text-xs sm:text-sm font-semibold text-[#222f30] bg-white hover:bg-[#f7f7f5] active:scale-[0.99] rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                className="inline-flex items-center justify-center px-6 py-3.5 text-xs sm:text-sm font-semibold text-[#0a1122] bg-[#22c55e] hover:bg-[#16a34a] hover:text-white active:scale-[0.99] rounded-lg transition-all cursor-pointer whitespace-nowrap"
               >
                 <span>{t.hero.ctaPrimary}</span>
               </button>
               <button
                 onClick={() => onNavigate('contact')}
                 aria-label="Direct action"
-                className="w-10 h-10 rounded-lg bg-[#cef79e] hover:bg-[#bde88a] text-[#222f30] flex items-center justify-center transition-all cursor-pointer shrink-0"
+                className="w-11 h-11 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
               >
                 <ArrowIcon className="w-4 h-4 rtl:rotate-0" />
               </button>
@@ -92,27 +92,26 @@ export const Hero: React.FC<HeroProps> = ({
 
             <button
               onClick={() => onNavigate('systems')}
-              className="inline-flex items-center justify-center px-5 py-3.5 text-xs sm:text-sm font-medium text-white hover:text-white bg-transparent hover:bg-[#2a3a3b]/50 border border-[#4d5757] hover:border-[#c9cbbe] rounded-lg transition-all cursor-pointer whitespace-nowrap"
+              className="inline-flex items-center justify-center px-5 py-3.5 text-xs sm:text-sm font-medium text-white hover:text-white bg-transparent hover:bg-[#0f1a34] border border-[#1e2e50] hover:border-slate-400 rounded-lg transition-all cursor-pointer whitespace-nowrap"
             >
               {t.hero.ctaSecondary}
             </button>
           </div>
 
-          {/* Claim-to-Proof Quiet Trust Row: Clean text with 6px lime dots and hairline divider */}
-          <div className="pt-6 border-t border-[#4d5757]/60 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#c9cbbe] font-normal">
+          {/* Claim-to-Proof Quiet Trust Row: Clean text with Brand dots and hairline divider */}
+          <div className="pt-6 border-t border-[#1e2e50] flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-300 font-normal">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
-              <ShieldCheck className="w-4 h-4 text-[#cef79e] shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-[#22c55e] shrink-0" />
               <span>{t.hero.trustBullet1}</span>
             </div>
-            <span aria-hidden="true" className="text-[#4d5757]">·</span>
+            <span aria-hidden="true" className="text-[#1e2e50]">·</span>
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-[#cef79e] shrink-0" />
+              <Cpu className="w-4 h-4 text-[#38bdf8] shrink-0" />
               <span>{t.hero.trustBullet2}</span>
             </div>
-            <span aria-hidden="true" className="text-[#4d5757]">·</span>
+            <span aria-hidden="true" className="text-[#1e2e50]">·</span>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#cef79e] shrink-0" />
+              <Clock className="w-4 h-4 text-[#22c55e] shrink-0" />
               <span>{t.hero.trustBullet3}</span>
             </div>
           </div>

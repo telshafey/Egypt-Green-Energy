@@ -37,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
   )}`;
 
   return (
-    <footer className="bg-[#000000] text-[#c9cbbe] border-t border-[#4d5757]/40 pt-16 pb-12">
+    <footer className="bg-[#060b17] text-slate-300 border-t border-[#1e2e50] pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Grid */}
@@ -53,11 +53,11 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
               companyNameAr={customSettings?.companyNameAr}
               companyNameEn={customSettings?.companyNameEn}
             />
-            <p className="text-xs sm:text-sm text-[#c9cbbe] leading-relaxed max-w-md">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
               {t.footer.about}
             </p>
-            <div className="inline-flex items-center gap-2 text-xs text-[#c9cbbe]/80 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e]" />
+            <div className="inline-flex items-center gap-2 text-xs text-slate-400 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
               <span>{t.footer.crNumber}</span>
             </div>
           </div>
@@ -67,11 +67,11 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
             <h4 className="text-xs font-medium text-white uppercase tracking-wider font-mono">
               {t.footer.quickLinks}
             </h4>
-            <ul className="space-y-2 text-xs sm:text-sm text-[#c9cbbe]">
+            <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
               <li>
                 <button
                   onClick={() => onNavigate('home')}
-                  className="hover:text-white transition-colors cursor-pointer"
+                  className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                 >
                   {t.nav.home}
                 </button>
@@ -80,7 +80,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 <li>
                   <button
                     onClick={() => onNavigate('about')}
-                    className="hover:text-white transition-colors cursor-pointer"
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.about}
                   </button>
@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 <li>
                   <button
                     onClick={() => onNavigate('systems')}
-                    className="hover:text-white transition-colors cursor-pointer"
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.systems}
                   </button>
@@ -100,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 <li>
                   <button
                     onClick={() => onNavigate('projects')}
-                    className="hover:text-white transition-colors cursor-pointer"
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.projects}
                   </button>
@@ -110,7 +110,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 <li>
                   <button
                     onClick={() => onNavigate('configurator')}
-                    className="hover:text-white transition-colors cursor-pointer"
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.configurator}
                   </button>
@@ -120,7 +120,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 <li>
                   <button
                     onClick={() => onNavigate('contact')}
-                    className="hover:text-white transition-colors cursor-pointer"
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.contact}
                   </button>
@@ -134,13 +134,13 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
             <h4 className="text-xs font-medium text-white uppercase tracking-wider font-mono">
               {t.contact.heading}
             </h4>
-            <div className="space-y-2.5 text-xs sm:text-sm text-[#c9cbbe]">
+            <div className="space-y-2.5 text-xs sm:text-sm text-slate-300">
               <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-[#cef79e] shrink-0 mt-0.5" />
+                <MapPin className="w-4 h-4 text-[#38bdf8] shrink-0 mt-0.5" />
                 <span>{activeAddress}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#cef79e] shrink-0" />
+                <Phone className="w-4 h-4 text-[#22c55e] shrink-0" />
                 <a
                   href={`tel:${activePhonePrimary.replace(/\s+/g, '')}`}
                   className="hover:text-white font-mono dir-ltr"
@@ -149,7 +149,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#cef79e] shrink-0" />
+                <Mail className="w-4 h-4 text-[#38bdf8] shrink-0" />
                 <a
                   href={`mailto:${activeEmail}`}
                   className="hover:text-white font-mono"
@@ -163,16 +163,16 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-[#4d5757]/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#c9cbbe]/80">
+        <div className="pt-8 border-t border-[#1e2e50] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-3">
             <span>{t.footer.rights}</span>
           </div>
           <button
             onClick={scrollToTop}
-            className="flex items-center gap-2 text-white hover:text-[#cef79e] transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-white hover:text-[#22c55e] transition-colors cursor-pointer"
           >
             <span>{t.footer.backToTop}</span>
-            <div className="w-7 h-7 bg-[#222f30] border border-[#4d5757] flex items-center justify-center text-[#cef79e]">
+            <div className="w-7 h-7 bg-[#0f1a34] border border-[#1e2e50] flex items-center justify-center text-[#22c55e]">
               <ArrowUp className="w-3.5 h-3.5" />
             </div>
           </button>

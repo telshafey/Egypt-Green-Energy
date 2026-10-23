@@ -2,16 +2,17 @@
 
 @layer base {
   :root {
-    /* Integrated Bioluminescent Laboratory at Midnight Design Tokens */
-    --color-bioluminescent-lime: #cef79e;
-    --color-abyssal-ink: #222f30;
-    --color-bone-white: #f7f7f5;
-    --color-paper: #ffffff;
-    --color-graphite: #4d5757;
-    --color-lichen: #c9cbbe;
-    --color-tissue: #e7e8e1;
-    --color-frost: #eeeeee;
-    --color-void: #000000;
+    /* Brand-Harmonized Design Tokens (Derived directly from Egypt Green Energy Official Emblem) */
+    --color-brand-midnight: #0a1122;
+    --color-brand-surface: #0f1a34;
+    --color-brand-border: #1e2e50;
+    --color-brand-green: #22c55e;
+    --color-brand-blue: #0ea5e9;
+    --color-brand-gold: #f59e0b;
+
+    --color-light-canvas: #f8fafc;
+    --color-light-card: #ffffff;
+    --color-light-border: #e2e8f0;
 
     --font-ar: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif;
     --font-en: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -28,15 +29,15 @@
 
   html {
     scroll-behavior: smooth;
-    background-color: var(--color-abyssal-ink);
-    color: var(--color-abyssal-ink);
+    background-color: var(--color-brand-midnight);
+    color: var(--color-brand-midnight);
   }
 }
 
-/* Custom scrollbar and bioluminescent selection */
+/* Custom scrollbar and brand selection */
 ::selection {
-  background-color: #cef79e;
-  color: #222f30;
+  background-color: #22c55e;
+  color: #0a1122;
 }
 
 /* Zero shadow discipline: completely flat architectural surfaces */
@@ -44,20 +45,22 @@
   box-shadow: none !important;
 }
 
-/* Micro-surface 40x40 Arrow CTA */
-.btn-arrow-lime {
+/* Micro-surface Arrow CTA */
+.btn-arrow-brand {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background-color: #cef79e;
-  color: #222f30;
+  background-color: #22c55e;
+  color: #0a1122;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
-.btn-arrow-lime:hover {
-  background-color: #bde88a;
+.btn-arrow-brand:hover {
+  background-color: #16a34a;
+  color: #ffffff;
   transform: translateY(-1px);
 }
+

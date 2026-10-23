@@ -301,24 +301,24 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
     : effectivePartners.filter((p) => p.category === activeCategory);
 
   return (
-    <section className="py-16 sm:py-20 bg-[#f7f7f5] text-[#222f30] border-b border-[#c9cbbe] overflow-hidden">
+    <section className="py-16 sm:py-20 bg-[#f8fafc] text-[#0a1122] border-b border-[#e2e8f0] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-medium text-[#4d5757] uppercase tracking-wider mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
             <span>{t.sectionKicker}</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#222f30] mb-3">
+          <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#0a1122] mb-3">
             {t.heading}
           </h2>
-          <p className="text-sm sm:text-base text-[#4d5757] leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
             {t.subheading}
           </p>
         </div>
 
-        {/* Filter Segmented Controls: On #e7e8e1 with #c9cbbe border */}
+        {/* Filter Segmented Controls: On #f1f5f9 with #e2e8f0 border */}
         <div className="flex items-center justify-center flex-wrap gap-1.5 mb-10">
           {[
             { id: 'all', label: currentLang === 'ar' ? 'جميع العلامات التجارية' : 'All Brands' },
@@ -334,8 +334,8 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
               onClick={() => setActiveCategory(cat.id as any)}
               className={`px-3.5 py-1.5 text-xs font-mono font-medium rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 activeCategory === cat.id
-                  ? 'bg-white text-[#222f30] font-semibold border border-[#c9cbbe]'
-                  : 'bg-[#e7e8e1] text-[#4d5757] hover:text-[#222f30] border border-transparent'
+                  ? 'bg-[#0a1122] text-white font-semibold border border-[#0a1122]'
+                  : 'bg-[#f1f5f9] text-slate-600 hover:text-[#0a1122] border border-[#e2e8f0]'
               }`}
             >
               {cat.label}
@@ -343,15 +343,15 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
           ))}
         </div>
 
-        {/* Brand Grid: Flat Paper White Cards with 1px #c9cbbe hairline border */}
+        {/* Brand Grid: Flat Paper White Cards with 1px #e2e8f0 hairline border */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {filteredPartners.map((brand) => (
             <div
               key={brand.id}
-              className="flex flex-col items-center justify-between p-4 sm:p-5 rounded-2xl bg-white border border-[#c9cbbe] hover:border-[#4d5757] transition-all flat-card text-center"
+              className="flex flex-col items-center justify-between p-4 sm:p-5 rounded-2xl bg-white border border-[#e2e8f0] hover:border-slate-400 transition-all flat-card text-center"
             >
               {/* 1. Uniform Neutral Logo Box - Object Fit Contain */}
-              <div className="w-full h-16 sm:h-18 flex items-center justify-center p-2 rounded-xl bg-[#f7f7f5] border border-[#c9cbbe] mb-3.5 overflow-hidden">
+              <div className="w-full h-16 sm:h-18 flex items-center justify-center p-2 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] mb-3.5 overflow-hidden">
                 {'logoUrl' in brand && brand.logoUrl ? (
                   <img
                     src={brand.logoUrl}
@@ -365,18 +365,18 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
 
               {/* 2. Brand Name */}
               <div className="w-full">
-                <h3 className="text-xs sm:text-sm font-semibold text-[#222f30] tracking-tight">
+                <h3 className="text-xs sm:text-sm font-semibold text-[#0a1122] tracking-tight">
                   {brand.name}
                 </h3>
 
                 {/* 3. Specialty Description */}
-                <p className="text-[11px] text-[#4d5757] font-normal leading-snug mt-1.5 line-clamp-2">
+                <p className="text-[11px] text-slate-600 font-normal leading-snug mt-1.5 line-clamp-2">
                   {currentLang === 'ar' ? brand.specialtyAr : brand.specialtyEn}
                 </p>
               </div>
 
               {/* 4. Category Tag At Bottom */}
-              <div className="mt-3.5 pt-2.5 border-t border-[#c9cbbe] w-full flex items-center justify-center gap-1 text-[10px] font-mono text-[#4d5757]">
+              <div className="mt-3.5 pt-2.5 border-t border-[#e2e8f0] w-full flex items-center justify-center gap-1 text-[10px] font-mono text-slate-500">
                 <span>{currentLang === 'ar' ? brand.statusAr : brand.statusEn}</span>
               </div>
             </div>
@@ -384,8 +384,8 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
         </div>
 
         {/* Concise Vendor Integration Statement (P0-5) */}
-        <div className="mt-10 p-5 sm:p-6 rounded-2xl bg-white border border-[#c9cbbe] flat-card text-center">
-          <p className="text-xs sm:text-sm text-[#4d5757] leading-relaxed font-normal max-w-3xl mx-auto">
+        <div className="mt-10 p-5 sm:p-6 rounded-2xl bg-white border border-[#e2e8f0] flat-card text-center">
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal max-w-3xl mx-auto">
             {currentLang === 'ar'
               ? 'نعمل على اختيار وتوريد ودمج أنظمة من علامات تجارية متنوعة وفق المتطلبات الفنية لكل مشروع، مع مراعاة توافر المنتجات وشروط الضمان الخاصة بالموردين.'
               : 'We select, procure, and integrate systems from various brands according to each project\'s technical requirements, taking into account product availability and suppliers\' warranty terms.'}

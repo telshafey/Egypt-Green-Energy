@@ -74,13 +74,13 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
   };
 
   return (
-    <section id="systems" className="py-20 lg:py-28 bg-[#222f30] text-white border-b border-[#4d5757]/60">
+    <section id="systems" className="py-20 lg:py-28 bg-[#0a1122] text-white border-b border-[#1e2e50]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header: Abyssal Ink canvas with Bioluminescent Lime kicker */}
+        {/* Section Header: Tech Midnight canvas with Brand Green kicker */}
         <div className="max-w-3xl mb-12">
-          <div className="flex items-center gap-2 text-xs font-mono font-medium text-[#c9cbbe] uppercase tracking-wider mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#cef79e] shrink-0 inline-block" />
+          <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
             <span>{t.sectionKicker}</span>
           </div>
           <h2
@@ -89,25 +89,25 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
           >
             {t.heading}
           </h2>
-          <p className="text-base sm:text-lg text-[#c9cbbe] leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
             {t.subheading}
           </p>
         </div>
 
-        {/* 4 Quick Category Highlights Strip: Outlined flat cards with 1px #4d5757 hairline */}
+        {/* 4 Quick Category Highlights Strip: Outlined flat cards with 1px #1e2e50 hairline */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-10">
           <button
             type="button"
             onClick={() => setActiveCategory(activeCategory === 'security' ? 'all' : 'security')}
             className={`p-4 rounded-xl border text-left rtl:text-right transition-all cursor-pointer flat-card ${
               activeCategory === 'security'
-                ? 'bg-[#2a3a3b] text-white border-[#cef79e]'
-                : 'bg-[#222f30] border-[#4d5757] hover:border-[#c9cbbe] text-[#c9cbbe]'
+                ? 'bg-[#132347] text-white border-[#22c55e]'
+                : 'bg-[#0f1a34] border-[#1e2e50] hover:border-slate-500 text-slate-300'
             }`}
           >
-            <Shield className="w-4 h-4 text-[#cef79e] mb-2" />
+            <Shield className="w-4 h-4 text-[#38bdf8] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.security}</h3>
-            <span className="text-[11px] block font-mono text-[#c9cbbe]">
+            <span className="text-[11px] block font-mono text-slate-400">
               CCTV & Access Control
             </span>
           </button>
@@ -117,13 +117,13 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             onClick={() => setActiveCategory(activeCategory === 'safety' ? 'all' : 'safety')}
             className={`p-4 rounded-xl border text-left rtl:text-right transition-all cursor-pointer flat-card ${
               activeCategory === 'safety'
-                ? 'bg-[#2a3a3b] text-white border-[#cef79e]'
-                : 'bg-[#222f30] border-[#4d5757] hover:border-[#c9cbbe] text-[#c9cbbe]'
+                ? 'bg-[#132347] text-white border-[#22c55e]'
+                : 'bg-[#0f1a34] border-[#1e2e50] hover:border-slate-500 text-slate-300'
             }`}
           >
-            <Flame className="w-4 h-4 text-[#cef79e] mb-2" />
+            <Flame className="w-4 h-4 text-[#ef4444] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.safety}</h3>
-            <span className="text-[11px] block font-mono text-[#c9cbbe]">
+            <span className="text-[11px] block font-mono text-slate-400">
               Fire Alarm & Safety
             </span>
           </button>
@@ -133,13 +133,13 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             onClick={() => setActiveCategory(activeCategory === 'connectivity' ? 'all' : 'connectivity')}
             className={`p-4 rounded-xl border text-left rtl:text-right transition-all cursor-pointer flat-card ${
               activeCategory === 'connectivity'
-                ? 'bg-[#2a3a3b] text-white border-[#cef79e]'
-                : 'bg-[#222f30] border-[#4d5757] hover:border-[#c9cbbe] text-[#c9cbbe]'
+                ? 'bg-[#132347] text-white border-[#22c55e]'
+                : 'bg-[#0f1a34] border-[#1e2e50] hover:border-slate-500 text-slate-300'
             }`}
           >
-            <Network className="w-4 h-4 text-[#cef79e] mb-2" />
+            <Network className="w-4 h-4 text-[#38bdf8] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.connectivity}</h3>
-            <span className="text-[11px] block font-mono text-[#c9cbbe]">
+            <span className="text-[11px] block font-mono text-slate-400">
               Cat6A, Fiber & IP PBX
             </span>
           </button>
@@ -149,21 +149,21 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             onClick={() => setActiveCategory(activeCategory === 'maintenance' ? 'all' : 'maintenance')}
             className={`p-4 rounded-xl border text-left rtl:text-right transition-all cursor-pointer flat-card ${
               activeCategory === 'maintenance'
-                ? 'bg-[#2a3a3b] text-white border-[#cef79e]'
-                : 'bg-[#222f30] border-[#4d5757] hover:border-[#c9cbbe] text-[#c9cbbe]'
+                ? 'bg-[#132347] text-white border-[#22c55e]'
+                : 'bg-[#0f1a34] border-[#1e2e50] hover:border-slate-500 text-slate-300'
             }`}
           >
-            <Wrench className="w-4 h-4 text-[#cef79e] mb-2" />
+            <Wrench className="w-4 h-4 text-[#22c55e] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.maintenance}</h3>
-            <span className="text-[11px] block font-mono text-[#c9cbbe]">
+            <span className="text-[11px] block font-mono text-slate-400">
               SLA Engineering Contracts
             </span>
           </button>
         </div>
 
-        {/* Filter Bar: Segmented controls with #4d5757 hairline borders */}
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-8 pb-4 border-b border-[#4d5757]/60">
-          <div className="flex items-center gap-1.5 p-1 bg-[#1c2728] border border-[#4d5757] rounded-xl overflow-x-auto max-w-full">
+        {/* Filter Bar: Segmented controls with #1e2e50 hairline borders */}
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-8 pb-4 border-b border-[#1e2e50]">
+          <div className="flex items-center gap-1.5 p-1 bg-[#070d1a] border border-[#1e2e50] rounded-xl overflow-x-auto max-w-full">
             {(['all', 'security', 'safety', 'connectivity', 'audio-bms', 'maintenance'] as const).map((cat) => (
               <button
                 key={cat}
@@ -171,8 +171,8 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                 onClick={() => setActiveCategory(cat)}
                 className={`px-3 py-1.5 text-xs font-mono font-medium rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
                   activeCategory === cat
-                    ? 'bg-white text-[#222f30] font-semibold'
-                    : 'text-[#c9cbbe] hover:text-white'
+                    ? 'bg-[#22c55e] text-[#0a1122] font-bold'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 {t.categories[cat === 'audio-bms' ? 'audioBms' : cat]}
@@ -180,28 +180,28 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             ))}
           </div>
 
-          <div className="text-xs text-[#c9cbbe] font-mono">
+          <div className="text-xs text-slate-400 font-mono">
             {filteredItems.length} {currentLang === 'ar' ? 'أنظمة تيار خفيف' : 'ELV Disciplines'}
           </div>
         </div>
 
-        {/* Low Current Systems Cards Grid: Flat #222f30 cards with #4d5757 hairline borders */}
+        {/* Low Current Systems Cards Grid: Flat #0f1a34 cards with #1e2e50 hairline borders */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => {
             const isCurrentlySelected = selectedSystem?.id === item.id;
             return (
               <div
                 key={item.id}
-                className={`group bg-[#222f30] rounded-2xl border transition-all flex flex-col justify-between flat-card overflow-hidden ${
+                className={`group bg-[#0f1a34] rounded-2xl border transition-all flex flex-col justify-between flat-card overflow-hidden ${
                   isCurrentlySelected
-                    ? 'border-[#cef79e] ring-1 ring-[#cef79e]'
-                    : 'border-[#4d5757] hover:border-[#c9cbbe]'
+                    ? 'border-[#22c55e] ring-1 ring-[#22c55e]'
+                    : 'border-[#1e2e50] hover:border-[#38bdf8]/60'
                 }`}
               >
                 <div>
                   {/* Visual Thumbnail */}
                   <div
-                    className="relative h-44 overflow-hidden bg-[#1c2728] cursor-pointer"
+                    className="relative h-44 overflow-hidden bg-[#070d1a] cursor-pointer"
                     onClick={() => handleSelectSystem(item)}
                   >
                     <img
@@ -211,16 +211,16 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                       onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#222f30] via-[#222f30]/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0f1a34] via-[#0f1a34]/40 to-transparent" />
                     
                     {/* Badge */}
-                    <div className="absolute top-3 start-3 px-2 py-0.5 rounded-md bg-[#222f30]/90 border border-[#4d5757] text-[10px] font-mono text-[#c9cbbe]">
+                    <div className="absolute top-3 start-3 px-2 py-0.5 rounded-md bg-[#0a1122]/90 border border-[#1e2e50] text-[10px] font-mono text-slate-300">
                       {item.badge}
                     </div>
 
                     {isCurrentlySelected && (
-                      <div className="absolute top-3 end-3 px-2 py-0.5 rounded-md bg-[#cef79e] text-[#222f30] text-[10px] font-mono font-bold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#222f30]" />
+                      <div className="absolute top-3 end-3 px-2 py-0.5 rounded-md bg-[#22c55e] text-[#0a1122] text-[10px] font-mono font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#0a1122]" />
                         <span>{currentLang === 'ar' ? 'معروض بالأسفل' : 'Open Below'}</span>
                       </div>
                     )}
@@ -230,32 +230,32 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <div className="p-6">
                     <h3
                       onClick={() => handleSelectSystem(item)}
-                      className="text-base sm:text-lg font-semibold text-white mb-1 group-hover:text-[#cef79e] transition-colors cursor-pointer leading-snug"
+                      className="text-base sm:text-lg font-semibold text-white mb-1 group-hover:text-[#38bdf8] transition-colors cursor-pointer leading-snug"
                     >
                       {item.title}
                     </h3>
-                    <p className="text-xs font-mono text-[#cef79e] mb-4 line-clamp-1">
+                    <p className="text-xs font-mono text-[#38bdf8] mb-4 line-clamp-1">
                       {item.subtitle}
                     </p>
-                    <p className="text-xs sm:text-sm text-[#c9cbbe] leading-relaxed mb-6 line-clamp-3 font-normal">
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 line-clamp-3 font-normal">
                       {item.description}
                     </p>
 
                     {/* Feature Highlights */}
                     <div className="space-y-2 mb-6">
                       {item.features.slice(0, 2).map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-2 text-xs text-[#c9cbbe]">
-                          <Check className="w-3.5 h-3.5 text-[#cef79e] shrink-0 mt-0.5" />
+                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-300">
+                          <Check className="w-3.5 h-3.5 text-[#22c55e] shrink-0 mt-0.5" />
                           <span>{feat}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Quantitative Specs */}
-                    <div className="p-3 bg-[#1c2728] rounded-xl border border-[#4d5757]/80 space-y-1.5 text-xs">
+                    <div className="p-3 bg-[#070d1a] rounded-xl border border-[#1e2e50] space-y-1.5 text-xs">
                       {item.specs.slice(0, 2).map((sp, sIdx) => (
                         <div key={sIdx} className="flex items-center justify-between">
-                          <span className="text-[#c9cbbe] text-[11px]">{sp.label}:</span>
+                          <span className="text-slate-400 text-[11px]">{sp.label}:</span>
                           <span className="font-mono text-white text-[11px] tabular-nums font-semibold">{sp.value}</span>
                         </div>
                       ))}
@@ -263,14 +263,14 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   </div>
                 </div>
 
-                {/* Action Buttons: 40x40 Lime Arrow button paired with white CTA */}
-                <div className="px-6 pb-6 pt-3 flex items-center justify-between gap-3 border-t border-[#4d5757]/60 mt-2">
+                {/* Action Buttons: 40x40 Brand Arrow button paired with CTA */}
+                <div className="px-6 pb-6 pt-3 flex items-center justify-between gap-3 border-t border-[#1e2e50] mt-2">
                   <button
                     type="button"
                     onClick={() => handleSelectSystem(item)}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono text-[#c9cbbe] hover:text-white transition-colors cursor-pointer py-1"
+                    className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-300 hover:text-white transition-colors cursor-pointer py-1"
                   >
-                    <FileText className="w-3.5 h-3.5 text-[#cef79e]" />
+                    <FileText className="w-3.5 h-3.5 text-[#38bdf8]" />
                     <span>{isCurrentlySelected ? (currentLang === 'ar' ? 'انتقل للملف ↓' : 'Jump to Dossier ↓') : t.exploreDetails}</span>
                   </button>
 
@@ -278,7 +278,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => handleInquire(item.title)}
-                      className="px-3.5 py-2 text-xs font-semibold bg-white hover:bg-[#f7f7f5] text-[#222f30] rounded-lg transition-colors cursor-pointer"
+                      className="px-3.5 py-2 text-xs font-semibold bg-[#22c55e] hover:bg-[#16a34a] text-white rounded-lg transition-colors cursor-pointer"
                     >
                       <span>{currentLang === 'ar' ? 'طلب مقايسة' : 'Request BOQ'}</span>
                     </button>
@@ -286,7 +286,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                       type="button"
                       onClick={() => handleInquire(item.title)}
                       aria-label="Direct inquiry"
-                      className="btn-arrow-lime cursor-pointer"
+                      className="w-9 h-9 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
                     >
                       <ArrowIcon className="w-3.5 h-3.5 rtl:rotate-0" />
                     </button>
@@ -303,12 +303,12 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             ref={dossierRef}
             id="system-technical-dossier"
             tabIndex={-1}
-            className="mt-14 bg-[#222f30] rounded-2xl border border-[#cef79e]/60 p-6 sm:p-10 flat-card scroll-mt-28 transition-all relative overflow-hidden"
+            className="mt-14 bg-[#0f1a34] rounded-2xl border border-[#22c55e]/60 p-6 sm:p-10 flat-card scroll-mt-28 transition-all relative overflow-hidden"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-6 mb-8 border-b border-[#4d5757]/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-6 mb-8 border-b border-[#1e2e50]">
               <div className="flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-[#cef79e] inline-block animate-pulse" />
-                <span className="text-xs sm:text-sm font-mono text-[#cef79e]">
+                <span className="w-2 h-2 rounded-full bg-[#22c55e] inline-block animate-pulse" />
+                <span className="text-xs sm:text-sm font-mono text-[#38bdf8]">
                   {currentLang === 'ar'
                     ? `الملف الفني للنظام: ${selectedSystem.title}`
                     : `Technical Specifications: ${selectedSystem.title}`}
@@ -318,7 +318,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
               <button
                 type="button"
                 onClick={handleCloseDossier}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-[#c9cbbe] hover:text-white bg-[#1c2728] border border-[#4d5757] rounded-lg transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-slate-300 hover:text-white bg-[#070d1a] border border-[#1e2e50] rounded-lg transition-colors cursor-pointer"
               >
                 <ArrowUp className="w-3.5 h-3.5" />
                 <span>{currentLang === 'ar' ? 'العودة للأعلى' : 'Back to Systems'}</span>
@@ -329,7 +329,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
               
               {/* Media Column */}
               <div className="w-full lg:w-5/12">
-                <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden border border-[#4d5757] bg-[#1c2728]">
+                <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden border border-[#1e2e50] bg-[#070d1a]">
                   <img
                     src={resolveImageUrl(selectedSystem.image, DEFAULT_CCTV_IMAGE)}
                     alt={selectedSystem.title}
@@ -337,20 +337,20 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                     onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                     className="w-full h-full object-cover opacity-80"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#222f30] via-transparent to-transparent flex items-end p-6">
-                    <span className="text-xs font-mono text-[#cef79e] bg-[#222f30]/90 border border-[#4d5757] px-3 py-1 rounded-md">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1a34] via-transparent to-transparent flex items-end p-6">
+                    <span className="text-xs font-mono text-[#38bdf8] bg-[#0a1122]/90 border border-[#1e2e50] px-3 py-1 rounded-md">
                       {selectedSystem.badge}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-5 p-5 bg-[#1c2728] rounded-xl border border-[#4d5757] space-y-2.5">
-                  <span className="block text-xs font-mono text-[#cef79e] uppercase tracking-wider mb-2">
+                <div className="mt-5 p-5 bg-[#070d1a] rounded-xl border border-[#1e2e50] space-y-2.5">
+                  <span className="block text-xs font-mono text-[#22c55e] uppercase tracking-wider mb-2">
                     {currentLang === 'ar' ? 'المواصفات القياسية والمقاييس' : 'Standard Specifications'}
                   </span>
                   {selectedSystem.specs.map((spec, sIdx) => (
-                    <div key={sIdx} className="flex items-center justify-between text-xs py-1 border-b border-[#4d5757]/40 last:border-0">
-                      <span className="text-[#c9cbbe]">{spec.label}</span>
+                    <div key={sIdx} className="flex items-center justify-between text-xs py-1 border-b border-[#1e2e50]/40 last:border-0">
+                      <span className="text-slate-400">{spec.label}</span>
                       <span className="font-semibold text-white font-mono tabular-nums">{spec.value}</span>
                     </div>
                   ))}
@@ -362,7 +362,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                 <div>
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
-                      <span className="text-xs font-mono text-[#cef79e] uppercase tracking-wider bg-[#1c2728] border border-[#4d5757] px-2.5 py-1 rounded-md inline-block">
+                      <span className="text-xs font-mono text-[#38bdf8] uppercase tracking-wider bg-[#070d1a] border border-[#1e2e50] px-2.5 py-1 rounded-md inline-block">
                         {selectedSystem.category.toUpperCase()}
                       </span>
                       <h3 className="text-xl sm:text-2xl font-medium text-white mt-3">
@@ -371,11 +371,11 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-xs sm:text-sm font-mono text-[#cef79e] mb-4">
+                  <p className="text-xs sm:text-sm font-mono text-[#38bdf8] mb-4">
                     {selectedSystem.subtitle}
                   </p>
 
-                  <p className="text-xs sm:text-sm text-[#c9cbbe] leading-relaxed mb-6 font-normal">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
                     {selectedSystem.description}
                   </p>
 
@@ -385,20 +385,20 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
 
                   <div className="space-y-2.5 mb-8">
                     {selectedSystem.features.map((feat, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm text-[#c9cbbe] bg-[#1c2728] p-3 rounded-xl border border-[#4d5757]">
-                        <Check className="w-4 h-4 text-[#cef79e] shrink-0 mt-0.5" />
+                      <div key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 bg-[#070d1a] p-3 rounded-xl border border-[#1e2e50]">
+                        <Check className="w-4 h-4 text-[#22c55e] shrink-0 mt-0.5" />
                         <span>{feat}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-[#4d5757]/60">
+                <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-[#1e2e50]">
                   <div className="inline-flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => handleInquire(selectedSystem.title)}
-                      className="px-6 py-3 text-xs sm:text-sm font-semibold text-[#222f30] bg-white hover:bg-[#f7f7f5] rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      className="px-6 py-3 text-xs sm:text-sm font-semibold text-white bg-[#22c55e] hover:bg-[#16a34a] rounded-lg transition-all cursor-pointer whitespace-nowrap"
                     >
                       <span>{currentLang === 'ar' ? 'طلب مقايسة فنية لهذا النظام' : 'Request BOQ For This System'}</span>
                     </button>
@@ -406,7 +406,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                       type="button"
                       onClick={() => handleInquire(selectedSystem.title)}
                       aria-label="Direct request"
-                      className="btn-arrow-lime cursor-pointer"
+                      className="w-11 h-11 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
                     >
                       <ArrowIcon className="w-4 h-4 rtl:rotate-0" />
                     </button>
@@ -415,7 +415,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <button
                     type="button"
                     onClick={handleCloseDossier}
-                    className="inline-flex items-center gap-1.5 px-4 py-3 text-xs font-mono text-[#c9cbbe] hover:text-white rounded-lg border border-[#4d5757] hover:border-[#c9cbbe] transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-4 py-3 text-xs font-mono text-slate-300 hover:text-white rounded-lg border border-[#1e2e50] hover:border-slate-400 transition-colors cursor-pointer"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
                     <span>{t.backToList}</span>
