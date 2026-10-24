@@ -70,6 +70,8 @@ import {
   getMediaAssets,
   saveMediaAsset,
   deleteMediaAsset,
+  uploadAndSaveImage,
+  subscribeToMediaAssets,
   MediaAssetData,
   DEFAULT_MEDIA_ASSETS,
   AdminUserData,
@@ -90,6 +92,7 @@ import {
   subscribeToVendors,
   DEFAULT_VENDOR_BRANDS,
 } from '../services/firebaseService';
+import { optimizeImageForDatabase, formatBytes } from '../utils/imageUploadHelper';
 import { LightCurrentSystem, ProjectItem, Language, VendorBrandItem } from '../types';
 import { content, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE } from '../data/translations';
 import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE, DEFAULT_CCTV_IMAGE, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
@@ -184,6 +187,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newMediaTitle, setNewMediaTitle] = useState<string>('');
   const [newMediaCategory, setNewMediaCategory] = useState<string>('cctv');
 
+  // Device Image Upload States for Media Library
+  const [isUploadingMedia, setIsUploadingMedia] = useState<boolean>(false);
+  const [mediaUploadMode, setMediaUploadMode] = useState<'upload' | 'url'>('upload');
+  const [selectedDeviceImage, setSelectedDeviceImage] = useState<{
+    file: File;
+    dataUrl: string;
+    name: string;
+    originalKb: number;
+    compressedKb: number;
+    width: number;
+    height: number;
+    format: string;
+  } | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
+
   // Vendor Brands Management States
   const [vendors, setVendors] = useState<VendorBrandItem[]>(DEFAULT_VENDOR_BRANDS);
   const [editingVendor, setEditingVendor] = useState<VendorBrandItem | null>(null);
@@ -272,6 +290,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     let unsubInquiries: (() => void) | undefined;
     let unsubUsers: (() => void) | undefined;
     let unsubVendors: (() => void) | undefined;
+    let unsubMedia: (() => void) | undefined;
 
     async function loadData() {
       setIsLoading(true);
@@ -317,6 +336,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         unsubVendors = subscribeToVendors((vList) => {
           if (vList.length > 0) setVendors(vList);
         });
+
+        // Subscribe to live media assets in database
+        unsubMedia = subscribeToMediaAssets((mList) => {
+          if (mList.length > 0) setMediaAssets(mList);
+        });
       } catch (err) {
         console.warn('Admin: Fallback to bundled data:', err);
       } finally {
@@ -332,6 +356,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (unsubInquiries) unsubInquiries();
       if (unsubUsers) unsubUsers();
       if (unsubVendors) unsubVendors();
+      if (unsubMedia) unsubMedia();
     };
   }, [isAdminUnlocked]);
 
@@ -639,8 +664,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // 4. Add Media Asset
-  const handleAddMedia = async (e: React.FormEvent) => {
+  // 4. Device Image Upload & Optimization for Media Library
+  const handleDeviceImageSelect = async (file: File) => {
+    if (!file.type.startsWith('image/') && !file.name.toLowerCase().endsWith('.svg')) {
+      showToast('يرجى اختيار ملف صورة صالح (PNG, JPG, WebP, SVG)', 'error');
+      return;
+    }
+
+    try {
+      showToast('جارِ فحص وضغط الصورة من جهازك...', 'info');
+      const optimized = await optimizeImageForDatabase(file, {
+        maxWidth: 1600,
+        maxHeight: 1200,
+        quality: 0.84,
+      });
+
+      setSelectedDeviceImage({
+        file,
+        dataUrl: optimized.dataUrl,
+        name: file.name,
+        originalKb: optimized.originalSizeKb,
+        compressedKb: optimized.compressedSizeKb,
+        width: optimized.width,
+        height: optimized.height,
+        format: optimized.format,
+      });
+
+      if (!newMediaTitle.trim()) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        setNewMediaTitle(cleanName);
+      }
+
+      showToast(
+        `تم تجهيز الصورة بنجاح: ${optimized.width}×${optimized.height} (${optimized.compressedSizeKb} KB)`,
+        'success'
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر ضغط وتجهيز الصورة';
+      showToast(msg, 'error');
+    }
+  };
+
+  const handleSaveDeviceImageToDatabase = async () => {
+    if (!selectedDeviceImage) {
+      showToast('يرجى اختيار صورة أولاً من جهازك', 'error');
+      return;
+    }
+
+    setIsUploadingMedia(true);
+    try {
+      const assetId = `media-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const title = newMediaTitle.trim() || selectedDeviceImage.name.replace(/\.[^/.]+$/, '');
+      const newAsset: MediaAssetData = {
+        id: assetId,
+        title,
+        url: selectedDeviceImage.dataUrl,
+        category: newMediaCategory,
+        createdAt: new Date().toISOString(),
+        sizeKb: selectedDeviceImage.compressedKb,
+        dimensions: `${selectedDeviceImage.width}x${selectedDeviceImage.height}`,
+        format: selectedDeviceImage.format,
+        source: 'upload',
+      };
+
+      await saveMediaAsset(newAsset);
+      setMediaAssets((prev) => [newAsset, ...prev]);
+      setSelectedDeviceImage(null);
+      setNewMediaTitle('');
+      showToast(`تم حفظ الصورة بنجاح في قاعدة بيانات فايربيز (${newAsset.sizeKb} KB)`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ الصورة في قاعدة البيانات';
+      showToast(msg, 'error');
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
+
+  // Add External Media URL
+  const handleAddMediaUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMediaUrl.trim()) return;
     const newAsset: MediaAssetData = {
@@ -649,13 +751,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       url: newMediaUrl.trim(),
       category: newMediaCategory,
       createdAt: new Date().toISOString(),
+      source: 'url',
     };
     try {
       await saveMediaAsset(newAsset);
       setMediaAssets((prev) => [newAsset, ...prev]);
       setNewMediaUrl('');
       setNewMediaTitle('');
-      showToast('تمت إضافة الصورة بنجاح إلى مكتبة الوسائط في فايربيز');
+      showToast('تمت إضافة رابط الصورة بنجاح إلى قاعدة بيانات فايربيز');
       getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر إضافة الصورة';
@@ -667,7 +770,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       await deleteMediaAsset(id);
       setMediaAssets((prev) => prev.filter((m) => m.id !== id));
-      showToast('تمت إزالة الصورة من المكتبة');
+      showToast('تمت إزالة الصورة من قاعدة البيانات');
       getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر حذف الصورة';
@@ -682,9 +785,57 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     try {
       await saveSiteSettings(updated);
       if (onSettingsUpdated) onSettingsUpdated(updated);
-      showToast('تم تعيين الصورة كخلفية رئيسية للموقع (Hero Banner)');
+      showToast('تم تعيين وحفظ الصورة كخلفية رئيسية (Hero) في فايربيز');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'تعذر تعيين الصورة الرئيسية';
+      showToast(msg, 'error');
+    }
+  };
+
+  // Upload hero image directly from device
+  const handleHeroFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('يرجى اختيار ملف صورة صالح (JPG, PNG, WebP)', 'error');
+      return;
+    }
+
+    try {
+      showToast('جارِ ضغط صورة الواجهة وحفظها في قاعدة البيانات...', 'info');
+      const optimized = await optimizeImageForDatabase(file, {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 0.84,
+      });
+
+      // Save to media assets library
+      const assetId = `media-hero-${Date.now()}`;
+      const newAsset: MediaAssetData = {
+        id: assetId,
+        title: `خلفية الواجهة الرئيسية (${file.name})`,
+        url: optimized.dataUrl,
+        category: 'hero',
+        createdAt: new Date().toISOString(),
+        sizeKb: optimized.compressedSizeKb,
+        dimensions: `${optimized.width}x${optimized.height}`,
+        format: optimized.format,
+        source: 'upload',
+      };
+      await saveMediaAsset(newAsset);
+      setMediaAssets((prev) => [newAsset, ...prev]);
+
+      // Set to site settings
+      const updated = { ...settings, heroImageUrl: optimized.dataUrl };
+      setSettings(updated);
+      await saveSiteSettings(updated);
+      if (onSettingsUpdated) onSettingsUpdated(updated);
+
+      showToast(`تم رفع وتثبيت صورة الـ Hero بنجاح في فايربيز (${optimized.compressedSizeKb} KB)`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ صورة الواجهة';
       showToast(msg, 'error');
     }
   };
@@ -703,55 +854,123 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Upload logo image file directly
-  const handleLogoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload logo image file directly with smart optimization
+  const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      showToast('يرجى اختيار ملف صورة صالح (PNG, SVG, JPG, WebP)', 'error');
+    if (!file.type.startsWith('image/') && !file.name.toLowerCase().endsWith('.svg')) {
+      showToast('يرجى اختيار ملف صورة صالح (PNG شفاف، SVG، JPG، WebP)', 'error');
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('حجم ملف الشعار يفضل ألا يتجاوز 2 ميجابايت لضمان السرعة', 'error');
-      return;
+    try {
+      showToast('جارِ معالجة وتثبيت الشعار في قاعدة البيانات...', 'info');
+      const optimized = await optimizeImageForDatabase(file, {
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.90,
+        preserveTransparency: true,
+      });
+
+      const updated = { ...settings, logoUrl: optimized.dataUrl };
+      setSettings(updated);
+
+      // Register in media assets library
+      const newAsset: MediaAssetData = {
+        id: `media-logo-${Date.now()}`,
+        title: `شعار الشركة المعتمد (${file.name})`,
+        url: optimized.dataUrl,
+        category: 'brand',
+        createdAt: new Date().toISOString(),
+        sizeKb: optimized.compressedSizeKb,
+        dimensions: `${optimized.width}x${optimized.height}`,
+        format: optimized.format,
+        source: 'upload',
+      };
+      await saveMediaAsset(newAsset);
+      setMediaAssets((prev) => [newAsset, ...prev]);
+
+      await saveSiteSettings(updated);
+      if (onSettingsUpdated) onSettingsUpdated(updated);
+      showToast(`تم رفع وحفظ شعار الشركة في فايربيز (${optimized.compressedSizeKb} KB)`);
+      getFirestoreDatabaseStats().then(setDbStats).catch(console.warn);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر حفظ ملف الشعار';
+      showToast(msg, 'error');
     }
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        const updated = { ...settings, logoUrl: result };
-        setSettings(updated);
-
-        // Also register in media assets
-        const newAsset: MediaAssetData = {
-          id: `media-logo-${Date.now()}`,
-          title: `شعار الشركة المعتمد (${file.name})`,
-          url: result,
-          category: 'brand',
-          createdAt: new Date().toISOString(),
-        };
-        try {
-          await saveMediaAsset(newAsset);
-          setMediaAssets((prev) => [newAsset, ...prev]);
-        } catch (err) {
-          console.warn('Failed to register logo in media library:', err);
-        }
-
-        try {
-          await saveSiteSettings(updated);
-          if (onSettingsUpdated) onSettingsUpdated(updated);
-          showToast('تم رفع وتثبيت شعار الشركة بنجاح عبر فايربيز');
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : 'تعذر حفظ الشعار';
-          showToast(msg, 'error');
-        }
-      }
-    };
-    reader.readAsDataURL(file);
   };
+
+  // Upload System Image directly from device
+  const handleSystemImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingSystem) return;
+
+    try {
+      showToast('جارِ ضغط صورة النظام وحفظها...', 'info');
+      const optimized = await optimizeImageForDatabase(file, {
+        maxWidth: 1280,
+        maxHeight: 800,
+        quality: 0.84,
+      });
+
+      const newAsset: MediaAssetData = {
+        id: `media-sys-${Date.now()}`,
+        title: `نظام ${editingSystem.title} (${file.name})`,
+        url: optimized.dataUrl,
+        category: 'systems',
+        createdAt: new Date().toISOString(),
+        sizeKb: optimized.compressedSizeKb,
+        dimensions: `${optimized.width}x${optimized.height}`,
+        format: optimized.format,
+        source: 'upload',
+      };
+      await saveMediaAsset(newAsset);
+      setMediaAssets((prev) => [newAsset, ...prev]);
+
+      setEditingSystem({ ...editingSystem, image: optimized.dataUrl });
+      showToast(`تم رفع صورة النظام بنجاح (${optimized.compressedSizeKb} KB)`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر رفع صورة النظام';
+      showToast(msg, 'error');
+    }
+  };
+
+  // Upload Project Image directly from device
+  const handleProjectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProject) return;
+
+    try {
+      showToast('جارِ ضغط صورة المشروع وحفظها...', 'info');
+      const optimized = await optimizeImageForDatabase(file, {
+        maxWidth: 1280,
+        maxHeight: 800,
+        quality: 0.84,
+      });
+
+      const newAsset: MediaAssetData = {
+        id: `media-proj-${Date.now()}`,
+        title: `مشروع ${editingProject.title} (${file.name})`,
+        url: optimized.dataUrl,
+        category: 'projects',
+        createdAt: new Date().toISOString(),
+        sizeKb: optimized.compressedSizeKb,
+        dimensions: `${optimized.width}x${optimized.height}`,
+        format: optimized.format,
+        source: 'upload',
+      };
+      await saveMediaAsset(newAsset);
+      setMediaAssets((prev) => [newAsset, ...prev]);
+
+      setEditingProject({ ...editingProject, image: optimized.dataUrl });
+      showToast(`تم رفع صورة المشروع بنجاح (${optimized.compressedSizeKb} KB)`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تعذر رفع صورة المشروع';
+      showToast(msg, 'error');
+    }
+  };
+
 
   // Reset to default geometric emblem
   const handleResetToDefaultLogo = async () => {
@@ -1587,6 +1806,119 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
+              {/* HERO BANNER BACKGROUND IMAGE CARD */}
+              <div className="p-6 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                        <span>خلفية الواجهة الرئيسية (Hero Banner Image)</span>
+                        {settings.heroImageUrl && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            صورة مخصصة نشطة
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        رفع صورة فوتوغرافية من حاسوبك لتكون خلفية الواجهة الرئيسية للموقع مع حفظها في الداتا بيز
+                      </p>
+                    </div>
+                  </div>
+
+                  {settings.heroImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => handleSetHeroImage('')}
+                      className="text-xs text-slate-400 hover:text-amber-300 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-amber-800 transition-colors cursor-pointer self-start sm:self-auto"
+                      title="استعادة صورة الواجهة الافتراضية"
+                    >
+                      استعادة الصورة الافتراضية
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                  {/* Left: Hero Preview */}
+                  <div className="lg:col-span-5">
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-800 bg-slate-900 group">
+                      <img
+                        src={resolveImageUrl(settings.heroImageUrl, DEFAULT_HERO_IMAGE)}
+                        alt="Hero preview"
+                        onError={handleImageError}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1122] via-[#0a1122]/60 to-transparent flex items-end p-3">
+                        <span className="text-[11px] font-bold text-white">
+                          {settings.heroTitleAr || 'أنظمة التيار الخفيف والحلول المتكاملة'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: URL Input & Device Upload Button */}
+                  <div className="lg:col-span-7 space-y-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        رفع صورة خلفية من جهازك أو إدخال رابط مباشر
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={settings.heroImageUrl || ''}
+                          onChange={(e) => setSettings({ ...settings, heroImageUrl: e.target.value })}
+                          placeholder="رابط الصورة أو ارفعها من جهازك مباشرة..."
+                          className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                        />
+                        <label
+                          htmlFor="hero-file-uploader"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer shrink-0"
+                          title="رفع صورة من حاسوبك أو هاتفك وحفظها في الداتا بيز"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>رفع صورة من جهازك</span>
+                        </label>
+                        <input
+                          type="file"
+                          id="hero-file-uploader"
+                          accept="image/*"
+                          onChange={handleHeroFileUpload}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Pick from Media Assets */}
+                    {mediaAssets.length > 0 && (
+                      <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                        <span className="text-[10px] text-slate-500 shrink-0">اختيار من المكتبة:</span>
+                        {mediaAssets.slice(0, 7).map((asset) => (
+                          <button
+                            key={asset.id}
+                            type="button"
+                            onClick={() => handleSetHeroImage(asset.url)}
+                            className={`p-1 rounded-lg border transition-all shrink-0 ${
+                              settings.heroImageUrl === asset.url
+                                ? 'bg-emerald-950 border-emerald-500 ring-1 ring-emerald-500'
+                                : 'bg-slate-900 hover:bg-slate-800 border-slate-800'
+                            }`}
+                            title={`تعيين ${asset.title} كخلفية Hero`}
+                          >
+                            <img src={resolveImageUrl(asset.url, DEFAULT_HERO_IMAGE)} alt={asset.title} className="w-6 h-6 rounded object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="text-[11px] text-slate-400">
+                      💡 <strong>ملاحظة:</strong> يتم ضغط الصورة المرفوعة تلقائياً إلى حجم خفيف وسريع (~60-120 KB) مع بقائها بدقة عالية جداً.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
@@ -2093,17 +2425,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      رابط صورة النظام (Image URL)
+                      صورة النظام — رفع من جهازك أو إدخال رابط مباشر
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={editingSystem.image}
                         onChange={(e) =>
                           setEditingSystem({ ...editingSystem, image: e.target.value })
                         }
+                        placeholder="رابط الصورة أو ارفعها من جهازك..."
                         className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                       />
+                      <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>رفع من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleSystemImageUpload}
+                        />
+                      </label>
                       {editingSystem.image && (
                         <img
                           src={resolveImageUrl(editingSystem.image, DEFAULT_CCTV_IMAGE)}
@@ -2373,17 +2716,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      رابط صورة المشروع
+                      صورة المشروع — رفع من جهازك أو إدخال رابط مباشر
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={editingProject.image}
                         onChange={(e) =>
                           setEditingProject({ ...editingProject, image: e.target.value })
                         }
+                        placeholder="رابط الصورة أو ارفعها من جهازك..."
                         className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
                       />
+                      <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>رفع من جهازك</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleProjectImageUpload}
+                        />
+                      </label>
                       {editingProject.image && (
                         <img
                           src={resolveImageUrl(editingProject.image, DEFAULT_CABLING_IMAGE)}
@@ -3233,58 +3587,287 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* TAB 6: MEDIA */}
           {activeTab === 'media' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white">مكتبة الصور والوسائط الفائقة الدقة</h2>
-                  <p className="text-xs text-slate-400">
-                    التحكم في صور الموقع، خلفية الواجهة الرئيسية (Hero)، وصور المشروعات والأنظمة
+                  <div className="flex items-center gap-2">
+                    <Database className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      مكتبة الصور والوسائط (حفظ مباشر في قاعدة البيانات)
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    رفع الصور من حاسوبك أو هاتفك وتخزينها مباشرة في قاعدة بيانات فايربيز مع ضغط تلقائي فائق النقاء، لتعيينها كواجهة (Hero) أو مشروعات أو شعار
                   </p>
+                </div>
+
+                {/* Mode Selector */}
+                <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setMediaUploadMode('upload')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      mediaUploadMode === 'upload'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>رفع ملف من جهازك</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMediaUploadMode('url')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                      mediaUploadMode === 'url'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>رابط خارجي (URL)</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Add Custom Image URL Form */}
-              <form onSubmit={handleAddMedia} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
-                <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
-                  <UploadCloud className="w-4 h-4" />
-                  <span>إضافة رابط صورة خارجية إلى المكتبة</span>
-                </h3>
+              {/* MODE 1: UPLOAD FROM DEVICE */}
+              {mediaUploadMode === 'upload' && (
+                <div className="p-6 rounded-2xl bg-slate-950 border-2 border-emerald-500/40 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-800 flex items-center justify-center text-emerald-400">
+                        <UploadCloud className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-white">
+                          رفع صورة من جهازك وتخزينها في قاعدة البيانات
+                        </h3>
+                        <p className="text-[11px] text-slate-400">
+                          يتم ضغط الصورة تلقائياً بجودة عالية وحفظها مباشرة داخل Firestore لتعمل بدون أي روابط خارجية
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-2">
-                    <input
-                      type="url"
-                      placeholder="https://example.com/image.jpg"
-                      value={newMediaUrl}
-                      onChange={(e) => setNewMediaUrl(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
-                    />
+                    <div className="hidden sm:flex items-center gap-2">
+                      <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                        Firestore Native Base64
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="عنوان ووصف الصورة..."
-                      value={newMediaTitle}
-                      onChange={(e) => setNewMediaTitle(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    />
-                  </div>
-                </div>
 
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors cursor-pointer"
-                  >
-                    حفظ الصورة في المكتبة
-                  </button>
+                  {/* Drag & Drop Area */}
+                  {!selectedDeviceImage ? (
+                    <label
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDraggingOver(true);
+                      }}
+                      onDragLeave={() => setIsDraggingOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDraggingOver(false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleDeviceImageSelect(file);
+                      }}
+                      className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+                        isDraggingOver
+                          ? 'border-emerald-400 bg-emerald-950/30 scale-[1.01]'
+                          : 'border-slate-800 hover:border-emerald-500/60 bg-slate-900/50 hover:bg-slate-900/80'
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*,.svg"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleDeviceImageSelect(file);
+                        }}
+                      />
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-950/60 border border-emerald-700/60 flex items-center justify-center text-emerald-400 mb-3 shadow-lg">
+                        <UploadCloud className="w-7 h-7" />
+                      </div>
+                      <span className="text-sm font-bold text-white mb-1">
+                        انقر لاختيار صورة من جهازك، أو اسحب الملف وأفلته هنا
+                      </span>
+                      <span className="text-xs text-slate-400 max-w-md">
+                        يدعم صيغ JPG، PNG، WebP، SVG — يتم تحجيم وضغط الصور الكبيرة تلقائياً لتناسب قاعدة البيانات وتضمن سرعة تحميل فائقة للزوار
+                      </span>
+                    </label>
+                  ) : (
+                    /* Selected Image Preview & Configuration Card */
+                    <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
+                      <div className="flex flex-col md:flex-row items-center gap-5">
+                        {/* Thumbnail */}
+                        <div className="w-36 h-28 rounded-xl overflow-hidden bg-slate-950 border border-slate-700 shrink-0 relative group">
+                          <img
+                            src={selectedDeviceImage.dataUrl}
+                            alt="معاينة"
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/80 text-white font-bold uppercase">
+                            {selectedDeviceImage.format}
+                          </span>
+                        </div>
+
+                        {/* Compression & Details Metrics */}
+                        <div className="flex-1 w-full space-y-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                              <span className="block text-[10px] text-slate-500">الأبعاد</span>
+                              <span className="text-xs font-bold text-white font-mono">
+                                {selectedDeviceImage.width} × {selectedDeviceImage.height} px
+                              </span>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                              <span className="block text-[10px] text-slate-500">الحجم الأصلي</span>
+                              <span className="text-xs font-bold text-slate-400 font-mono">
+                                {selectedDeviceImage.originalKb} KB
+                              </span>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-slate-950 border border-emerald-500/40">
+                              <span className="block text-[10px] text-emerald-400">الحجم في الداتا بيز</span>
+                              <span className="text-xs font-bold text-emerald-300 font-mono">
+                                {selectedDeviceImage.compressedKb} KB
+                              </span>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                              <span className="block text-[10px] text-slate-500">نسبة التوفير</span>
+                              <span className="text-xs font-bold text-blue-400 font-mono">
+                                {selectedDeviceImage.originalKb > selectedDeviceImage.compressedKb
+                                  ? `-${Math.round((1 - selectedDeviceImage.compressedKb / selectedDeviceImage.originalKb) * 100)}%`
+                                  : '100%'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Title and Category Inputs */}
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="sm:col-span-2">
+                              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                                عنوان أو وصف الصورة *
+                              </label>
+                              <input
+                                type="text"
+                                value={newMediaTitle}
+                                onChange={(e) => setNewMediaTitle(e.target.value)}
+                                placeholder="عنوان معبر للصورة..."
+                                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                                تصنيف الاستخدام
+                              </label>
+                              <select
+                                value={newMediaCategory}
+                                onChange={(e) => setNewMediaCategory(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                              >
+                                <option value="hero">خلفية الواجهة الرئيسية (Hero)</option>
+                                <option value="projects">سابقة المشروعات (Projects)</option>
+                                <option value="systems">أنظمة التيار الخفيف (Systems)</option>
+                                <option value="brand">شعار وهوية الشركة (Brand Logo)</option>
+                                <option value="general">عام / منوع (General)</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDeviceImage(null)}
+                          className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                          إلغاء واختيار صورة أخرى
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSaveDeviceImageToDatabase}
+                          disabled={isUploadingMedia}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>
+                            {isUploadingMedia
+                              ? 'جارِ الحفظ في قاعدة البيانات...'
+                              : 'حفظ الصورة في قاعدة بيانات فايربيز'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </form>
+              )}
+
+              {/* MODE 2: EXTERNAL URL */}
+              {mediaUploadMode === 'url' && (
+                <form onSubmit={handleAddMediaUrl} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    <span>إضافة رابط صورة خارجية إلى المكتبة</span>
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
+                      <input
+                        type="url"
+                        placeholder="https://example.com/image.jpg"
+                        value={newMediaUrl}
+                        onChange={(e) => setNewMediaUrl(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 dir-ltr text-start"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="عنوان ووصف الصورة..."
+                        value={newMediaTitle}
+                        onChange={(e) => setNewMediaTitle(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors cursor-pointer"
+                    >
+                      حفظ الرابط في المكتبة
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Summary Stats Strip for Media Library */}
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+                <span className="text-slate-400">
+                  إجمالي الصور في المكتبة: <strong className="text-white font-mono">{mediaAssets.length}</strong>
+                </span>
+                <span className="text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>
+                    {mediaAssets.filter((a) => a.source === 'upload' || a.url.startsWith('data:')).length} صورة مرفوعة مباشرة من الأجهزة ومحفوظة في قاعدة البيانات
+                  </span>
+                </span>
+              </div>
 
               {/* Media Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {mediaAssets.map((asset) => {
                   const isCurrentHero = settings.heroImageUrl === asset.url;
                   const isCurrentLogo = settings.logoUrl === asset.url;
+                  const isStoredInDb = asset.source === 'upload' || asset.url.startsWith('data:');
+
                   return (
                     <div
                       key={asset.id}
@@ -3301,6 +3884,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           onError={handleImageError}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
+
+                        {/* Top Badges */}
                         <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                           {isCurrentHero && (
                             <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white shadow-md flex items-center gap-1">
@@ -3315,19 +3900,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </span>
                           )}
                         </div>
+
+                        {/* Storage Indicator Badge */}
+                        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                          {isStoredInDb ? (
+                            <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 flex items-center gap-1">
+                              <Database className="w-2.5 h-2.5" />
+                              <span>محفوظة بالداتا بيز</span>
+                              {asset.sizeKb ? <span className="font-mono">({asset.sizeKb} KB)</span> : null}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[9px] font-medium bg-slate-900/90 text-slate-300 border border-slate-700 flex items-center gap-1">
+                              <ExternalLink className="w-2.5 h-2.5" />
+                              <span>رابط خارجي</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
-                          <h4 className="text-xs font-bold text-white mb-1">{asset.title}</h4>
-                          <p className="text-[10px] font-mono text-slate-400 truncate dir-ltr text-start">
-                            {asset.url}
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <h4 className="text-xs font-bold text-white truncate">{asset.title}</h4>
+                            {asset.category && (
+                              <span className="text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 font-mono border border-slate-800 shrink-0">
+                                {asset.category}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] font-mono text-slate-500 truncate dir-ltr text-start">
+                            {isStoredInDb ? 'data:image/... [Base64 Firestore Document]' : asset.url}
                           </p>
                         </div>
 
                         <div className="pt-3 mt-3 border-t border-slate-900 flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <button
+                              type="button"
                               onClick={() => handleSetHeroImage(asset.url)}
                               disabled={isCurrentHero}
                               className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
@@ -3340,6 +3949,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </button>
 
                             <button
+                              type="button"
                               onClick={() => handleSetLogoImage(asset.url)}
                               disabled={isCurrentLogo}
                               className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
@@ -3352,13 +3962,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </button>
                           </div>
 
-                          <button
-                            onClick={() => handleDeleteMedia(asset.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-900 transition-colors cursor-pointer"
-                            title="حذف من المكتبة"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(asset.url);
+                                showToast('تم نسخ مسار الصورة إلى الحافظة');
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors cursor-pointer"
+                              title="نسخ مسار الصورة"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteMedia(asset.id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-900 transition-colors cursor-pointer"
+                              title="حذف من قاعدة البيانات"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

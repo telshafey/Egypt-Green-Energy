@@ -26,6 +26,8 @@ import {
   JOJOBA_IMAGE,
 } from '../data/translations';
 
+import { optimizeImageForDatabase, OptimizeImageOptions } from '../utils/imageUploadHelper';
+
 export interface SiteSettingsData {
   companyNameAr: string;
   companyNameEn: string;
@@ -72,6 +74,10 @@ export interface MediaAssetData {
   url: string;
   category: string;
   createdAt: string;
+  sizeKb?: number;
+  dimensions?: string;
+  format?: string;
+  source?: 'upload' | 'url';
 }
 
 export interface AdminUserData {
@@ -940,6 +946,58 @@ export async function deleteMediaAsset(assetId: string): Promise<void> {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
+
+/**
+ * Upload an image file from user device, optimize/compress it,
+ * and persist directly into Firestore media_assets collection.
+ */
+export async function uploadAndSaveImage(
+  file: File,
+  category = 'general',
+  customTitle?: string,
+  options?: OptimizeImageOptions
+): Promise<MediaAssetData> {
+  const optimized = await optimizeImageForDatabase(file, options);
+  const assetId = `media-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const asset: MediaAssetData = {
+    id: assetId,
+    title: customTitle?.trim() || file.name.replace(/\.[^/.]+$/, ''),
+    url: optimized.dataUrl,
+    category,
+    createdAt: new Date().toISOString(),
+    sizeKb: optimized.compressedSizeKb,
+    dimensions: `${optimized.width}x${optimized.height}`,
+    format: optimized.format,
+    source: 'upload',
+  };
+
+  await saveMediaAsset(asset);
+  return asset;
+}
+
+export function subscribeToMediaAssets(callback: (assets: MediaAssetData[]) => void): () => void {
+  try {
+    const q = collection(db, 'media_assets');
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as MediaAssetData));
+          callback(list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        } else {
+          callback(DEFAULT_MEDIA_ASSETS);
+        }
+      },
+      (error) => {
+        console.warn('Real-time media assets listener fallback:', error);
+      }
+    );
+  } catch (err) {
+    console.warn('Real-time media assets listener setup failed:', err);
+    return () => {};
+  }
+}
+
 
 // 9. Comprehensive Database Diagnostics & Document Counter
 export async function getFirestoreDatabaseStats(): Promise<FirestoreDatabaseStats> {

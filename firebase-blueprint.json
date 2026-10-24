@@ -13,8 +13,8 @@
         "heroTitleEn": { "type": "string", "maxLength": 200 },
         "heroSubtitleAr": { "type": "string", "maxLength": 500 },
         "heroSubtitleEn": { "type": "string", "maxLength": 500 },
-        "heroImageUrl": { "type": "string", "maxLength": 1000 },
-        "logoUrl": { "type": "string", "maxLength": 1000 },
+        "heroImageUrl": { "type": "string", "maxLength": 500000 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
         "phonePrimary": { "type": "string", "maxLength": 50 },
         "phoneSecondary": { "type": "string", "maxLength": 50 },
         "email": { "type": "string", "maxLength": 100 },
@@ -45,7 +45,7 @@
         "descriptionAr": { "type": "string", "maxLength": 1000 },
         "descriptionEn": { "type": "string", "maxLength": 1000 },
         "icon": { "type": "string", "maxLength": 50 },
-        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 500000 },
         "order": { "type": "number" },
         "featuresAr": { "type": "array" },
         "featuresEn": { "type": "array" },
@@ -69,7 +69,7 @@
         "sector": { "type": "string", "maxLength": 100 },
         "scopeSummary": { "type": "string", "maxLength": 500 },
         "description": { "type": "string", "maxLength": 1000 },
-        "image": { "type": "string", "maxLength": 1000 },
+        "image": { "type": "string", "maxLength": 500000 },
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
       "required": ["id", "title", "category"]
@@ -83,7 +83,7 @@
         "name": { "type": "string", "maxLength": 150 },
         "slug": { "type": "string", "maxLength": 100 },
         "category": { "type": "string", "maxLength": 50 },
-        "logoUrl": { "type": "string", "maxLength": 1000 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
         "svgContent": { "type": "string", "maxLength": 100000 },
         "websiteUrl": { "type": "string", "maxLength": 300 },
         "descriptionAr": { "type": "string", "maxLength": 500 },
@@ -94,6 +94,23 @@
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
       "required": ["id", "name", "slug", "category"]
+    },
+    "MediaAsset": {
+      "title": "MediaAsset",
+      "description": "Uploaded or linked media asset stored in the database media library",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "maxLength": 200 },
+        "url": { "type": "string", "maxLength": 500000 },
+        "category": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "sizeKb": { "type": "number" },
+        "dimensions": { "type": "string", "maxLength": 50 },
+        "format": { "type": "string", "maxLength": 20 },
+        "source": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["id", "title", "url"]
     },
     "Inquiry": {
       "title": "Inquiry",
@@ -159,6 +176,10 @@
     "/vendors/{vendorId}": {
       "schema": "Vendor",
       "description": "Technology brands we work with"
+    },
+    "/media_assets/{assetId}": {
+      "schema": "MediaAsset",
+      "description": "Uploaded and linked image assets in the media library"
     },
     "/inquiries/{inquiryId}": {
       "schema": "Inquiry",

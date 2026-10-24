@@ -66,6 +66,25 @@ export function resolveImageUrl(url?: string | null, fallback: string = heroComm
   }
 
   const cleanUrl = url.trim();
+
+  // Direct uploaded images (Data URL, Blob, or newly uploaded local/cloud assets) must be returned immediately
+  if (
+    cleanUrl.startsWith('data:image/') ||
+    cleanUrl.startsWith('blob:') ||
+    cleanUrl.startsWith('/assets/aistudio/') ||
+    cleanUrl.startsWith('data:')
+  ) {
+    return cleanUrl;
+  }
+
+  // Direct external HTTP/HTTPS images (custom user-provided URLs)
+  if (
+    (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) &&
+    !cleanUrl.includes('images.unsplash.com/photo-placeholder')
+  ) {
+    return cleanUrl;
+  }
+
   const lower = cleanUrl.toLowerCase();
 
   // Specific Project Site Execution Photos
