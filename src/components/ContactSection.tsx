@@ -140,16 +140,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         <div className="max-w-3xl mb-14">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{(currentLang === 'ar' && customSettings?.contactSectionKickerAr) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#0a1122] mb-4"
           >
-            {t.heading}
+            {(currentLang === 'ar' && customSettings?.contactSectionTitleAr) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {t.subheading}
+            {(currentLang === 'ar' && customSettings?.contactSectionSubtitleAr) || t.subheading}
           </p>
         </div>
 

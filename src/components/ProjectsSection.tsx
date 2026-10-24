@@ -14,11 +14,14 @@ import {
   Send,
 } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface ProjectsSectionProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onSelectProjectForBOQ?: (projectTitle: string) => void;
   customProjects?: ProjectItem[];
+  customSettings?: SiteSettingsData | null;
 }
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
@@ -26,6 +29,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onNavigate,
   onSelectProjectForBOQ,
   customProjects,
+  customSettings,
 }) => {
   const t = content[currentLang].projects;
   const isRtl = currentLang === 'ar';
@@ -74,16 +78,16 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         <div className="max-w-3xl mb-12">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{(isRtl && customSettings?.projectsSectionKickerAr) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#0a1122] mb-4"
           >
-            {t.heading}
+            {(isRtl && customSettings?.projectsSectionTitleAr) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {t.subheading}
+            {(isRtl && customSettings?.projectsSectionSubtitleAr) || t.subheading}
           </p>
         </div>
 

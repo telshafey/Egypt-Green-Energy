@@ -19,16 +19,20 @@ import {
   Info,
 } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface BOQConfiguratorProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onPrefillInquiry?: (details: string) => void;
+  customSettings?: SiteSettingsData | null;
 }
 
 export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
   currentLang,
   onNavigate,
   onPrefillInquiry,
+  customSettings,
 }) => {
   const t = content[currentLang].configurator;
   const isRtl = currentLang === 'ar';
@@ -139,16 +143,16 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
         <div className="max-w-3xl mb-14">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{(isRtl && customSettings?.boqSectionKickerAr) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-white mb-4"
           >
-            {t.heading}
+            {(isRtl && customSettings?.boqSectionTitleAr) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            {t.subheading}
+            {(isRtl && customSettings?.boqSectionSubtitleAr) || t.subheading}
           </p>
         </div>
 

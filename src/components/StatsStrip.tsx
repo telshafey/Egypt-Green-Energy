@@ -3,36 +3,39 @@ import { Language } from '../types';
 import { content } from '../data/translations';
 import { Compass, ShieldCheck, Wrench, Clock } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface StatsStripProps {
   currentLang: Language;
+  customSettings?: SiteSettingsData | null;
 }
 
-export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang }) => {
+export const StatsStrip: React.FC<StatsStripProps> = ({ currentLang, customSettings }) => {
   const t = content[currentLang].stats;
 
   const pillars = [
     {
-      title: t.projectsCount,
-      label: t.projectsLabel,
-      desc: t.projectsDesc,
+      title: customSettings?.stat1Value || t.projectsCount,
+      label: (currentLang === 'ar' ? customSettings?.stat1LabelAr : null) || t.projectsLabel,
+      desc: (currentLang === 'ar' ? customSettings?.stat1DescAr : null) || t.projectsDesc,
       icon: Compass,
     },
     {
-      title: t.satisfactionRate,
-      label: t.satisfactionLabel,
-      desc: t.satisfactionDesc,
+      title: customSettings?.stat2Value || t.satisfactionRate,
+      label: (currentLang === 'ar' ? customSettings?.stat2LabelAr : null) || t.satisfactionLabel,
+      desc: (currentLang === 'ar' ? customSettings?.stat2DescAr : null) || t.satisfactionDesc,
       icon: ShieldCheck,
     },
     {
-      title: t.heritageYears,
-      label: t.heritageLabel,
-      desc: t.heritageDesc,
+      title: customSettings?.stat3Value || t.heritageYears,
+      label: (currentLang === 'ar' ? customSettings?.stat3LabelAr : null) || t.heritageLabel,
+      desc: (currentLang === 'ar' ? customSettings?.stat3DescAr : null) || t.heritageDesc,
       icon: Wrench,
     },
     {
-      title: t.systemsCount,
-      label: t.systemsLabel,
-      desc: t.systemsDesc,
+      title: customSettings?.stat4Value || t.systemsCount,
+      label: (currentLang === 'ar' ? customSettings?.stat4LabelAr : null) || t.systemsLabel,
+      desc: (currentLang === 'ar' ? customSettings?.stat4DescAr : null) || t.systemsDesc,
       icon: Clock,
     },
   ];

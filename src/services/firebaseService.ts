@@ -36,15 +36,81 @@ export interface SiteSettingsData {
   email: string;
   address: string;
   hours: string;
+
+  // Hero Section Written Content
+  heroKickerAr?: string;
+  heroKickerEn?: string;
   heroTitleAr: string;
   heroTitleEn: string;
   heroSubtitleAr: string;
   heroSubtitleEn: string;
+  heroCtaPrimaryAr?: string;
+  heroCtaSecondaryAr?: string;
   heroImageUrl?: string;
   logoUrl?: string;
   whatsAppNumber: string;
+
+  // Stats Strip (The 4 Pillars)
+  stat1Value?: string;
+  stat1LabelAr?: string;
+  stat1DescAr?: string;
+  stat2Value?: string;
+  stat2LabelAr?: string;
+  stat2DescAr?: string;
+  stat3Value?: string;
+  stat3LabelAr?: string;
+  stat3DescAr?: string;
+  stat4Value?: string;
+  stat4LabelAr?: string;
+  stat4DescAr?: string;
+
+  // About Us Section Content
+  aboutKickerAr?: string;
+  aboutHeadingAr?: string;
+  aboutSubheadingAr?: string;
+  aboutP1Ar?: string;
+  aboutP2Ar?: string;
+  aboutVisionTitleAr?: string;
   aboutVisionAr?: string;
+  aboutMissionTitleAr?: string;
   aboutMissionAr?: string;
+
+  // Historical Heritage Section Content
+  heritageKickerAr?: string;
+  heritageHeadingAr?: string;
+  heritageSubheadingAr?: string;
+  heritageEnergyTitleAr?: string;
+  heritageEnergyTagAr?: string;
+  heritageEnergyDescAr?: string;
+  heritageEnergySpecsAr?: string;
+  heritageWaterTitleAr?: string;
+  heritageWaterTagAr?: string;
+  heritageWaterDescAr?: string;
+  heritageWaterSpecsAr?: string;
+  heritageBiofuelTitleAr?: string;
+  heritageBiofuelTagAr?: string;
+  heritageBiofuelDescAr?: string;
+  heritageBiofuelSpecsAr?: string;
+
+  // Section Headers & Intros
+  systemsSectionKickerAr?: string;
+  systemsSectionTitleAr?: string;
+  systemsSectionSubtitleAr?: string;
+  projectsSectionKickerAr?: string;
+  projectsSectionTitleAr?: string;
+  projectsSectionSubtitleAr?: string;
+  boqSectionKickerAr?: string;
+  boqSectionTitleAr?: string;
+  boqSectionSubtitleAr?: string;
+  partnersSectionKickerAr?: string;
+  partnersSectionTitleAr?: string;
+  partnersSectionSubtitleAr?: string;
+  contactSectionKickerAr?: string;
+  contactSectionTitleAr?: string;
+  contactSectionSubtitleAr?: string;
+  footerAboutAr?: string;
+
+  // Visibility Flags
   showStats?: boolean;
   showAbout?: boolean;
   showHeritage?: boolean;
@@ -362,15 +428,81 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   email: 'info@egypt-ge.com',
   address: 'مدينة نصر، القاهرة، جمهورية مصر العربية',
   hours: 'السبت - الخميس: 9:00 ص - 6:00 م (خدمات الدعم الفني وفق اتفاقيات مستوى الخدمة SLA)',
+
+  // Hero Section
+  heroKickerAr: 'قطاع هندسي متكامل • أنظمة التيار الخفيف المعتمدة',
+  heroKickerEn: 'Integrated Engineering Division • Certified Low Current Systems',
   heroTitleAr: 'أنظمة التيار الخفيف والحلول التكنولوجية للمباني والمنشآت',
   heroTitleEn: 'Low Current Systems & Technology Solutions for Modern Facilities',
   heroSubtitleAr: 'نقدم حلولاً هندسية متكاملة تشمل دراسة المتطلبات، التصميم، التوريد، التركيب، البرمجة، والاختبارات والصيانة لأنظمة المراقبة التلفزيونية، إنذار الحريق، التحكم في الدخول، الشبكات والسنترالات، وأنظمة إدارة المباني.',
   heroSubtitleEn: 'We deliver integrated engineering solutions covering requirements assessment, design, procurement, installation, programming, testing, and contractual maintenance for CCTV, Fire Alarm, Access Control, Structured Cabling, IP PBX, and BMS systems.',
+  heroCtaPrimaryAr: 'طلب مقايسة فنية ومعاينة موقع',
+  heroCtaSecondaryAr: 'استعراض كتالوج الأنظمة المعتمدة',
   heroImageUrl: HERO_IMAGE,
   logoUrl: '',
   whatsAppNumber: '201007196485',
-  aboutVisionAr: 'تقديم حلول متكاملة في أنظمة التيار الخفيف وتكنولوجيا المباني تلبي متطلبات المنشآت الحديثة بكفاءة واعتمادية.',
-  aboutMissionAr: 'توفير خدمات هندسية تبدأ من دراسة وتصميم الأنظمة وحتى التوريد والتركيب والتشغيل والصيانة التعاقدية، مع الالتزام بالمواصفات الفنية المعتمدة لكل مشروع.',
+
+  // Stats Strip (The 4 Pillars)
+  stat1Value: '250+',
+  stat1LabelAr: 'مشروع هندسي منفذ',
+  stat1DescAr: 'في مختلف القطاعات التجارية والصناعية والطبية والإدارية',
+  stat2Value: '99.4%',
+  stat2LabelAr: 'نسبة رضاء واعتماد',
+  stat2DescAr: 'التزام صارم بالكود والمواصفات وشهادات الفحص والاختبار',
+  stat3Value: '12+',
+  stat3LabelAr: 'عاماً من الريادة والخبرة',
+  stat3DescAr: 'كيان مسجل عام 2014 بسجل أعمال موثق ومستمر',
+  stat4Value: '24/7',
+  stat4LabelAr: 'دعم فني وصيانة معتمدة',
+  stat4DescAr: 'عقود صيانة وقائية وعلاجية واتفاقيات مستوى الخدمة SLA',
+
+  // About Us
+  aboutKickerAr: 'الكيان الهندسي والتأسيس منذ 2014',
+  aboutHeadingAr: 'خبرة هندسية موثقة منذ 2014 في تنفيذ حلول التيار الخفيف',
+  aboutSubheadingAr: 'مصر للطاقة الخضراء ذ.م.م — شريكك الهندسي المعتمد في البنية التحتية التكنولوجية والمنشآت الذكية الآمنة',
+  aboutP1Ar: 'تأسست شركة مصر للطاقة الخضراء ذ.م.م عام 2014، وانطلقت برؤية هندسية طموحة تواكب التحول التكنولوجي في جمهورية مصر العربية والمنطقة. على مدار أكثر من عقد من الزمان، نجحنا في بناء سجل تنفيذي يجمع بين التخصص الهندسي الصارم والمعايير الدولية.',
+  aboutP2Ar: 'يرتكز قطاع أنظمة التيار الخفيف (ELV) بالشركة على كوادر هندسية معتمدة ومتخصصة في تقديم حلول متكاملة تبدأ من مرحلة دراسة المخططات وإعداد التصاميم والمقايسات (BOQ)، مروراً بالتوريد المعتمد من كبرى الشركات العالمية، والتركيب الميداني المتوافق مع الكود المصري، وصولاً إلى البرمجة الدقيقة والتشغيل التجريبي والدعم الفني المستمر.',
+  aboutVisionTitleAr: 'رؤيتنا (Our Vision)',
+  aboutVisionAr: 'تقديم حلول متكاملة في أنظمة التيار الخفيف وتكنولوجيا المباني تلبي متطلبات المنشآت الحديثة بكفاءة واعتمادية وأعلى معايير الاستدامة.',
+  aboutMissionTitleAr: 'رسالتنا (Our Mission)',
+  aboutMissionAr: 'توفير خدمات هندسية تبدأ من دراسة وتصميم الأنظمة وحتى التوريد والتركيب والتشغيل والصيانة التعاقدية، مع الالتزام بالمواصفات الفنية المعتمدة وسلامة الأرواح والمنشآت.',
+
+  // Historical Heritage
+  heritageKickerAr: 'سجل المشروعات البيئية والتاريخية',
+  heritageHeadingAr: 'جذورنا وخبراتنا الميدانية الممتدة منذ عام 2014',
+  heritageSubheadingAr: 'سجل تنفيذي موثق في مشروعات الطاقة المتجددة وتحلية المياه والوقود الحيوي، يعكس عمقنا الهندسي وقدرتنا على تنفيذ كبرى المشروعات في مختلف البيئات.',
+  heritageEnergyTitleAr: 'هندسة الطاقة المتجددة والشمسية',
+  heritageEnergyTagAr: 'منظومات كهروضوئية وميكروجريد',
+  heritageEnergyDescAr: 'سجل تنفيذي موثق في تصميم وتشغيل محطات الطاقة الكهروضوئية للقطاعات الصناعية، والمحطات الهجينة المستقلة في واحة سيوة لتوفير ملايين اللترات من الديزل.',
+  heritageEnergySpecsAr: '14.8+ ميجاوات منجزة',
+  heritageWaterTitleAr: 'حلول المياه والتحلية والضخ الشمسي',
+  heritageWaterTagAr: 'معالجة المياه وتوفير 90% استهلاك',
+  heritageWaterDescAr: 'تجهيز آبار المياه الجوفية بمنظومات ضخ تعمل بالطاقة الشمسية، ومحطات تحلية المياه للبيئات القاسية، مع أنظمة الزراعة المائية المتطورة لترشيد الموارد المائية.',
+  heritageWaterSpecsAr: '14,000 م³ مياه يومياً',
+  heritageBiofuelTitleAr: 'الطاقة الحيوية ومزارع الجوجوبا',
+  heritageBiofuelTagAr: 'استصلاح الأراضي والزيوت النظيفة',
+  heritageBiofuelDescAr: 'استصلاح مئات الأفدنة الصحراوية بمزارع الجوجوبا المقاومة للملوحة لإنتاج زيوت المحركات والوقود الحيوي، وتطوير مفاعلات استزراع الطحالب الخضراء للكتلة الحيوية.',
+  heritageBiofuelSpecsAr: '500+ فدان مستصلح',
+
+  // Section Headers & Intros
+  systemsSectionKickerAr: 'الكتالوج التخصصي الشامل',
+  systemsSectionTitleAr: 'أنظمة وحلول التيار الخفيف المتكاملة (ELV Systems)',
+  systemsSectionSubtitleAr: 'حلول هندسية متوافقة مع الكود المصري ومواصفات المنشآت الحيوية تشمل التوريد والتركيب والبرمجة والربط المركزي',
+  projectsSectionKickerAr: 'سابقة الأعمال الميدانية',
+  projectsSectionTitleAr: 'مشروعات ونماذج تنفيذية من مواقع العمل',
+  projectsSectionSubtitleAr: 'نماذج حية لمنشآت تجارية، طبية، صناعية، ومصرفية قمنا بتنفيذ أنظمة التيار الخفيف وتجهيز البنية التحتية بها',
+  boqSectionKickerAr: 'حاسبة المقايسة التقديرية التفاعلية',
+  boqSectionTitleAr: 'احسب تكلفة ومكونات مقايسة التيار الخفيف لمنشأتك فورياً',
+  boqSectionSubtitleAr: 'أداة هندسية تفاعلية تمكنك من تقدير حجم الكاميرات ونقاط الشبكات وأبواب التحكم بالدخول بناءً على مساحة وطبيعة المنشأة',
+  partnersSectionKickerAr: 'شركاء التكنولوجيا المعتمدون',
+  partnersSectionTitleAr: 'كبرى العلامات التجارية والشركات العالمية الموردة',
+  partnersSectionSubtitleAr: 'نعتمد على توريد وتكامل تجهيزات كبرى الشركات التكنولوجية العالمية المعتمدة لضمان أطول عمر تشغيلي وأعلى موثوقية',
+  contactSectionKickerAr: 'استشارات هندسية ومعاينات مجانية',
+  contactSectionTitleAr: 'تواصل مع مهندسينا لطلب مقايسة فنية أو معاينة موقع',
+  contactSectionSubtitleAr: 'فريقنا الهندسي جاهز لدراسة مقايستك وجداول الكميات والرد بعرض فني ومالي مفصل خلال 24 ساعة',
+  footerAboutAr: 'شركة مصر للطاقة الخضراء ذ.م.م تأسست عام 2014. قطاع رائد في تصميم وتوريد وتركيب وبرمجة أنظمة التيار الخفيف (ELV) والحلول التكنولوجية للمباني والمنشآت الذكية.',
+
+  // Visibility Flags
   showStats: true,
   showAbout: true,
   showHeritage: false,

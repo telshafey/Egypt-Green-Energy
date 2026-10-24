@@ -107,12 +107,14 @@ interface AdminDashboardProps {
 
 type AdminTab =
   | 'general'
+  | 'stats'
+  | 'about'
+  | 'heritage'
+  | 'headers'
   | 'visibility'
   | 'systems'
   | 'projects'
   | 'vendors'
-  | 'heritage'
-  | 'about'
   | 'media'
   | 'inquiries'
   | 'users'
@@ -462,15 +464,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // 1. Save Settings
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsSaving(true);
     try {
       await saveSiteSettings(settings);
       if (onSettingsUpdated) {
         onSettingsUpdated(settings);
       }
-      showToast('تم حفظ وتحديث إعدادات وبيانات الموقع بنجاح في فايربيز');
+      showToast('تم حفظ وتحديث البيانات في فايربيز بنجاح');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ الإعدادات';
       showToast(msg, 'error');
@@ -1412,7 +1414,71 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>الهوية والنصوص والعناوين</span>
+            <span>الهوية والواجهة (Hero)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('stats');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'stats'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <TrendingUp className="w-4 h-4" />
+            <span>الأرقام والإحصائيات (4 Pillars)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('about');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'about'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Compass className="w-4 h-4" />
+            <span>من نحن ورؤية ورسالة الشركة</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('heritage');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'heritage'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <History className="w-4 h-4" />
+            <span>الجذور التاريخية (طاقة ومياه)</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('headers');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'headers'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span>عناوين ومقدمات الأقسام</span>
           </button>
 
           <button
@@ -1508,38 +1574,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {vendors.length}
               </span>
             </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('heritage');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'heritage'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <History className="w-4 h-4" />
-            <span>الجذور التاريخية (طاقة ومياه)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('about');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'about'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Compass className="w-4 h-4" />
-            <span>من نحن ورؤية الشركة</span>
           </button>
 
           <button
@@ -1945,35 +1979,84 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  عنوان الواجهة الرئيسية (Hero Title - عربي)
-                </label>
-                <input
-                  type="text"
-                  value={settings.heroTitleAr}
-                  onChange={(e) => setSettings({ ...settings, heroTitleAr: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+              {/* Hero Texts and Actions */}
+              <div className="pt-4 border-t border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  <span>نصوص وأزرار الواجهة الرئيسية (Hero Section)</span>
+                </h3>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  الوصف التفصيلي للواجهة (Hero Subtitle - عربي)
-                </label>
-                <textarea
-                  rows={3}
-                  value={settings.heroSubtitleAr}
-                  onChange={(e) => setSettings({ ...settings, heroSubtitleAr: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      شارة الواجهة العلوية (Hero Kicker)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="أنظمة التيار الخفيف المتكاملة"
+                      value={settings.heroKickerAr || ''}
+                      onChange={(e) => setSettings({ ...settings, heroKickerAr: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      نص زر الإجراء الأول (Primary CTA)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="طلب استشارة هندسية ومقايسة"
+                      value={settings.heroCtaPrimaryAr || ''}
+                      onChange={(e) => setSettings({ ...settings, heroCtaPrimaryAr: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      نص زر الإجراء الثاني (Secondary CTA)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="استكشاف منظومات التيار الخفيف"
+                      value={settings.heroCtaSecondaryAr || ''}
+                      onChange={(e) => setSettings({ ...settings, heroCtaSecondaryAr: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    عنوان الواجهة الرئيسية (Hero Title - عربي)
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.heroTitleAr}
+                    onChange={(e) => setSettings({ ...settings, heroTitleAr: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    الوصف التفصيلي للواجهة (Hero Subtitle - عربي)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={settings.heroSubtitleAr}
+                    onChange={(e) => setSettings({ ...settings, heroSubtitleAr: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  />
+                </div>
               </div>
 
               {/* Contact Information */}
-              <div className="pt-4 border-t border-slate-800">
-                <h3 className="text-sm font-bold text-emerald-400 mb-4 flex items-center gap-2">
+              <div className="pt-4 border-t border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>بيانات الاتصال والمقر المعتمد</span>
+                  <span>بيانات الاتصال والمقر وساعات العمل الرسمية</span>
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -2026,19 +2109,454 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      عنوان المقر الرئيسي (مدينة نصر، القاهرة)
+                    </label>
+                    <input
+                      type="text"
+                      value={settings.address}
+                      onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      ساعات العمل والدوام الرسمي
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="الأحد - الخميس: 9:00 ص - 5:00 م"
+                      value={settings.hours || ''}
+                      onChange={(e) => setSettings({ ...settings, hours: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    عنوان المقر الرئيسي (مدينة نصر، القاهرة)
+                    النبذة التعريفية في الفوتر السفلي (Footer About)
                   </label>
-                  <input
-                    type="text"
-                    value={settings.address}
-                    onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  <textarea
+                    rows={2}
+                    value={settings.footerAboutAr || ''}
+                    onChange={(e) => setSettings({ ...settings, footerAboutAr: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
                   />
                 </div>
               </div>
             </form>
+          )}
+
+          {/* TAB: STATS / 4 PILLARS (الأركان الهندسية والأرقام والإحصائيات) */}
+          {activeTab === 'stats' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      الأركان الهندسية والإحصائيات (The 4 Pillars)
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    التحكم الكامل في الأرقام، المسميات، والوصف المعروض في شريط الأركان الهندسية أسفل الواجهة الرئيسية
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveSettings()}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ الإحصائيات في فايربيز'}</span>
+                </button>
+              </div>
+
+              {/* 4 Pillars Grid Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Pillar 1 */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-mono font-bold text-emerald-400">الركن الأول (Pillar 1)</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">
+                      {settings.stat1Value || '100%'}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الرقم أو النسبة</label>
+                    <input
+                      type="text"
+                      value={settings.stat1Value || ''}
+                      onChange={(e) => setSettings({ ...settings, stat1Value: e.target.value })}
+                      placeholder="100%"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">عنوان الركن (Label)</label>
+                    <input
+                      type="text"
+                      value={settings.stat1LabelAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat1LabelAr: e.target.value })}
+                      placeholder="مطابقة الأكواد والمواصفات القياسية"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف الهندسي</label>
+                    <textarea
+                      rows={2}
+                      value={settings.stat1DescAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat1DescAr: e.target.value })}
+                      placeholder="NFPA 72، ISO/IEC 11801، واشتراطات الدفاع المدني المصري"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* Pillar 2 */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-mono font-bold text-sky-400">الركن الثاني (Pillar 2)</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">
+                      {settings.stat2Value || '8+'}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الرقم أو النطاق</label>
+                    <input
+                      type="text"
+                      value={settings.stat2Value || ''}
+                      onChange={(e) => setSettings({ ...settings, stat2Value: e.target.value })}
+                      placeholder="8+"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">عنوان الركن (Label)</label>
+                    <input
+                      type="text"
+                      value={settings.stat2LabelAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat2LabelAr: e.target.value })}
+                      placeholder="تخصصات متكاملة في أنظمة التيار الخفيف"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف الهندسي</label>
+                    <textarea
+                      rows={2}
+                      value={settings.stat2DescAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat2DescAr: e.target.value })}
+                      placeholder="من كاميرات المراقبة والإنذار إلى الشبكات، الصوت، وإدارة المباني"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* Pillar 3 */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-mono font-bold text-amber-400">الركن الثالث (Pillar 3)</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">
+                      {settings.stat3Value || '24/7'}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الرقم أو الجاهزية</label>
+                    <input
+                      type="text"
+                      value={settings.stat3Value || ''}
+                      onChange={(e) => setSettings({ ...settings, stat3Value: e.target.value })}
+                      placeholder="24/7"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">عنوان الركن (Label)</label>
+                    <input
+                      type="text"
+                      value={settings.stat3LabelAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat3LabelAr: e.target.value })}
+                      placeholder="جاهزية الدعم وعقود الصيانة التشغيلية (SLA)"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف الهندسي</label>
+                    <textarea
+                      rows={2}
+                      value={settings.stat3DescAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat3DescAr: e.target.value })}
+                      placeholder="فرق صيانة ميدانية وزمن استجابة فوري للمواقع الحيوية والصناعية"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* Pillar 4 */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-mono font-bold text-purple-400">الركن الرابع (Pillar 4)</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">
+                      {settings.stat4Value || '2014'}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">سنة التأسيس أو الخبرة</label>
+                    <input
+                      type="text"
+                      value={settings.stat4Value || ''}
+                      onChange={(e) => setSettings({ ...settings, stat4Value: e.target.value })}
+                      placeholder="2014"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">عنوان الركن (Label)</label>
+                    <input
+                      type="text"
+                      value={settings.stat4LabelAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat4LabelAr: e.target.value })}
+                      placeholder="تأسست الشركة بسجل هندسي معتمد"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف الهندسي</label>
+                    <textarea
+                      rows={2}
+                      value={settings.stat4DescAr || ''}
+                      onChange={(e) => setSettings({ ...settings, stat4DescAr: e.target.value })}
+                      placeholder="مصر للطاقة الخضراء ذ.م.م — سجل تجاري 84920 وضمان أعمال معتمد"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: SECTION HEADERS & KICKERS (عناوين ومقدمات أقسام الموقع) */}
+          {activeTab === 'headers' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <LayoutGrid className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
+                      عناوين ومقدمات أقسام الموقع (Section Headers)
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    تعديل الشارة العلوية (Kicker)، العنوان الرئيسي، والمقدمة التوضيحية لجميع الأقسام
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveSettings()}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ عناوين الأقسام في فايربيز'}</span>
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* 1. Systems Section */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <Layers className="w-4 h-4" />
+                    <span>1. قسم منظومات التيار الخفيف (Systems Section)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <input
+                        type="text"
+                        value={settings.systemsSectionKickerAr || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionKickerAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <input
+                        type="text"
+                        value={settings.systemsSectionTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionTitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
+                    <textarea
+                      rows={2}
+                      value={settings.systemsSectionSubtitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, systemsSectionSubtitleAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Projects Section */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <FolderGit2 className="w-4 h-4" />
+                    <span>2. قسم المشروعات وسابقة الأعمال (Projects Section)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <input
+                        type="text"
+                        value={settings.projectsSectionKickerAr || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionKickerAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <input
+                        type="text"
+                        value={settings.projectsSectionTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionTitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
+                    <textarea
+                      rows={2}
+                      value={settings.projectsSectionSubtitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, projectsSectionSubtitleAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. BOQ Configurator Section */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
+                    <span>3. حاسبة المقايسة الفنية التقديرية (BOQ Configurator)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <input
+                        type="text"
+                        value={settings.boqSectionKickerAr || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionKickerAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <input
+                        type="text"
+                        value={settings.boqSectionTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionTitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
+                    <textarea
+                      rows={2}
+                      value={settings.boqSectionSubtitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, boqSectionSubtitleAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Partners Section */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    <span>4. قسم شركاء التكنولوجيا والعلامات (Partners Section)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <input
+                        type="text"
+                        value={settings.partnersSectionKickerAr || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionKickerAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <input
+                        type="text"
+                        value={settings.partnersSectionTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionTitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
+                    <textarea
+                      rows={2}
+                      value={settings.partnersSectionSubtitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, partnersSectionSubtitleAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Contact Section */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    <span>5. قسم الاتصال والتواصل والمقر (Contact Section)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <input
+                        type="text"
+                        value={settings.contactSectionKickerAr || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionKickerAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <input
+                        type="text"
+                        value={settings.contactSectionTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionTitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
+                    <textarea
+                      rows={2}
+                      value={settings.contactSectionSubtitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, contactSectionSubtitleAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* TAB: SECTION VISIBILITY (إظهار / إخفاء أقسام الموقع في العرض) */}
@@ -3502,83 +4020,389 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 4: HERITAGE (ENERGY & WATER) */}
+          {/* TAB: HERITAGE (مشروعات الطاقة النظيفة والمياه والجوجوبا) */}
           {activeTab === 'heritage' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white">مشروعات الطاقة النظيفة والمياه</h2>
-                  <p className="text-xs text-slate-400">
-                    استعراض مشروعات وسجل الشركة الميداني المنفذ في الطاقة الشمسية وتحلية المياه والجوجوبا
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">الجذور التاريخية وسجل المشروعات (طاقة ومياه)</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    التحكم الكامل في جميع نصوص، عناوين، ومواصفات مشروعات الطاقة الشمسية، محطات تحلية المياه، ومزارع الجوجوبا
                   </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveSettings()}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer shrink-0"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ مشروعات الطاقة في فايربيز'}</span>
+                </button>
+              </div>
+
+              {/* Section Header Controls */}
+              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-emerald-400">عناوين ومقدمة قسم الجذور التاريخية</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية للقسم (Kicker)</label>
+                    <input
+                      type="text"
+                      value={settings.heritageKickerAr || ''}
+                      onChange={(e) => setSettings({ ...settings, heritageKickerAr: e.target.value })}
+                      placeholder="سجل المشروعات في الطاقة النظيفة والبيئة"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي للقسم (Heading)</label>
+                    <input
+                      type="text"
+                      value={settings.heritageHeadingAr || ''}
+                      onChange={(e) => setSettings({ ...settings, heritageHeadingAr: e.target.value })}
+                      placeholder="مشروعاتنا التأسيسية في الطاقة المتجددة، المياه، والتكنولوجيا الحيوية"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">مقدمة ووصف القسم (Subheading)</label>
+                  <textarea
+                    rows={2}
+                    value={settings.heritageSubheadingAr || ''}
+                    onChange={(e) => setSettings({ ...settings, heritageSubheadingAr: e.target.value })}
+                    placeholder="إلى جانب نشاطنا الأساسي في قطاع أنظمة التيار الخفيف..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  />
                 </div>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs text-slate-300 leading-relaxed">
-                <p>
-                  يتم استعراض هذا القسم كـ <strong>سجل مشروعات تخصصية</strong> يبرز قدرات الشركة التنفيذية الميدانية، مع بقاء التركيز الهندسي الأساسي على قطاع أنظمة التيار الخفيف.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <h4 className="font-bold text-emerald-400 mb-1">1. الطاقة المتجددة والشمسية</h4>
-                    <p className="text-slate-400">محطات كهروضوئية وميكروجريد سيوة، توفير الوقود والديزل.</p>
+              {/* 3 Heritage Project Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* 1. Solar Energy Project */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3.5 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-mono font-bold text-emerald-400">1. الطاقة المتجددة والشمسية</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">Solar PV</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">عنوان المشروع</label>
+                      <input
+                        type="text"
+                        value={settings.heritageEnergyTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageEnergyTitleAr: e.target.value })}
+                        placeholder="هندسة الطاقة المتجددة والشمسية"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوسم التقني (Tag)</label>
+                      <input
+                        type="text"
+                        value={settings.heritageEnergyTagAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageEnergyTagAr: e.target.value })}
+                        placeholder="منظومات كهروضوئية وميكروجريد"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوصف الهندسي والميداني</label>
+                      <textarea
+                        rows={4}
+                        value={settings.heritageEnergyDescAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageEnergyDescAr: e.target.value })}
+                        placeholder="سجل تنفيذي موثق في تصميم وتشغيل محطات الطاقة الكهروضوئية..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">مقياس الإنجاز المعتمد</label>
+                      <input
+                        type="text"
+                        value={settings.heritageEnergySpecsAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageEnergySpecsAr: e.target.value })}
+                        placeholder="14.8+ ميجاوات منجزة"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <h4 className="font-bold text-emerald-400 mb-1">2. حلول المياه والتحلية والضخ</h4>
-                    <p className="text-slate-400">محطات تحلية الآبار، وضخ المياه بالطاقة الشمسية، والزراعة المائية.</p>
+                </div>
+
+                {/* 2. Water Project */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3.5 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-mono font-bold text-sky-400">2. حلول المياه والتحلية والضخ</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">Water & RO</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">عنوان المشروع</label>
+                      <input
+                        type="text"
+                        value={settings.heritageWaterTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageWaterTitleAr: e.target.value })}
+                        placeholder="حلول المياه والتحلية والضخ الشمسي"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوسم التقني (Tag)</label>
+                      <input
+                        type="text"
+                        value={settings.heritageWaterTagAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageWaterTagAr: e.target.value })}
+                        placeholder="معالجة المياه وتوفير 90% استهلاك"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوصف الهندسي والميداني</label>
+                      <textarea
+                        rows={4}
+                        value={settings.heritageWaterDescAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageWaterDescAr: e.target.value })}
+                        placeholder="تجهيز آبار المياه الجوفية بمنظومات ضخ تعمل بالطاقة الشمسية..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">مقياس الإنجاز المعتمد</label>
+                      <input
+                        type="text"
+                        value={settings.heritageWaterSpecsAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageWaterSpecsAr: e.target.value })}
+                        placeholder="14,000 م³ مياه يومياً"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-sky-400 font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
-                    <h4 className="font-bold text-emerald-400 mb-1">3. الطاقة الحيوية والجوجوبا</h4>
-                    <p className="text-slate-400">استصلاح أراضي صحراوية، زيوت الجوجوبا ومفاعلات الطحالب الخضراء.</p>
+                </div>
+
+                {/* 3. Biofuel & Jojoba Project */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3.5 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-mono font-bold text-amber-400">3. الطاقة الحيوية والجوجوبا</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-300 font-mono">Bio-Energy</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">عنوان المشروع</label>
+                      <input
+                        type="text"
+                        value={settings.heritageBiofuelTitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageBiofuelTitleAr: e.target.value })}
+                        placeholder="الطاقة الحيوية ومزارع الجوجوبا"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوسم التقني (Tag)</label>
+                      <input
+                        type="text"
+                        value={settings.heritageBiofuelTagAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageBiofuelTagAr: e.target.value })}
+                        placeholder="استصلاح الأراضي والزيوت النظيفة"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">الوصف الهندسي والميداني</label>
+                      <textarea
+                        rows={4}
+                        value={settings.heritageBiofuelDescAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageBiofuelDescAr: e.target.value })}
+                        placeholder="استصلاح مئات الأفدنة الصحراوية بمزارع الجوجوبا المقاومة للملوحة..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-300 mb-1">مقياس الإنجاز المعتمد</label>
+                      <input
+                        type="text"
+                        value={settings.heritageBiofuelSpecsAr || ''}
+                        onChange={(e) => setSettings({ ...settings, heritageBiofuelSpecsAr: e.target.value })}
+                        placeholder="500+ فدان مستصلح"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-amber-400 font-mono focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 5: ABOUT US */}
+          {/* TAB: ABOUT US (من نحن، الرؤية، والرسالة) */}
           {activeTab === 'about' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white">من نحن ورؤية ورسالة الشركة</h2>
-                  <p className="text-xs text-slate-400">
-                    شركة مصر للطاقة الخضراء ذ.م.م — تأسست عام 2014
+                  <div className="flex items-center gap-2">
+                    <Compass className="w-5 h-5 text-emerald-400" />
+                    <h2 className="text-lg sm:text-xl font-bold text-white">من نحن ورؤية ورسالة الشركة</h2>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    التحكم الكامل في جميع نصوص التعريف، الأهداف الاستراتيجية، الرؤية، والرسالة المعروضة في قسم (من نحن)
                   </p>
                 </div>
+
                 <button
                   type="button"
-                  onClick={handleSaveAbout}
+                  onClick={() => handleSaveSettings()}
                   disabled={isSaving}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs cursor-pointer shadow-sm transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer shrink-0"
                 >
-                  {isSaving ? 'جارِ الحفظ...' : 'حفظ الرؤية والرسالة في فايربيز'}
+                  <Save className="w-4 h-4" />
+                  <span>{isSaving ? 'جارِ الحفظ...' : 'حفظ بيانات من نحن في فايربيز'}</span>
                 </button>
               </div>
 
-              <div className="space-y-4">
+              {/* Main Headings */}
+              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-emerald-400">عناوين قسم (من نحن)</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                    <input
+                      type="text"
+                      value={settings.aboutKickerAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutKickerAr: e.target.value })}
+                      placeholder="من نحن ورؤيتنا التأسيسية"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Heading)</label>
+                    <input
+                      type="text"
+                      value={settings.aboutHeadingAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutHeadingAr: e.target.value })}
+                      placeholder="شركة مصر للطاقة الخضراء — شريكك الهندسي المعتمد في تكنولوجيا المباني والأنظمة الذكية"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان التوضيحي (Subheading)</label>
+                  <textarea
+                    rows={2}
+                    value={settings.aboutSubheadingAr || ''}
+                    onChange={(e) => setSettings({ ...settings, aboutSubheadingAr: e.target.value })}
+                    placeholder="منذ تأسيسها عام 2014، رسخت شركة مصر للطاقة الخضراء مكانتها ككيان هندسي رائد..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                  />
+                </div>
+              </div>
+
+              {/* Story Paragraphs */}
+              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <h3 className="text-sm font-bold text-emerald-400">فقرات النبذة التعريفية (About Story)</h3>
+                
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    الرؤية (Our Vision)
+                    الفقرة الأولى (سجل الشركة والتأسيس والمعايير العالمية)
                   </label>
                   <textarea
                     rows={3}
-                    value={aboutVisionAr}
-                    onChange={(e) => setAboutVisionAr(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    value={settings.aboutP1Ar || ''}
+                    onChange={(e) => setSettings({ ...settings, aboutP1Ar: e.target.value })}
+                    placeholder="تأسست شركة مصر للطاقة الخضراء ذ.م.م عام 2014..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                    الرسالة والهدف التشغيلي (Our Mission)
+                    الفقرة الثانية (نطاق العمل الحالي في أنظمة التيار الخفيف وتكامل المشاريع)
                   </label>
                   <textarea
                     rows={3}
-                    value={aboutMissionAr}
-                    onChange={(e) => setAboutMissionAr(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    value={settings.aboutP2Ar || ''}
+                    onChange={(e) => setSettings({ ...settings, aboutP2Ar: e.target.value })}
+                    placeholder="نقدم اليوم باقة متكاملة من حلول التيار الخفيف والشبكات المتقدمة..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
                   />
+                </div>
+              </div>
+
+              {/* Vision and Mission Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Vision */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-bold text-emerald-400">الرؤية الاستراتيجية (Our Vision)</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 font-mono">Vision</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">عنوان كارت الرؤية</label>
+                    <input
+                      type="text"
+                      value={settings.aboutVisionTitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutVisionTitleAr: e.target.value })}
+                      placeholder="رؤيتنا"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">نص الرؤية التفصيلي</label>
+                    <textarea
+                      rows={3}
+                      value={settings.aboutVisionAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutVisionAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* Mission */}
+                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <span className="text-xs font-bold text-sky-400">الرسالة والأهداف (Our Mission)</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-slate-400 font-mono">Mission</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">عنوان كارت الرسالة</label>
+                    <input
+                      type="text"
+                      value={settings.aboutMissionTitleAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutMissionTitleAr: e.target.value })}
+                      placeholder="رسالتنا"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">نص الرسالة التفصيلي</label>
+                    <textarea
+                      rows={3}
+                      value={settings.aboutMissionAr || ''}
+                      onChange={(e) => setSettings({ ...settings, aboutMissionAr: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

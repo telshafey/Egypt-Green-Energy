@@ -4,12 +4,25 @@ import { content, HERO_IMAGE } from '../data/translations';
 import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE } from '../utils/imageHelper';
 import { Compass, Target, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface AboutSectionProps {
   currentLang: Language;
+  customSettings?: SiteSettingsData | null;
 }
 
-export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
+export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang, customSettings }) => {
   const t = content[currentLang].about;
+
+  const sectionKicker = (currentLang === 'ar' ? customSettings?.aboutKickerAr : null) || t.sectionKicker;
+  const heading = (currentLang === 'ar' ? customSettings?.aboutHeadingAr : null) || t.heading;
+  const subheading = (currentLang === 'ar' ? customSettings?.aboutSubheadingAr : null) || t.subheading;
+  const p1 = (currentLang === 'ar' ? customSettings?.aboutP1Ar : null) || t.p1;
+  const p2 = (currentLang === 'ar' ? customSettings?.aboutP2Ar : null) || t.p2;
+  const visionTitle = (currentLang === 'ar' ? customSettings?.aboutVisionTitleAr : null) || t.visionTitle;
+  const visionText = (currentLang === 'ar' ? customSettings?.aboutVisionAr : null) || t.visionText;
+  const missionTitle = (currentLang === 'ar' ? customSettings?.aboutMissionTitleAr : null) || t.missionTitle;
+  const missionText = (currentLang === 'ar' ? customSettings?.aboutMissionAr : null) || t.missionText;
 
   return (
     <section id="about" className="py-20 lg:py-28 bg-[#f8fafc] text-[#0a1122] border-b border-[#e2e8f0]">
@@ -19,24 +32,24 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
         <div className="max-w-3xl mb-14">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#0a1122] mb-4"
           >
-            {t.heading}
+            {heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {t.subheading}
+            {subheading}
           </p>
         </div>
 
         {/* 2-Column Split: Story & Visual */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch mb-16">
           <div className="lg:col-span-7 flex flex-col justify-center space-y-5 text-slate-600 text-base leading-relaxed font-normal">
-            <p>{t.p1}</p>
-            <p>{t.p2}</p>
+            <p>{p1}</p>
+            <p>{p2}</p>
 
             {/* Vision & Mission Cards: Paper white flat cards with #e2e8f0 hairline border */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
@@ -45,10 +58,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                   <Compass className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#0a1122] mb-2">
-                  {t.visionTitle}
+                  {visionTitle}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {t.visionText}
+                  {visionText}
                 </p>
               </div>
 
@@ -57,10 +70,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ currentLang }) => {
                   <Target className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-semibold text-[#0a1122] mb-2">
-                  {t.missionTitle}
+                  {missionTitle}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {t.missionText}
+                  {missionText}
                 </p>
               </div>
             </div>

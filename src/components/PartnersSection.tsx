@@ -3,9 +3,12 @@ import { Language, VendorBrandItem } from '../types';
 import { content } from '../data/translations';
 import { Award, CheckCircle2, ShieldCheck, ExternalLink } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface PartnersSectionProps {
   currentLang: Language;
   customVendors?: VendorBrandItem[];
+  customSettings?: SiteSettingsData | null;
 }
 
 interface PartnerBrandItem {
@@ -20,7 +23,7 @@ interface PartnerBrandItem {
   renderLogo: () => React.ReactNode;
 }
 
-export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, customVendors }) => {
+export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, customVendors, customSettings }) => {
   const t = content[currentLang].partners;
   const isRtl = currentLang === 'ar';
   const [activeCategory, setActiveCategory] = useState<'all' | 'cctv' | 'fire' | 'networks' | 'access' | 'telecom'>('all');
@@ -308,13 +311,13 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
         <div className="text-center max-w-3xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{(isRtl && customSettings?.partnersSectionKickerAr) || t.sectionKicker}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#0a1122] mb-3">
-            {t.heading}
+            {(isRtl && customSettings?.partnersSectionTitleAr) || t.heading}
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            {t.subheading}
+            {(isRtl && customSettings?.partnersSectionSubtitleAr) || t.subheading}
           </p>
         </div>
 

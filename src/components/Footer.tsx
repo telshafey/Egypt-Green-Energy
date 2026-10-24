@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
               companyNameEn={customSettings?.companyNameEn}
             />
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
-              {t.footer.about}
+              {(currentLang === 'ar' && customSettings?.footerAboutAr) || t.footer.about}
             </p>
             <div className="inline-flex items-center gap-2 text-xs text-slate-400 font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />

@@ -12,6 +12,9 @@ interface HeroProps {
   customSubtitle?: string;
   customHeroImage?: string;
   customLogoUrl?: string;
+  customKicker?: string;
+  customCtaPrimary?: string;
+  customCtaSecondary?: string;
 }
 
 export const Hero: React.FC<HeroProps> = ({
@@ -21,6 +24,9 @@ export const Hero: React.FC<HeroProps> = ({
   customSubtitle,
   customHeroImage,
   customLogoUrl,
+  customKicker,
+  customCtaPrimary,
+  customCtaSecondary,
 }) => {
   const t = content[currentLang];
   const isRtl = currentLang === 'ar';
@@ -28,6 +34,9 @@ export const Hero: React.FC<HeroProps> = ({
   const heroImageSrc = resolveImageUrl(customHeroImage, DEFAULT_HERO_IMAGE);
   const displayTitle = customTitle || t.hero.title;
   const displaySubtitle = customSubtitle || t.hero.subtitle;
+  const displayKicker = customKicker || t.hero.kicker;
+  const displayCtaPrimary = customCtaPrimary || t.hero.ctaPrimary;
+  const displayCtaSecondary = customCtaSecondary || t.hero.ctaSecondary;
 
   return (
     <section className="relative overflow-hidden bg-[#0a1122] text-white min-h-[600px] lg:min-h-[680px] flex items-center border-b border-[#1e2e50]">
@@ -54,7 +63,7 @@ export const Hero: React.FC<HeroProps> = ({
           {/* Quiet Unboxed Kicker Metadata with Brand Green Dot */}
           <div className="flex items-center gap-2.5 text-xs font-mono text-slate-300 mb-5 tracking-wide">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span className="uppercase tracking-wider font-semibold text-white">{t.hero.kicker}</span>
+            <span className="uppercase tracking-wider font-semibold text-white">{displayKicker}</span>
             <span aria-hidden="true" className="text-[#1e2e50]">·</span>
             <span className="text-[#38bdf8] font-mono">{currentLang === 'ar' ? 'مصر للطاقة الخضراء ذ.م.م' : 'Egypt Green Energy L.L.C'}</span>
           </div>
@@ -79,7 +88,7 @@ export const Hero: React.FC<HeroProps> = ({
                 onClick={() => onNavigate('contact')}
                 className="inline-flex items-center justify-center px-6 py-3.5 text-xs sm:text-sm font-semibold text-[#0a1122] bg-[#22c55e] hover:bg-[#16a34a] hover:text-white active:scale-[0.99] rounded-lg transition-all cursor-pointer whitespace-nowrap"
               >
-                <span>{t.hero.ctaPrimary}</span>
+                <span>{displayCtaPrimary}</span>
               </button>
               <button
                 onClick={() => onNavigate('contact')}
@@ -94,7 +103,7 @@ export const Hero: React.FC<HeroProps> = ({
               onClick={() => onNavigate('systems')}
               className="inline-flex items-center justify-center px-5 py-3.5 text-xs sm:text-sm font-medium text-white hover:text-white bg-transparent hover:bg-[#0f1a34] border border-[#1e2e50] hover:border-slate-400 rounded-lg transition-all cursor-pointer whitespace-nowrap"
             >
-              {t.hero.ctaSecondary}
+              {displayCtaSecondary}
             </button>
           </div>
 

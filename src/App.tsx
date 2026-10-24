@@ -203,23 +203,38 @@ export default function App() {
               ? liveSettings?.heroSubtitleAr
               : liveSettings?.heroSubtitleEn
           }
+          customKicker={
+            currentLang === 'ar'
+              ? liveSettings?.heroKickerAr
+              : liveSettings?.heroKickerEn
+          }
+          customCtaPrimary={
+            currentLang === 'ar'
+              ? liveSettings?.heroCtaPrimaryAr
+              : undefined
+          }
+          customCtaSecondary={
+            currentLang === 'ar'
+              ? liveSettings?.heroCtaSecondaryAr
+              : undefined
+          }
           customHeroImage={liveSettings?.heroImageUrl}
           customLogoUrl={liveSettings?.logoUrl}
         />
 
         {/* 2. Engineering Fundamentals Strip */}
         {liveSettings?.showStats !== false && (
-          <StatsStrip currentLang={currentLang} />
+          <StatsStrip currentLang={currentLang} customSettings={liveSettings} />
         )}
 
         {/* 3. About Us - Corporate Entity Established 2014 */}
         {liveSettings?.showAbout !== false && (
-          <AboutSection currentLang={currentLang} />
+          <AboutSection currentLang={currentLang} customSettings={liveSettings} />
         )}
 
         {/* 4. Optional Historical Projects (Off by default per Task 2, toggleable via Admin) */}
         {liveSettings?.showHeritage === true && (
-          <HeritageOverview currentLang={currentLang} />
+          <HeritageOverview currentLang={currentLang} customSettings={liveSettings} />
         )}
 
         {/* 5. Flagship: Comprehensive Low Current (ELV) Systems Showcase */}
@@ -229,6 +244,7 @@ export default function App() {
             onNavigate={handleNavigate}
             onSelectSystemForBOQ={handleSelectSystemForBOQ}
             customSystems={liveSystems || undefined}
+            customSettings={liveSettings}
           />
         )}
 
@@ -239,6 +255,7 @@ export default function App() {
             onNavigate={handleNavigate}
             onSelectProjectForBOQ={handleSelectSystemForBOQ}
             customProjects={liveProjects || undefined}
+            customSettings={liveSettings}
           />
         )}
 
@@ -248,6 +265,7 @@ export default function App() {
             currentLang={currentLang}
             onNavigate={handleNavigate}
             onPrefillInquiry={handlePrefillInquiryFromConfigurator}
+            customSettings={liveSettings}
           />
         )}
 
@@ -256,6 +274,7 @@ export default function App() {
           <PartnersSection
             currentLang={currentLang}
             customVendors={liveVendors || undefined}
+            customSettings={liveSettings}
           />
         )}
 

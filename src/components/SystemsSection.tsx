@@ -14,11 +14,14 @@ import {
   FileText,
 } from 'lucide-react';
 
+import { SiteSettingsData } from '../services/firebaseService';
+
 interface SystemsSectionProps {
   currentLang: Language;
   onNavigate: (section: NavSection) => void;
   onSelectSystemForBOQ?: (systemTitle: string) => void;
   customSystems?: LightCurrentSystem[];
+  customSettings?: SiteSettingsData | null;
 }
 
 export const SystemsSection: React.FC<SystemsSectionProps> = ({
@@ -26,6 +29,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
   onNavigate,
   onSelectSystemForBOQ,
   customSystems,
+  customSettings,
 }) => {
   const t = content[currentLang].systems;
   const isRtl = currentLang === 'ar';
@@ -81,16 +85,16 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
         <div className="max-w-3xl mb-12">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{t.sectionKicker}</span>
+            <span>{(isRtl && customSettings?.systemsSectionKickerAr) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-white mb-4"
           >
-            {t.heading}
+            {(isRtl && customSettings?.systemsSectionTitleAr) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            {t.subheading}
+            {(isRtl && customSettings?.systemsSectionSubtitleAr) || t.subheading}
           </p>
         </div>
 
