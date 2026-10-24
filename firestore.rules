@@ -23,6 +23,11 @@ service cloud.firestore {
       );
     }
 
+    // Connection test document
+    match /test/{docId} {
+      allow read: if true;
+    }
+
     // Site Settings (Public Read for visitors, Admin and Portal Write)
     match /settings/{settingId} {
       allow read: if true;
