@@ -42,6 +42,14 @@ import {
   TrendingUp,
   LayoutGrid,
   Cpu,
+  Calculator,
+  RotateCcw,
+  Flame,
+  KeyRound,
+  Volume2,
+  Network,
+  Video,
+  Building,
 } from 'lucide-react';
 import {
   auth,
@@ -91,6 +99,8 @@ import {
   deleteVendor,
   subscribeToVendors,
   DEFAULT_VENDOR_BRANDS,
+  DEFAULT_ESTIMATOR_CONFIG,
+  EstimatorSettingsData,
 } from '../services/firebaseService';
 import { optimizeImageForDatabase, formatBytes } from '../utils/imageUploadHelper';
 import { LightCurrentSystem, ProjectItem, Language, VendorBrandItem } from '../types';
@@ -112,6 +122,7 @@ type AdminTab =
   | 'heritage'
   | 'headers'
   | 'visibility'
+  | 'estimator'
   | 'systems'
   | 'projects'
   | 'vendors'
@@ -208,6 +219,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [vendors, setVendors] = useState<VendorBrandItem[]>(DEFAULT_VENDOR_BRANDS);
   const [editingVendor, setEditingVendor] = useState<VendorBrandItem | null>(null);
   const [isAddingVendor, setIsAddingVendor] = useState<boolean>(false);
+
+  // Estimator Sandbox / Simulator States
+  const [simFacilityType, setSimFacilityType] = useState<string>('office');
+  const [simFloorArea, setSimFloorArea] = useState<number>(1200);
+  const [simSelectedModules, setSimSelectedModules] = useState<string[]>([
+    'cctv',
+    'fire',
+    'access',
+    'cabling',
+    'pbx',
+    'sla',
+  ]);
+
+  const toggleSimModule = (id: string) => {
+    setSimSelectedModules((prev) =>
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+    );
+  };
+
+  const handleResetEstimatorDefaults = () => {
+    setSettings((prev) => ({
+      ...prev,
+      estimatorConfig: { ...DEFAULT_ESTIMATOR_CONFIG },
+    }));
+    showToast('تم استعادة المعاملات الهندسية القياسية بنجاح. اضغط "حفظ ونشر التعديلات" لتثبيتها في فايربيز.');
+  };
+
+  const updateEstimatorConfig = (field: keyof EstimatorSettingsData, value: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      estimatorConfig: {
+        ...DEFAULT_ESTIMATOR_CONFIG,
+        ...(prev.estimatorConfig || {}),
+        [field]: value,
+      },
+    }));
+  };
   const [vendorCategoryFilter, setVendorCategoryFilter] = useState<string>('all');
   const [newVendorForm, setNewVendorForm] = useState<{
     name: string;
@@ -1513,6 +1561,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <button
             onClick={() => {
+              setActiveTab('estimator');
+              setEditingSystem(null);
+              setEditingProject(null);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeTab === 'estimator'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Sliders className="w-4 h-4 text-emerald-400" />
+            <div className="flex-1 flex items-center justify-between">
+              <span>حاسبة ومساعد التقدير (BOQ)</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-semibold">
+                تحكم كامل
+              </span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
               setActiveTab('systems');
               setEditingSystem(null);
               setEditingProject(null);
@@ -2779,6 +2848,724 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
           )}
+
+          {/* TAB: ESTIMATOR & BOQ CONFIGURATOR FULL CONTROL */}
+          {activeTab === 'estimator' && (() => {
+            const cfg = {
+              ...DEFAULT_ESTIMATOR_CONFIG,
+              ...(settings.estimatorConfig || {}),
+            };
+
+            const simDensityFactor =
+              simFacilityType === 'office'
+                ? (cfg.cablingOfficeDensity ?? 15)
+                : simFacilityType === 'hospital' || simFacilityType === 'healthcare'
+                ? (cfg.cablingHealthcareDensity ?? 18)
+                : simFacilityType === 'factory' || simFacilityType === 'industrial'
+                ? (cfg.cablingIndustrialDensity ?? 45)
+                : simFacilityType === 'hotel' || simFacilityType === 'residential'
+                ? (cfg.cablingResidentialDensity ?? 25)
+                : (cfg.cablingOtherDensity ?? 30);
+
+            const simDrops = simSelectedModules.includes('cabling')
+              ? Math.max(cfg.cablingMinDrops ?? 8, Math.round(simFloorArea / simDensityFactor))
+              : 0;
+
+            const simCameraDensity =
+              simFacilityType === 'commercial' || simFacilityType === 'healthcare'
+                ? (cfg.cctvHighDensity ?? 55)
+                : (cfg.cctvStandardDensity ?? 85);
+
+            const simCctv = simSelectedModules.includes('cctv')
+              ? Math.max(cfg.cctvMinCameras ?? 4, Math.round(simFloorArea / simCameraDensity) + (cfg.cctvBaseAdd ?? 2))
+              : 0;
+
+            const simDoorsCount = simSelectedModules.includes('access')
+              ? Math.max(cfg.accessMinDoors ?? 2, Math.round(simFloorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1))
+              : 0;
+
+            const simFireDevices = simSelectedModules.includes('fire')
+              ? Math.max(cfg.fireMinDevices ?? 6, Math.round(simFloorArea / (cfg.fireAreaPerDevice ?? 50)))
+              : 0;
+
+            const simSpeakers = simSelectedModules.includes('pa')
+              ? Math.max(cfg.paMinSpeakers ?? 4, Math.round(simFloorArea / (cfg.paAreaPerSpeaker ?? 70)))
+              : 0;
+
+            const simBmsPoints = simSelectedModules.includes('bms')
+              ? Math.max(cfg.bmsMinPoints ?? 10, Math.round(simFloorArea / (cfg.bmsAreaPerPoint ?? 120)) + (cfg.bmsBaseAdd ?? 8))
+              : 0;
+
+            const simBaseWeeks = Math.max(
+              cfg.timelineBaseWeeks ?? 2,
+              Math.round(simFloorArea / (cfg.timelineAreaDivisor ?? 600)) + Math.ceil(simSelectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
+            );
+
+            return (
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sliders className="w-5 h-5 text-emerald-400" />
+                      <h2 className="text-lg sm:text-xl font-bold text-white">
+                        التحكم الكامل في حاسبة ومساعد التقدير الهندسي (BOQ Configurator)
+                      </h2>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      تحكم كامل ومباشر في جميع نسب التقدير الهندسية، مساحات التغطية لكل نظام، والحدود الدنيا. التعديلات تحفظ في فايربيز وتنعكس فورياً للزوار.
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleResetEstimatorDefaults}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                      title="استعادة القيم الحسابية القياسية الموصى بها"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>استعادة الافتراضي</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSaveSettings}
+                      disabled={isSaving}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-900/30 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{isSaving ? 'جاري الحفظ...' : 'حفظ ونشر التعديلات'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Sandbox / Simulator Card */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#0c162d] to-[#070d1a] border border-[#1e2e50] shadow-xl space-y-5">
+                  <div className="flex items-center justify-between border-b border-[#1e2e50] pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <Calculator className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>نموذج الاختبار والمحاكاة الفوري (Live Simulator)</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                            يُحسب فورياً بالمعاملات الحالية
+                          </span>
+                        </h3>
+                        <p className="text-[11px] text-slate-400">
+                          جرب تعديل المعاملات بالأسفل وشاهد كيف ستظهر الأرقام لزوار الموقع في الوقت الفعلي
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Simulator Controls */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    {/* Facility Type */}
+                    <div className="md:col-span-4">
+                      <label className="block text-[11px] font-mono text-slate-300 mb-1.5">
+                        نوع المنشأة للتجربة:
+                      </label>
+                      <select
+                        value={simFacilityType}
+                        onChange={(e) => setSimFacilityType(e.target.value)}
+                        className="w-full bg-[#080f1e] border border-[#1e2e50] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      >
+                        <option value="office">مبنى إداري / مقر شركات</option>
+                        <option value="healthcare">مستشفى / مجمع طبي</option>
+                        <option value="industrial">منشأة صناعية / مصنع</option>
+                        <option value="commercial">مركز تجاري / مول</option>
+                        <option value="residential">مجمع سكني / كمبوند</option>
+                        <option value="logistics">مستودع لوجستي / مركز توزيع</option>
+                      </select>
+                    </div>
+
+                    {/* Area Slider */}
+                    <div className="md:col-span-8">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-[11px] font-mono text-slate-300">
+                          المساحة التجريبية:
+                        </label>
+                        <div className="flex items-center gap-1 text-xs font-mono font-bold text-emerald-400">
+                          <span>{simFloorArea.toLocaleString()}</span>
+                          <span className="text-slate-400">م²</span>
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min="200"
+                        max="10000"
+                        step="100"
+                        value={simFloorArea}
+                        onChange={(e) => setSimFloorArea(Number(e.target.value))}
+                        className="w-full accent-emerald-500 bg-slate-900 h-2 rounded-lg cursor-pointer"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Module Chips Toggle */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {[
+                      { id: 'cctv', label: 'CCTV كاميرات' },
+                      { id: 'cabling', label: 'شبكات Cat6A' },
+                      { id: 'access', label: 'تحكم دخول' },
+                      { id: 'fire', label: 'إنذار حريق' },
+                      { id: 'pa', label: 'صوتيات PA' },
+                      { id: 'bms', label: 'تحكم BMS' },
+                      { id: 'sla', label: 'عقد SLA' },
+                    ].map((mod) => {
+                      const isSel = simSelectedModules.includes(mod.id);
+                      return (
+                        <button
+                          key={mod.id}
+                          type="button"
+                          onClick={() => toggleSimModule(mod.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer ${
+                            isSel
+                              ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                              : 'bg-slate-900 border-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {mod.label} {isSel ? '✓' : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Live Results Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 pt-2">
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">كاميرات المراقبة</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('cctv') ? `~${simCctv}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">نقاط الشبكة</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('cabling') ? `~${simDrops}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">أبواب التحكم</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('access') ? `~${simDoorsCount}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">كواشف الحريق</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('fire') ? `~${simFireDevices}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">سماعات الإذاعة</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('pa') ? `~${simSpeakers}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">نقاط BMS</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        {simSelectedModules.includes('bms') ? `~${simBmsPoints}` : '—'}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#080f1e] border border-[#1e2e50] text-center">
+                      <span className="text-[10px] text-slate-400 block mb-0.5">المدة التقديرية</span>
+                      <span className="text-lg font-bold text-emerald-400 font-mono">
+                        ~{simBaseWeeks} أسابيع
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6 Sections of Configurable Parameters */}
+                <div className="space-y-5">
+                  {/* SECTION 1: Cabling Densities */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <Network className="w-4 h-4" />
+                      <span>1. شبكات البيانات والكابلات الهيكلية (Structured Cabling & Cat6A Drops)</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      تحديد معدل المساحة (م²) المقابلة لكل نقطة شبكة (داتا / تليفون) بحسب طبيعة النشاط والحد الأدنى لنقاط التوزيع.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          المباني الإدارية والشركات (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="100"
+                          value={cfg.cablingOfficeDensity ?? 15}
+                          onChange={(e) => updateEstimatorConfig('cablingOfficeDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 15 م² لكل نقطة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          المستشفيات والمراكز الطبية (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="5"
+                          max="100"
+                          value={cfg.cablingHealthcareDensity ?? 18}
+                          onChange={(e) => updateEstimatorConfig('cablingHealthcareDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 18 م² لكل نقطة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          المصانع والمستودعات وعنابر الإنتاج (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          max="200"
+                          value={cfg.cablingIndustrialDensity ?? 45}
+                          onChange={(e) => updateEstimatorConfig('cablingIndustrialDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 45 م² لكل نقطة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الفنادق والمجمعات السكنية (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          max="150"
+                          value={cfg.cablingResidentialDensity ?? 25}
+                          onChange={(e) => updateEstimatorConfig('cablingResidentialDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 25 م² لكل نقطة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          المنشآت الأخرى واللوجستية (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="10"
+                          max="150"
+                          value={cfg.cablingOtherDensity ?? 30}
+                          onChange={(e) => updateEstimatorConfig('cablingOtherDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 30 م² لكل نقطة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى لنقاط الشبكة (Min Drops)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={cfg.cablingMinDrops ?? 8}
+                          onChange={(e) => updateEstimatorConfig('cablingMinDrops', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 8 نقاط كحد أدنى</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: CCTV Densities */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <Video className="w-4 h-4" />
+                      <span>2. منظومة المراقبة التلفزيونية والكاميرات (CCTV Video Surveillance)</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      ضبط مساحة التغطية التقريبية للكاميرا الواحدة، والكاميرات الإضافية المخصصة للمداخل ومحيط السور.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          تغطية الكاميرا: تجاري ومستشفيات (م² / كاميرا)
+                        </label>
+                        <input
+                          type="number"
+                          min="20"
+                          max="200"
+                          value={cfg.cctvHighDensity ?? 55}
+                          onChange={(e) => updateEstimatorConfig('cctvHighDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 55 م²</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          تغطية الكاميرا: إداري وصناعي قياسي (م² / كاميرا)
+                        </label>
+                        <input
+                          type="number"
+                          min="30"
+                          max="300"
+                          value={cfg.cctvStandardDensity ?? 85}
+                          onChange={(e) => updateEstimatorConfig('cctvStandardDensity', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 85 م²</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          كاميرات المداخل والأسوار الأساسية
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={cfg.cctvBaseAdd ?? 2}
+                          onChange={(e) => updateEstimatorConfig('cctvBaseAdd', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: +2 كاميرا للمداخل</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى لعدد الكاميرات (Min Cameras)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          value={cfg.cctvMinCameras ?? 4}
+                          onChange={(e) => updateEstimatorConfig('cctvMinCameras', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 4 كاميرات</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: Access Control */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <KeyRound className="w-4 h-4" />
+                      <span>3. التحكم في الدخول والأبواب المؤمنة (Access Control)</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          مساحة المنشأة لكل باب مؤمن (م² / باب)
+                        </label>
+                        <input
+                          type="number"
+                          min="50"
+                          max="1000"
+                          value={cfg.accessAreaPerDoor ?? 280}
+                          onChange={(e) => updateEstimatorConfig('accessAreaPerDoor', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 280 م² لكل باب</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الأبواب الأساسية الإضافية (مثل البوابة الرئيسية)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          value={cfg.accessBaseAdd ?? 1}
+                          onChange={(e) => updateEstimatorConfig('accessBaseAdd', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: +1 باب للمدخل</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى للأبواب المؤمنة (Min Doors)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={cfg.accessMinDoors ?? 2}
+                          onChange={(e) => updateEstimatorConfig('accessMinDoors', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 2 أبواب مؤمنة</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 4: Fire Alarm & Safety */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <Flame className="w-4 h-4" />
+                      <span>4. أنظمة إنذار الحريق والسلامة (Fire Alarm Systems)</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          مساحة التغطية للكاشف الواحد طبقاً للكود (م² / كاشف)
+                        </label>
+                        <input
+                          type="number"
+                          min="20"
+                          max="150"
+                          value={cfg.fireAreaPerDevice ?? 50}
+                          onChange={(e) => updateEstimatorConfig('fireAreaPerDevice', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 50 م² (متوافق مع دوائر الكود المصري و NFPA)</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى لكواشف الإنذار (Min Fire Devices)
+                        </label>
+                        <input
+                          type="number"
+                          min="2"
+                          max="50"
+                          value={cfg.fireMinDevices ?? 6}
+                          onChange={(e) => updateEstimatorConfig('fireMinDevices', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 6 كواشف</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 5: Public Address & BMS */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <Volume2 className="w-4 h-4" />
+                      <span>5. الإذاعة والنداء الصوتي وإدارة المباني (PA Sound & BMS Automation)</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          تغطية السماعة (م² / سماعة)
+                        </label>
+                        <input
+                          type="number"
+                          min="20"
+                          max="200"
+                          value={cfg.paAreaPerSpeaker ?? 70}
+                          onChange={(e) => updateEstimatorConfig('paAreaPerSpeaker', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 70 م²</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى للسماعات
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="30"
+                          value={cfg.paMinSpeakers ?? 4}
+                          onChange={(e) => updateEstimatorConfig('paMinSpeakers', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 4 سماعات</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          تغطية نقاط BMS (م² / نقطة)
+                        </label>
+                        <input
+                          type="number"
+                          min="30"
+                          max="500"
+                          value={cfg.bmsAreaPerPoint ?? 120}
+                          onChange={(e) => updateEstimatorConfig('bmsAreaPerPoint', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 120 م²</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          نقاط BMS المركزية الإضافية
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={cfg.bmsBaseAdd ?? 8}
+                          onChange={(e) => updateEstimatorConfig('bmsBaseAdd', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: +8 نقاط لمحطات التكييف</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          الحد الأدنى لنقاط BMS
+                        </label>
+                        <input
+                          type="number"
+                          min="2"
+                          max="50"
+                          value={cfg.bmsMinPoints ?? 10}
+                          onChange={(e) => updateEstimatorConfig('bmsMinPoints', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 10 نقاط</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 6: Timeline & General Defaults */}
+                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                    <div className="flex items-center gap-2 text-sm font-bold text-emerald-400">
+                      <Calendar className="w-4 h-4" />
+                      <span>6. حساب الجدول الزمني التقديري والتنويهات الفنية (Timeline & Disclaimer)</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          أسابيع التأسيس والتجهيز المبدئية
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={cfg.timelineBaseWeeks ?? 2}
+                          onChange={(e) => updateEstimatorConfig('timelineBaseWeeks', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 2 أسابيع</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          مساحة العمل لكل أسبوع إضافي (م² / أسبوع)
+                        </label>
+                        <input
+                          type="number"
+                          min="100"
+                          max="2000"
+                          value={cfg.timelineAreaDivisor ?? 600}
+                          onChange={(e) => updateEstimatorConfig('timelineAreaDivisor', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 600 م² لكل أسبوع</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          أسابيع إضافية لكل نظام تيار خفيف
+                        </label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          max="3"
+                          value={cfg.timelineWeeksPerSystem ?? 0.8}
+                          onChange={(e) => updateEstimatorConfig('timelineWeeksPerSystem', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 0.8 أسبوع / نظام</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          المساحة الافتراضية عند فتح الحاسبة (م²)
+                        </label>
+                        <input
+                          type="number"
+                          min="100"
+                          max="10000"
+                          step="50"
+                          value={cfg.defaultFloorArea ?? 1200}
+                          onChange={(e) => updateEstimatorConfig('defaultFloorArea', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 1,200 م²</span>
+                      </div>
+                    </div>
+
+                    {/* Custom Disclaimers */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          نص التنويه الهندسي أسفل الحاسبة (باللغة العربية)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={cfg.customDisclaimerAr || ''}
+                          onChange={(e) => updateEstimatorConfig('customDisclaimerAr', e.target.value)}
+                          placeholder="يتطلب تحديد الكميات بدقة مراجعة المخططات الهندسية وجداول المواصفات الفنية للمنشأة."
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                          نص التنويه الهندسي (باللغة الإنجليزية)
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={cfg.customDisclaimerEn || ''}
+                          onChange={(e) => updateEstimatorConfig('customDisclaimerEn', e.target.value)}
+                          placeholder="Exact quantities require architectural review and formal specifications analysis."
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed text-left ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Action Footer */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-400">
+                    💡 يمكنك الضغط على <strong>«حفظ ونشر التعديلات»</strong> لحفظ هذه المعاملات وتطبيقها فوراً في الموقع.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleSaveSettings}
+                    disabled={isSaving}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/40 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{isSaving ? 'جاري الحفظ...' : 'حفظ ونشر كافة المعاملات في فايربيز'}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* TAB 2: SYSTEMS */}
           {activeTab === 'systems' && (

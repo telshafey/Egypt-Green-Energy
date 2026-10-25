@@ -84,6 +84,7 @@
         "showConfigurator": { "type": "boolean" },
         "showPartners": { "type": "boolean" },
         "showContact": { "type": "boolean" },
+        "estimatorConfig": { "type": "object", "description": "Customizable calculation parameters and ratios for the estimator" },
         "updatedAt": { "type": "string", "maxLength": 50 }
       },
       "required": ["companyNameAr", "companyNameEn", "email"]

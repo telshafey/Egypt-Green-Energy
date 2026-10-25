@@ -19,7 +19,7 @@ import {
   Info,
 } from 'lucide-react';
 
-import { SiteSettingsData } from '../services/firebaseService';
+import { SiteSettingsData, DEFAULT_ESTIMATOR_CONFIG } from '../services/firebaseService';
 
 interface BOQConfiguratorProps {
   currentLang: Language;
@@ -38,8 +38,15 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
   const isRtl = currentLang === 'ar';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
+  const cfg = {
+    ...DEFAULT_ESTIMATOR_CONFIG,
+    ...(customSettings?.estimatorConfig || {}),
+  };
+
   const [facilityType, setFacilityType] = useState<string>('office');
-  const [floorArea, setFloorArea] = useState<number>(1200); // 1200 m2
+  const [floorArea, setFloorArea] = useState<number>(() => {
+    return customSettings?.estimatorConfig?.defaultFloorArea || 1200;
+  });
   const [selectedModules, setSelectedModules] = useState<string[]>([
     'cctv',
     'fire',
@@ -57,41 +64,47 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
 
   const densityFactor =
     facilityType === 'office'
-      ? 15
+      ? (cfg.cablingOfficeDensity ?? 15)
       : facilityType === 'hospital' || facilityType === 'healthcare'
-      ? 18
+      ? (cfg.cablingHealthcareDensity ?? 18)
       : facilityType === 'factory' || facilityType === 'industrial'
-      ? 45
+      ? (cfg.cablingIndustrialDensity ?? 45)
       : facilityType === 'hotel' || facilityType === 'residential'
-      ? 25
-      : 30;
+      ? (cfg.cablingResidentialDensity ?? 25)
+      : (cfg.cablingOtherDensity ?? 30);
 
   const estDrops = selectedModules.includes('cabling')
-    ? Math.max(8, Math.round(floorArea / densityFactor))
+    ? Math.max(cfg.cablingMinDrops ?? 8, Math.round(floorArea / densityFactor))
     : 0;
 
-  const cameraDensity = facilityType === 'commercial' || facilityType === 'healthcare' ? 55 : 85;
+  const cameraDensity =
+    facilityType === 'commercial' || facilityType === 'healthcare'
+      ? (cfg.cctvHighDensity ?? 55)
+      : (cfg.cctvStandardDensity ?? 85);
   const estCctv = selectedModules.includes('cctv')
-    ? Math.max(4, Math.round(floorArea / cameraDensity) + 2)
+    ? Math.max(cfg.cctvMinCameras ?? 4, Math.round(floorArea / cameraDensity) + (cfg.cctvBaseAdd ?? 2))
     : 0;
 
   const estDoorsCount = selectedModules.includes('access')
-    ? Math.max(2, Math.round(floorArea / 280) + 1)
+    ? Math.max(cfg.accessMinDoors ?? 2, Math.round(floorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1))
     : 0;
 
   const estFireDevices = selectedModules.includes('fire')
-    ? Math.max(6, Math.round(floorArea / 50))
+    ? Math.max(cfg.fireMinDevices ?? 6, Math.round(floorArea / (cfg.fireAreaPerDevice ?? 50)))
     : 0;
 
   const estSpeakers = selectedModules.includes('pa')
-    ? Math.max(4, Math.round(floorArea / 70))
+    ? Math.max(cfg.paMinSpeakers ?? 4, Math.round(floorArea / (cfg.paAreaPerSpeaker ?? 70)))
     : 0;
 
   const estBmsPoints = selectedModules.includes('bms')
-    ? Math.max(10, Math.round(floorArea / 120) + 8)
+    ? Math.max(cfg.bmsMinPoints ?? 10, Math.round(floorArea / (cfg.bmsAreaPerPoint ?? 120)) + (cfg.bmsBaseAdd ?? 8))
     : 0;
 
-  const baseWeeks = Math.max(2, Math.round(floorArea / 600) + Math.ceil(selectedModules.length * 0.8));
+  const baseWeeks = Math.max(
+    cfg.timelineBaseWeeks ?? 2,
+    Math.round(floorArea / (cfg.timelineAreaDivisor ?? 600)) + Math.ceil(selectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
+  );
 
   const handleApplyBOQ = () => {
     const facLabel = t.facilityTypes.find((f) => f.id === facilityType)?.label || facilityType;
@@ -284,7 +297,11 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
 
             <p className="text-xs text-slate-400 leading-relaxed pt-5 border-t border-[#1e2e50] mt-6 flex items-start gap-2">
               <Info className="w-4 h-4 text-[#38bdf8] shrink-0 mt-0.5" />
-              <span>{t.disclaimer}</span>
+              <span>
+                {(isRtl && customSettings?.estimatorConfig?.customDisclaimerAr) ||
+                  (!isRtl && customSettings?.estimatorConfig?.customDisclaimerEn) ||
+                  t.disclaimer}
+              </span>
             </p>
           </div>
 

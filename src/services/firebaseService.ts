@@ -28,6 +28,86 @@ import {
 
 import { optimizeImageForDatabase, OptimizeImageOptions } from '../utils/imageUploadHelper';
 
+export interface EstimatorSettingsData {
+  // Cabling density (m² per drop)
+  cablingOfficeDensity?: number;
+  cablingHealthcareDensity?: number;
+  cablingIndustrialDensity?: number;
+  cablingResidentialDensity?: number;
+  cablingOtherDensity?: number;
+  cablingMinDrops?: number;
+
+  // CCTV density (m² per camera)
+  cctvHighDensity?: number;
+  cctvStandardDensity?: number;
+  cctvBaseAdd?: number;
+  cctvMinCameras?: number;
+
+  // Access Control
+  accessAreaPerDoor?: number;
+  accessBaseAdd?: number;
+  accessMinDoors?: number;
+
+  // Fire Alarm
+  fireAreaPerDevice?: number;
+  fireMinDevices?: number;
+
+  // Public Address (PA)
+  paAreaPerSpeaker?: number;
+  paMinSpeakers?: number;
+
+  // BMS Automation
+  bmsAreaPerPoint?: number;
+  bmsBaseAdd?: number;
+  bmsMinPoints?: number;
+
+  // Timeline
+  timelineBaseWeeks?: number;
+  timelineAreaDivisor?: number;
+  timelineWeeksPerSystem?: number;
+
+  // Default floor area & disclaimer
+  defaultFloorArea?: number;
+  customDisclaimerAr?: string;
+  customDisclaimerEn?: string;
+}
+
+export const DEFAULT_ESTIMATOR_CONFIG: EstimatorSettingsData = {
+  cablingOfficeDensity: 15,
+  cablingHealthcareDensity: 18,
+  cablingIndustrialDensity: 45,
+  cablingResidentialDensity: 25,
+  cablingOtherDensity: 30,
+  cablingMinDrops: 8,
+
+  cctvHighDensity: 55,
+  cctvStandardDensity: 85,
+  cctvBaseAdd: 2,
+  cctvMinCameras: 4,
+
+  accessAreaPerDoor: 280,
+  accessBaseAdd: 1,
+  accessMinDoors: 2,
+
+  fireAreaPerDevice: 50,
+  fireMinDevices: 6,
+
+  paAreaPerSpeaker: 70,
+  paMinSpeakers: 4,
+
+  bmsAreaPerPoint: 120,
+  bmsBaseAdd: 8,
+  bmsMinPoints: 10,
+
+  timelineBaseWeeks: 2,
+  timelineAreaDivisor: 600,
+  timelineWeeksPerSystem: 0.8,
+
+  defaultFloorArea: 1200,
+  customDisclaimerAr: 'يتطلب تحديد الكميات بدقة مراجعة المخططات الهندسية وجداول المواصفات الفنية للمنشأة.',
+  customDisclaimerEn: 'Exact quantities require architectural review and formal specifications analysis.',
+};
+
 export interface SiteSettingsData {
   companyNameAr: string;
   companyNameEn: string;
@@ -109,6 +189,9 @@ export interface SiteSettingsData {
   contactSectionTitleAr?: string;
   contactSectionSubtitleAr?: string;
   footerAboutAr?: string;
+
+  // BOQ Estimator Full Control Configuration
+  estimatorConfig?: EstimatorSettingsData;
 
   // Visibility Flags
   showStats?: boolean;
@@ -501,6 +584,9 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   contactSectionTitleAr: 'تواصل مع مهندسينا لطلب مقايسة فنية أو معاينة موقع',
   contactSectionSubtitleAr: 'فريقنا الهندسي جاهز لدراسة مقايستك وجداول الكميات والرد بعرض فني ومالي مفصل خلال 24 ساعة',
   footerAboutAr: 'شركة مصر للطاقة الخضراء ذ.م.م تأسست عام 2014. قطاع رائد في تصميم وتوريد وتركيب وبرمجة أنظمة التيار الخفيف (ELV) والحلول التكنولوجية للمباني والمنشآت الذكية.',
+
+  // BOQ Estimator Full Control Configuration
+  estimatorConfig: DEFAULT_ESTIMATOR_CONFIG,
 
   // Visibility Flags
   showStats: true,
