@@ -190,19 +190,35 @@ export interface SiteSettingsData {
   systemsSectionKickerAr?: string;
   systemsSectionTitleAr?: string;
   systemsSectionSubtitleAr?: string;
+  systemsSectionKickerEn?: string;
+  systemsSectionTitleEn?: string;
+  systemsSectionSubtitleEn?: string;
   projectsSectionKickerAr?: string;
   projectsSectionTitleAr?: string;
   projectsSectionSubtitleAr?: string;
+  projectsSectionKickerEn?: string;
+  projectsSectionTitleEn?: string;
+  projectsSectionSubtitleEn?: string;
   boqSectionKickerAr?: string;
   boqSectionTitleAr?: string;
   boqSectionSubtitleAr?: string;
+  boqSectionKickerEn?: string;
+  boqSectionTitleEn?: string;
+  boqSectionSubtitleEn?: string;
   partnersSectionKickerAr?: string;
   partnersSectionTitleAr?: string;
   partnersSectionSubtitleAr?: string;
+  partnersSectionKickerEn?: string;
+  partnersSectionTitleEn?: string;
+  partnersSectionSubtitleEn?: string;
   contactSectionKickerAr?: string;
   contactSectionTitleAr?: string;
   contactSectionSubtitleAr?: string;
+  contactSectionKickerEn?: string;
+  contactSectionTitleEn?: string;
+  contactSectionSubtitleEn?: string;
   footerAboutAr?: string;
+  footerAboutEn?: string;
 
   // BOQ Estimator Full Control Configuration
   estimatorConfig?: EstimatorSettingsData;
@@ -216,6 +232,7 @@ export interface SiteSettingsData {
   showConfigurator?: boolean;
   showPartners?: boolean;
   showContact?: boolean;
+  showMap?: boolean;
   updatedAt?: string;
 }
 
@@ -585,19 +602,35 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   systemsSectionKickerAr: 'الكتالوج التخصصي الشامل',
   systemsSectionTitleAr: 'أنظمة وحلول التيار الخفيف المتكاملة (ELV Systems)',
   systemsSectionSubtitleAr: 'حلول هندسية متوافقة مع الكود المصري ومواصفات المنشآت الحيوية تشمل التوريد والتركيب والبرمجة والربط المركزي',
+  systemsSectionKickerEn: 'Comprehensive Engineering Catalog',
+  systemsSectionTitleEn: 'Low Current & Building Technology Systems (ELV)',
+  systemsSectionSubtitleEn: 'Turnkey engineering solutions conforming to Egyptian codes and enterprise standards including supply, installation, commissioning, and central integration.',
   projectsSectionKickerAr: 'سابقة الأعمال الميدانية',
   projectsSectionTitleAr: 'مشروعات ونماذج تنفيذية من مواقع العمل',
   projectsSectionSubtitleAr: 'نماذج حية لمنشآت تجارية، طبية، صناعية، ومصرفية قمنا بتنفيذ أنظمة التيار الخفيف وتجهيز البنية التحتية بها',
+  projectsSectionKickerEn: 'Field Track Record & Portfolio',
+  projectsSectionTitleEn: 'Selected Low Current Engineering Projects',
+  projectsSectionSubtitleEn: 'Live field references across commercial, healthcare, industrial, and banking sectors engineered by our team.',
   boqSectionKickerAr: 'حاسبة المقايسة التقديرية التفاعلية',
   boqSectionTitleAr: 'احسب تكلفة ومكونات مقايسة التيار الخفيف لمنشأتك فورياً',
-  boqSectionSubtitleAr: 'أداة هندسية تفاعلية تمكنك من تقدير حجم الكاميرات ونقاط الشبكات وأبواب التحكم بالدخول بناءً على مساحة وطبيعة المنشأة',
+  boqSectionSubtitleAr: 'أداة هندسية تفاعلية تمكنك من تقدير حجم الكاميرات ونقاط الشبكات وأبواب التحكم بالدخول بناءً على مساحة وطبيعة المنشأة وعدد الغرف',
+  boqSectionKickerEn: 'Interactive Preliminary Estimator',
+  boqSectionTitleEn: 'Instant Low Current Requirements & BOQ Estimator',
+  boqSectionSubtitleEn: 'Interactive engineering calculator estimating data drops, CCTV coverage, fire detection, and access control based on area and room count.',
   partnersSectionKickerAr: 'شركاء التكنولوجيا المعتمدون',
   partnersSectionTitleAr: 'كبرى العلامات التجارية والشركات العالمية الموردة',
   partnersSectionSubtitleAr: 'نعتمد على توريد وتكامل تجهيزات كبرى الشركات التكنولوجية العالمية المعتمدة لضمان أطول عمر تشغيلي وأعلى موثوقية',
+  partnersSectionKickerEn: 'Certified Technology Partners',
+  partnersSectionTitleEn: 'Global Hardware Vendors & Brand Partners',
+  partnersSectionSubtitleEn: 'We procure and integrate genuine equipment from certified global manufacturers ensuring long service life and high availability.',
   contactSectionKickerAr: 'استشارات هندسية ومعاينات مجانية',
   contactSectionTitleAr: 'تواصل مع مهندسينا لطلب مقايسة فنية أو معاينة موقع',
   contactSectionSubtitleAr: 'فريقنا الهندسي جاهز لدراسة مقايستك وجداول الكميات والرد بعرض فني ومالي مفصل خلال 24 ساعة',
+  contactSectionKickerEn: 'Complimentary Consultations & Surveys',
+  contactSectionTitleEn: 'Contact Our Engineering Team for BOQs & Site Surveys',
+  contactSectionSubtitleEn: 'Our technical team is ready to analyze your drawings and BOQs and provide an itemized proposal within 24 hours.',
   footerAboutAr: 'شركة مصر للطاقة الخضراء ذ.م.م تأسست عام 2014. قطاع رائد في تصميم وتوريد وتركيب وبرمجة أنظمة التيار الخفيف (ELV) والحلول التكنولوجية للمباني والمنشآت الذكية.',
+  footerAboutEn: 'Egypt Green Energy L.L.C founded in 2014. A pioneering division for the engineering design, supply, installation, and programming of Low Current (ELV) and smart building technology solutions.',
 
   // BOQ Estimator Full Control Configuration
   estimatorConfig: DEFAULT_ESTIMATOR_CONFIG,
@@ -611,6 +644,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
   showConfigurator: true,
   showPartners: true,
   showContact: true,
+  showMap: false,
 };
 
 // 1. Fetch & Save Site Settings

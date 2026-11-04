@@ -1039,7 +1039,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Toggle individual section visibility on/off
   const handleToggleSectionVisibility = async (key: keyof SiteSettingsData) => {
-    const currentVal = settings[key] !== false;
+    const currentVal = key === 'showMap' ? Boolean(settings[key]) : settings[key] !== false;
     const updated = { ...settings, [key]: !currentVal };
     setSettings(updated);
     if (onSettingsUpdated) onSettingsUpdated(updated);
@@ -1047,8 +1047,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       await saveSiteSettings(updated);
       showToast(
         !currentVal
-          ? 'تم تفعيل وإظهار هذا القسم بنجاح في الموقع'
-          : 'تم إخفاء هذا القسم بنجاح من الموقع وحفظ التغيير'
+          ? 'تم تفعيل وإظهار هذا العنصر بنجاح في الموقع'
+          : 'تم إخفاء هذا العنصر بنجاح من الموقع وحفظ التغيير'
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ الحالة';
@@ -2449,32 +2449,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (عربي)</label>
                       <input
                         type="text"
                         value={settings.systemsSectionKickerAr || ''}
                         onChange={(e) => setSettings({ ...settings, systemsSectionKickerAr: e.target.value })}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        placeholder="مثل: الأنظمة المتكاملة"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Kicker (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.systemsSectionKickerEn || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionKickerEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        placeholder="e.g. Integrated Systems"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (عربي)</label>
                       <input
                         type="text"
                         value={settings.systemsSectionTitleAr || ''}
                         onChange={(e) => setSettings({ ...settings, systemsSectionTitleAr: e.target.value })}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        placeholder="مثل: حلول هندسية متخصصة في التيار الخفيف"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Main Title (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.systemsSectionTitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionTitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        placeholder="e.g. Specialized Low Current Solutions"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
-                    <textarea
-                      rows={2}
-                      value={settings.systemsSectionSubtitleAr || ''}
-                      onChange={(e) => setSettings({ ...settings, systemsSectionSubtitleAr: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (عربي)</label>
+                      <textarea
+                        rows={2}
+                        value={settings.systemsSectionSubtitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionSubtitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subtitle & Scope (English)</label>
+                      <textarea
+                        rows={2}
+                        dir="ltr"
+                        value={settings.systemsSectionSubtitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, systemsSectionSubtitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -2486,7 +2524,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (عربي)</label>
                       <input
                         type="text"
                         value={settings.projectsSectionKickerAr || ''}
@@ -2495,7 +2533,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Kicker (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.projectsSectionKickerEn || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionKickerEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (عربي)</label>
                       <input
                         type="text"
                         value={settings.projectsSectionTitleAr || ''}
@@ -2503,15 +2553,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Main Title (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.projectsSectionTitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionTitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
-                    <textarea
-                      rows={2}
-                      value={settings.projectsSectionSubtitleAr || ''}
-                      onChange={(e) => setSettings({ ...settings, projectsSectionSubtitleAr: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (عربي)</label>
+                      <textarea
+                        rows={2}
+                        value={settings.projectsSectionSubtitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionSubtitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subtitle & Scope (English)</label>
+                      <textarea
+                        rows={2}
+                        dir="ltr"
+                        value={settings.projectsSectionSubtitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, projectsSectionSubtitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -2523,7 +2595,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (عربي)</label>
                       <input
                         type="text"
                         value={settings.boqSectionKickerAr || ''}
@@ -2532,7 +2604,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Kicker (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.boqSectionKickerEn || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionKickerEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (عربي)</label>
                       <input
                         type="text"
                         value={settings.boqSectionTitleAr || ''}
@@ -2540,15 +2624,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Main Title (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.boqSectionTitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionTitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
-                    <textarea
-                      rows={2}
-                      value={settings.boqSectionSubtitleAr || ''}
-                      onChange={(e) => setSettings({ ...settings, boqSectionSubtitleAr: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (عربي)</label>
+                      <textarea
+                        rows={2}
+                        value={settings.boqSectionSubtitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionSubtitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subtitle & Scope (English)</label>
+                      <textarea
+                        rows={2}
+                        dir="ltr"
+                        value={settings.boqSectionSubtitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, boqSectionSubtitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -2560,7 +2666,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (عربي)</label>
                       <input
                         type="text"
                         value={settings.partnersSectionKickerAr || ''}
@@ -2569,7 +2675,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Kicker (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.partnersSectionKickerEn || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionKickerEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (عربي)</label>
                       <input
                         type="text"
                         value={settings.partnersSectionTitleAr || ''}
@@ -2577,15 +2695,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Main Title (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.partnersSectionTitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionTitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
-                    <textarea
-                      rows={2}
-                      value={settings.partnersSectionSubtitleAr || ''}
-                      onChange={(e) => setSettings({ ...settings, partnersSectionSubtitleAr: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (عربي)</label>
+                      <textarea
+                        rows={2}
+                        value={settings.partnersSectionSubtitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionSubtitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subtitle & Scope (English)</label>
+                      <textarea
+                        rows={2}
+                        dir="ltr"
+                        value={settings.partnersSectionSubtitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, partnersSectionSubtitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -2597,7 +2737,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (Kicker)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الشارة العلوية (عربي)</label>
                       <input
                         type="text"
                         value={settings.contactSectionKickerAr || ''}
@@ -2606,7 +2746,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (Title)</label>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Kicker (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.contactSectionKickerEn || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionKickerEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">العنوان الرئيسي (عربي)</label>
                       <input
                         type="text"
                         value={settings.contactSectionTitleAr || ''}
@@ -2614,15 +2766,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Main Title (English)</label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={settings.contactSectionTitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionTitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (Subtitle)</label>
-                    <textarea
-                      rows={2}
-                      value={settings.contactSectionSubtitleAr || ''}
-                      onChange={(e) => setSettings({ ...settings, contactSectionSubtitleAr: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">الوصف والمقدمة (عربي)</label>
+                      <textarea
+                        rows={2}
+                        value={settings.contactSectionSubtitleAr || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionSubtitleAr: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subtitle & Scope (English)</label>
+                      <textarea
+                        rows={2}
+                        dir="ltr"
+                        value={settings.contactSectionSubtitleEn || ''}
+                        onChange={(e) => setSettings({ ...settings, contactSectionSubtitleEn: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 leading-relaxed font-sans"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2752,14 +2926,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   },
                   {
                     key: 'showContact' as keyof SiteSettingsData,
-                    title: 'التواصل والاستشارات الهندسية والمقر والخريطة',
+                    title: 'التواصل والاستشارات الهندسية والمقر',
                     badge: 'Contact & Consultation',
-                    desc: 'بيانات الاتصال، أرقام الهواتف، زر الواتساب المباشر، نموذج طلب المقايسة، وخريطة المقر المعتمد بمدينة نصر.',
+                    desc: 'بيانات الاتصال، أرقام الهواتف، زر الواتساب المباشر، ونموذج طلب المقايسة المعتمد بمدينة نصر.',
                     icon: Mail,
+                  },
+                  {
+                    key: 'showMap' as keyof SiteSettingsData,
+                    title: 'خريطة الموقع الجغرافي (Google Maps)',
+                    badge: 'Google Maps Embed',
+                    desc: 'إظهار أو إخفاء خريطة Google Maps التفاعلية لمقر مدينة نصر في صفحة اتصل بنا وأسفل الموقع (افتراضياً: معطلة لتخفيف وتنسيق الفوتر).',
+                    icon: MapPin,
                   },
                 ].map((sec) => {
                   const Icon = sec.icon;
-                  const isVisible = settings[sec.key] !== false;
+                  const isVisible = sec.key === 'showMap' ? Boolean(settings[sec.key]) : settings[sec.key] !== false;
 
                   return (
                     <div
@@ -3725,10 +3906,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </button>
                   </div>
 
+                  {/* Title Fields (Arabic & English) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        اسم النظام (عربي)
+                        اسم النظام (عربي) *
                       </label>
                       <input
                         type="text"
@@ -3742,7 +3924,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        العنوان الفرعي / التصنيف
+                        System Title (English) *
+                      </label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={editingSystem.titleEn || ''}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, titleEn: e.target.value })
+                        }
+                        placeholder="e.g. Video Surveillance Systems (CCTV)"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 text-left font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Subtitle Fields (Arabic & English) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        العنوان الفرعي ومجال التطبيق (عربي)
                       </label>
                       <input
                         type="text"
@@ -3753,9 +3954,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Subtitle & Scope (English)
+                      </label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={editingSystem.subtitleEn || ''}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, subtitleEn: e.target.value })
+                        }
+                        placeholder="e.g. IP Cameras, NVR Recorders & Control Rooms"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 text-left"
+                      />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Category & Badge */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
                         تصنيف النظام
@@ -3780,7 +3998,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        شارة النظام الترويجية (Badge)
+                        شارة ترويجية (عربي)
                       </label>
                       <input
                         type="text"
@@ -3788,45 +4006,105 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) =>
                           setEditingSystem({ ...editingSystem, badge: e.target.value })
                         }
-                        placeholder="مثال: 4K Ultra HD & AI Analytics"
+                        placeholder="مثال: CCTV / IP Video"
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Badge (English)
+                      </label>
+                      <input
+                        type="text"
+                        dir="ltr"
+                        value={editingSystem.badgeEn || ''}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, badgeEn: e.target.value })
+                        }
+                        placeholder="e.g. CCTV / IP Video"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 text-left font-mono"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      الوصف الهندسي للحل
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={editingSystem.description}
-                      onChange={(e) =>
-                        setEditingSystem({ ...editingSystem, description: e.target.value })
-                      }
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
-                    />
+                  {/* Description Fields (Arabic & English) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        الوصف الهندسي للحل (عربي)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editingSystem.description}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, description: e.target.value })
+                        }
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Engineering Description (English)
+                      </label>
+                      <textarea
+                        rows={3}
+                        dir="ltr"
+                        value={editingSystem.descriptionEn || ''}
+                        onChange={(e) =>
+                          setEditingSystem({ ...editingSystem, descriptionEn: e.target.value })
+                        }
+                        placeholder="Detailed turnkey engineering scope..."
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 leading-relaxed text-left"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      المزايا الفنية والمواصفات (اكتب كل ميزة في سطر منفصل)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={editingSystem.features.join('\n')}
-                      onChange={(e) =>
-                        setEditingSystem({
-                          ...editingSystem,
-                          features: e.target.value
-                            .split('\n')
-                            .map((f) => f.trim())
-                            .filter(Boolean),
-                        })
-                      }
-                      placeholder="توريد وتركيب معتمد&#10;ضمان استبدال وصيانة 24/7"
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono text-xs"
-                    />
+                  {/* Features (Arabic & English) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        المزايا الفنية (عربي — بند في كل سطر)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editingSystem.features.join('\n')}
+                        onChange={(e) =>
+                          setEditingSystem({
+                            ...editingSystem,
+                            features: e.target.value
+                              .split('\n')
+                              .map((f) => f.trim())
+                              .filter(Boolean),
+                          })
+                        }
+                        placeholder="توريد وتركيب معتمد&#10;برمجة وربط شبكي"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Technical Features (English — one per line)
+                      </label>
+                      <textarea
+                        rows={3}
+                        dir="ltr"
+                        value={(editingSystem.featuresEn || []).join('\n')}
+                        onChange={(e) =>
+                          setEditingSystem({
+                            ...editingSystem,
+                            featuresEn: e.target.value
+                              .split('\n')
+                              .map((f) => f.trim())
+                              .filter(Boolean),
+                          })
+                        }
+                        placeholder="Certified procurement & installation&#10;Central network integration"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono text-xs text-left"
+                      />
+                    </div>
                   </div>
 
                   <div>

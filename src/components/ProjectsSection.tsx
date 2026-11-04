@@ -42,13 +42,36 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
 
   const projectDossierRef = useRef<HTMLDivElement | null>(null);
 
-  const projectsList = (customProjects && customProjects.length > 0) ? customProjects : t.items;
+  const getLocalizedProject = (proj: ProjectItem, lang: Language): ProjectItem => {
+    if (lang === 'en') {
+      const builtinEn = content['en'].projects.items.find((p) => p.id === proj.id);
+      return {
+        ...proj,
+        title: (proj as any).titleEn || builtinEn?.title || proj.title,
+        categoryLabel: builtinEn?.categoryLabel || proj.categoryLabel,
+        location: (proj as any).locationEn || builtinEn?.location || proj.location,
+        clientType: (proj as any).clientTypeEn || builtinEn?.clientType || proj.clientType,
+        sector: (proj as any).sectorEn || builtinEn?.sector || proj.sector,
+        scopeSummary: (proj as any).scopeSummaryEn || builtinEn?.scopeSummary || proj.scopeSummary,
+        scopeOfWork: (proj as any).scopeOfWorkEn || builtinEn?.scopeOfWork || proj.scopeOfWork,
+        description: (proj as any).descriptionEn || builtinEn?.description || proj.description,
+        impactMetrics: (proj as any).impactMetricsEn || builtinEn?.impactMetrics || proj.impactMetrics,
+        technicalSpecs: (proj as any).technicalSpecsEn || builtinEn?.technicalSpecs || proj.technicalSpecs,
+      };
+    }
+    return proj;
+  };
+
+  const rawProjects = (customProjects && customProjects.length > 0) ? customProjects : t.items;
+  const projectsList = rawProjects.map((p) => getLocalizedProject(p, currentLang));
 
   const filteredProjects = activeFilter === 'all'
     ? projectsList
     : projectsList.filter((item) => item.category === activeFilter);
 
   const displayedProjects = isCuratedPreview ? filteredProjects.slice(0, 3) : filteredProjects;
+
+  const activeSelectedProject = selectedProject ? getLocalizedProject(selectedProject, currentLang) : null;
 
   const handleSelectProject = (project: ProjectItem) => {
     setSelectedProject(project);
@@ -82,16 +105,16 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         <div className="max-w-3xl mb-12">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{(isRtl && customSettings?.projectsSectionKickerAr) || t.sectionKicker}</span>
+            <span>{(isRtl ? customSettings?.projectsSectionKickerAr : customSettings?.projectsSectionKickerEn) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#0a1122] mb-4"
           >
-            {(isRtl && customSettings?.projectsSectionTitleAr) || t.heading}
+            {(isRtl ? customSettings?.projectsSectionTitleAr : customSettings?.projectsSectionTitleEn) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {(isRtl && customSettings?.projectsSectionSubtitleAr) || t.subheading}
+            {(isRtl ? customSettings?.projectsSectionSubtitleAr : customSettings?.projectsSectionSubtitleEn) || t.subheading}
           </p>
         </div>
 
@@ -261,7 +284,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
         )}
 
         {/* Inline In-Page Project Dossier */}
-        {selectedProject && (
+        {activeSelectedProject && (
           <div
             ref={projectDossierRef}
             id="project-technical-dossier"
@@ -274,8 +297,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                 <span className="w-2 h-2 rounded-full bg-[#22c55e] inline-block" />
                 <span className="text-xs sm:text-sm font-mono text-[#0a1122] font-semibold">
                   {currentLang === 'ar'
-                    ? `مواصفات ونطاق أعمال المشروع: ${selectedProject.title}`
-                    : `Project Scope & Specs: ${selectedProject.title}`}
+                    ? `مواصفات ونطاق أعمال المشروع: ${activeSelectedProject.title}`
+                    : `Project Scope & Specs: ${activeSelectedProject.title}`}
                 </span>
               </div>
               
@@ -295,15 +318,15 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
               <div className="w-full lg:w-5/12">
                 <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden border border-[#e2e8f0] bg-[#0a1122]">
                   <img
-                    src={resolveImageUrl(selectedProject.image, DEFAULT_CABLING_IMAGE)}
-                    alt={selectedProject.title}
+                    src={resolveImageUrl(activeSelectedProject.image, DEFAULT_CABLING_IMAGE)}
+                    alt={activeSelectedProject.title}
                     referrerPolicy="no-referrer"
                     onError={handleImageError(DEFAULT_CABLING_IMAGE)}
                     className="w-full h-full object-cover opacity-85"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a1122] via-transparent to-transparent flex items-end p-6">
                     <span className="text-xs font-mono font-medium text-white bg-[#0a1122]/90 border border-[#1e2e50] px-3 py-1 rounded-md">
-                      {selectedProject.categoryLabel}
+                      {activeSelectedProject.categoryLabel}
                     </span>
                   </div>
                 </div>
@@ -313,7 +336,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   <span className="block text-xs font-mono font-semibold text-[#0a1122] uppercase tracking-wider mb-2">
                     {currentLang === 'ar' ? 'المواصفات الفنية المعتمدة' : 'Technical Specifications'}
                   </span>
-                  {selectedProject.technicalSpecs.map((spec, sIdx) => (
+                  {activeSelectedProject.technicalSpecs.map((spec, sIdx) => (
                     <div key={sIdx} className="flex items-center justify-between text-xs py-1 border-b border-[#e2e8f0] last:border-0">
                       <span className="text-slate-600">{spec.label}</span>
                       <span className="font-semibold text-[#0a1122] font-mono tabular-nums">{spec.value}</span>
@@ -328,20 +351,20 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
                       <span className="text-xs font-mono text-[#0a1122] uppercase tracking-wider bg-[#f1f5f9] border border-[#e2e8f0] px-2.5 py-1 rounded-md inline-block">
-                        {selectedProject.clientType || selectedProject.sector}
+                        {activeSelectedProject.clientType || activeSelectedProject.sector}
                       </span>
                       <h3 className="text-xl sm:text-2xl font-semibold text-[#0a1122] mt-3">
-                        {selectedProject.title}
+                        {activeSelectedProject.title}
                       </h3>
                     </div>
                   </div>
 
                   <p className="text-xs sm:text-sm font-mono text-slate-500 mb-4">
-                    {selectedProject.scopeSummary}
+                    {activeSelectedProject.scopeSummary}
                   </p>
 
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6 font-normal">
-                    {selectedProject.description}
+                    {activeSelectedProject.description}
                   </p>
 
                   <h4 className="text-xs sm:text-sm font-mono text-[#0a1122] uppercase tracking-wider mb-3 font-semibold">
@@ -349,7 +372,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   </h4>
 
                   <div className="space-y-2.5 mb-8">
-                    {(selectedProject.scopeOfWork || []).map((item, iIdx) => (
+                    {(activeSelectedProject.scopeOfWork || []).map((item, iIdx) => (
                       <div key={iIdx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-700 bg-[#f8fafc] p-3 rounded-xl border border-[#e2e8f0]">
                         <CheckCircle2 className="w-4 h-4 text-[#22c55e] shrink-0 mt-0.5" />
                         <span>{item}</span>
@@ -362,14 +385,14 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
                   <div className="inline-flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => handleInquireFromProject(selectedProject.title)}
+                      onClick={() => handleInquireFromProject(activeSelectedProject.title)}
                       className="px-6 py-3 text-xs sm:text-sm font-semibold text-white bg-[#0a1122] hover:bg-[#111d38] rounded-lg transition-all cursor-pointer whitespace-nowrap"
                     >
                       <span>{currentLang === 'ar' ? 'طلب دراسة فنية لمشروع مماثل' : 'Request Technical Study'}</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleInquireFromProject(selectedProject.title)}
+                      onClick={() => handleInquireFromProject(activeSelectedProject.title)}
                       aria-label="Direct request"
                       className="w-11 h-11 rounded-lg bg-[#22c55e] hover:bg-[#16a34a] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
                     >

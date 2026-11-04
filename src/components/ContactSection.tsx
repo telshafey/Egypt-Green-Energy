@@ -140,16 +140,16 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         <div className="max-w-3xl mb-14">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-500 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{(currentLang === 'ar' && customSettings?.contactSectionKickerAr) || t.sectionKicker}</span>
+            <span>{(currentLang === 'ar' ? customSettings?.contactSectionKickerAr : customSettings?.contactSectionKickerEn) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-[#0a1122] mb-4"
           >
-            {(currentLang === 'ar' && customSettings?.contactSectionTitleAr) || t.heading}
+            {(currentLang === 'ar' ? customSettings?.contactSectionTitleAr : customSettings?.contactSectionTitleEn) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
-            {(currentLang === 'ar' && customSettings?.contactSectionSubtitleAr) || t.subheading}
+            {(currentLang === 'ar' ? customSettings?.contactSectionSubtitleAr : customSettings?.contactSectionSubtitleEn) || t.subheading}
           </p>
         </div>
 
@@ -254,40 +254,42 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               </div>
             </div>
 
-            {/* Google Maps Interactive Card */}
-            <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] flat-card overflow-hidden">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-[#0a1122]">
-                  {t.mapTitle}
-                </h4>
-                <a
-                  href="https://maps.google.com/?q=Nasr+City+Cairo+Egypt"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-mono text-[#0ea5e9] hover:underline"
-                >
-                  <span>{t.openInMaps}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
-              <p className="text-xs text-slate-600 mb-4">
-                {t.mapDesc}
-              </p>
+            {/* Optional Google Maps Interactive Card (Controlled via Admin Control Panel) */}
+            {customSettings?.showMap === true && (
+              <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] flat-card overflow-hidden">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-[#0a1122]">
+                    {t.mapTitle}
+                  </h4>
+                  <a
+                    href="https://maps.google.com/?q=Nasr+City+Cairo+Egypt"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-mono text-[#0ea5e9] hover:underline"
+                  >
+                    <span>{t.openInMaps}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+                <p className="text-xs text-slate-600 mb-4">
+                  {t.mapDesc}
+                </p>
 
-              {/* Google Maps Visual Embed Container */}
-              <div className="w-full h-44 rounded-xl overflow-hidden border border-[#e2e8f0] relative bg-[#f1f5f9]">
-                <iframe
-                  title="Egypt Green Energy Nasr City Location"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src="https://maps.google.com/maps?q=Nasr%20City,%20Cairo,%20Egypt&t=&z=14&ie=UTF8&iwloc=&output=embed"
-                />
+                {/* Google Maps Visual Embed Container */}
+                <div className="w-full h-44 rounded-xl overflow-hidden border border-[#e2e8f0] relative bg-[#f1f5f9]">
+                  <iframe
+                    title="Egypt Green Energy Nasr City Location"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src="https://maps.google.com/maps?q=Nasr%20City,%20Cairo,%20Egypt&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
 

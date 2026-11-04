@@ -12,6 +12,18 @@ export interface LightCurrentSystem {
   specs: { label: string; value: string }[];
   image: string;
   badge: string;
+  titleAr?: string;
+  titleEn?: string;
+  subtitleAr?: string;
+  subtitleEn?: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  featuresAr?: string[];
+  featuresEn?: string[];
+  specsAr?: { label: string; value: string }[];
+  specsEn?: { label: string; value: string }[];
+  badgeAr?: string;
+  badgeEn?: string;
 }
 
 export interface ProjectItem {

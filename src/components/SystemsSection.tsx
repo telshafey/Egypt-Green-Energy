@@ -44,7 +44,36 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
 
   const dossierRef = useRef<HTMLDivElement | null>(null);
 
-  const systemsList = (customSystems && customSystems.length > 0) ? customSystems : t.items;
+  // Localization helper ensuring complete Arabic and English fidelity
+  const getLocalizedSystem = (sys: LightCurrentSystem, lang: Language): LightCurrentSystem => {
+    if (lang === 'en') {
+      const builtinEn = content['en'].systems.items.find((i) => i.id === sys.id);
+      return {
+        ...sys,
+        title: sys.titleEn || builtinEn?.title || sys.title,
+        subtitle: sys.subtitleEn || builtinEn?.subtitle || sys.subtitle,
+        description: sys.descriptionEn || builtinEn?.description || sys.description,
+        features: (sys.featuresEn && sys.featuresEn.length > 0) ? sys.featuresEn : (builtinEn?.features || sys.features),
+        specs: (sys.specsEn && sys.specsEn.length > 0) ? sys.specsEn : (builtinEn?.specs || sys.specs),
+        badge: sys.badgeEn || builtinEn?.badge || sys.badge,
+      };
+    }
+
+    // Arabic
+    const builtinAr = content['ar'].systems.items.find((i) => i.id === sys.id);
+    return {
+      ...sys,
+      title: sys.titleAr || sys.title || builtinAr?.title || '',
+      subtitle: sys.subtitleAr || sys.subtitle || builtinAr?.subtitle || '',
+      description: sys.descriptionAr || sys.description || builtinAr?.description || '',
+      features: (sys.featuresAr && sys.featuresAr.length > 0) ? sys.featuresAr : (sys.features || builtinAr?.features || []),
+      specs: (sys.specsAr && sys.specsAr.length > 0) ? sys.specsAr : (sys.specs || builtinAr?.specs || []),
+      badge: sys.badgeAr || sys.badge || builtinAr?.badge || '',
+    };
+  };
+
+  const rawList = (customSystems && customSystems.length > 0) ? customSystems : t.items;
+  const systemsList = rawList.map((s) => getLocalizedSystem(s, currentLang));
 
   const filteredItems = activeCategory === 'all'
     ? systemsList
@@ -56,6 +85,8 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
       });
 
   const displayedItems = isCuratedPreview ? filteredItems.slice(0, 4) : filteredItems;
+
+  const activeSelectedSystem = selectedSystem ? getLocalizedSystem(selectedSystem, currentLang) : null;
 
   const handleSelectSystem = (item: LightCurrentSystem) => {
     setSelectedSystem(item);
@@ -89,16 +120,16 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
         <div className="max-w-3xl mb-12">
           <div className="flex items-center gap-2 text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-2">
             <span className="w-2 h-2 rounded-full bg-[#22c55e] shrink-0 inline-block" />
-            <span>{(isRtl && customSettings?.systemsSectionKickerAr) || t.sectionKicker}</span>
+            <span>{(isRtl ? customSettings?.systemsSectionKickerAr : customSettings?.systemsSectionKickerEn) || t.sectionKicker}</span>
           </div>
           <h2
             style={{ textWrap: 'balance' }}
             className="text-2xl sm:text-3xl lg:text-4xl font-medium tracking-tight text-white mb-4"
           >
-            {(isRtl && customSettings?.systemsSectionTitleAr) || t.heading}
+            {(isRtl ? customSettings?.systemsSectionTitleAr : customSettings?.systemsSectionTitleEn) || t.heading}
           </h2>
           <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            {(isRtl && customSettings?.systemsSectionSubtitleAr) || t.subheading}
+            {(isRtl ? customSettings?.systemsSectionSubtitleAr : customSettings?.systemsSectionSubtitleEn) || t.subheading}
           </p>
         </div>
 
@@ -116,7 +147,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             <Shield className="w-4 h-4 text-[#38bdf8] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.security}</h3>
             <span className="text-[11px] block font-mono text-slate-400">
-              CCTV & Access Control
+              {isRtl ? 'المراقبة والتحكم بالدخول' : 'CCTV & Access Control'}
             </span>
           </button>
 
@@ -132,7 +163,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             <Flame className="w-4 h-4 text-[#ef4444] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.safety}</h3>
             <span className="text-[11px] block font-mono text-slate-400">
-              Fire Alarm & Safety
+              {isRtl ? 'إنذار الحريق والسلامة' : 'Fire Alarm & Safety'}
             </span>
           </button>
 
@@ -148,7 +179,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             <Network className="w-4 h-4 text-[#38bdf8] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.connectivity}</h3>
             <span className="text-[11px] block font-mono text-slate-400">
-              Cat6A, Fiber & IP PBX
+              {isRtl ? 'الشبكات والسنترالات' : 'Cat6A, Fiber & IP PBX'}
             </span>
           </button>
 
@@ -164,7 +195,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             <Wrench className="w-4 h-4 text-[#22c55e] mb-2" />
             <h3 className="text-xs sm:text-sm font-semibold text-white block mb-0.5">{t.categories.maintenance}</h3>
             <span className="text-[11px] block font-mono text-slate-400">
-              SLA Engineering Contracts
+              {isRtl ? 'عقود الصيانة السنوية SLA' : 'SLA Engineering Contracts'}
             </span>
           </button>
         </div>
@@ -324,7 +355,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
         )}
 
         {/* Inline In-Page Technical Dossier */}
-        {selectedSystem && (
+        {activeSelectedSystem && (
           <div
             ref={dossierRef}
             id="system-technical-dossier"
@@ -336,8 +367,8 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                 <span className="w-2 h-2 rounded-full bg-[#22c55e] inline-block animate-pulse" />
                 <span className="text-xs sm:text-sm font-mono text-[#38bdf8]">
                   {currentLang === 'ar'
-                    ? `الملف الفني للنظام: ${selectedSystem.title}`
-                    : `Technical Specifications: ${selectedSystem.title}`}
+                    ? `الملف الفني للنظام: ${activeSelectedSystem.title}`
+                    : `Technical Specifications: ${activeSelectedSystem.title}`}
                 </span>
               </div>
               
@@ -357,15 +388,15 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
               <div className="w-full lg:w-5/12">
                 <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden border border-[#1e2e50] bg-[#070d1a]">
                   <img
-                    src={resolveImageUrl(selectedSystem.image, DEFAULT_CCTV_IMAGE)}
-                    alt={selectedSystem.title}
+                    src={resolveImageUrl(activeSelectedSystem.image, DEFAULT_CCTV_IMAGE)}
+                    alt={activeSelectedSystem.title}
                     referrerPolicy="no-referrer"
                     onError={handleImageError(DEFAULT_CCTV_IMAGE)}
                     className="w-full h-full object-cover opacity-80"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0f1a34] via-transparent to-transparent flex items-end p-6">
                     <span className="text-xs font-mono text-[#38bdf8] bg-[#0a1122]/90 border border-[#1e2e50] px-3 py-1 rounded-md">
-                      {selectedSystem.badge}
+                      {activeSelectedSystem.badge}
                     </span>
                   </div>
                 </div>
@@ -374,7 +405,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <span className="block text-xs font-mono text-[#22c55e] uppercase tracking-wider mb-2">
                     {currentLang === 'ar' ? 'المواصفات القياسية والمقاييس' : 'Standard Specifications'}
                   </span>
-                  {selectedSystem.specs.map((spec, sIdx) => (
+                  {activeSelectedSystem.specs.map((spec, sIdx) => (
                     <div key={sIdx} className="flex items-center justify-between text-xs py-1 border-b border-[#1e2e50]/40 last:border-0">
                       <span className="text-slate-400">{spec.label}</span>
                       <span className="font-semibold text-white font-mono tabular-nums">{spec.value}</span>
@@ -389,20 +420,20 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
                       <span className="text-xs font-mono text-[#38bdf8] uppercase tracking-wider bg-[#070d1a] border border-[#1e2e50] px-2.5 py-1 rounded-md inline-block">
-                        {selectedSystem.category.toUpperCase()}
+                        {activeSelectedSystem.category.toUpperCase()}
                       </span>
                       <h3 className="text-xl sm:text-2xl font-medium text-white mt-3">
-                        {selectedSystem.title}
+                        {activeSelectedSystem.title}
                       </h3>
                     </div>
                   </div>
 
                   <p className="text-xs sm:text-sm font-mono text-[#38bdf8] mb-4">
-                    {selectedSystem.subtitle}
+                    {activeSelectedSystem.subtitle}
                   </p>
 
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
-                    {selectedSystem.description}
+                    {activeSelectedSystem.description}
                   </p>
 
                   <h4 className="text-xs sm:text-sm font-mono text-white uppercase tracking-wider mb-3">
@@ -410,7 +441,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   </h4>
 
                   <div className="space-y-2.5 mb-8">
-                    {selectedSystem.features.map((feat, fIdx) => (
+                    {activeSelectedSystem.features.map((feat, fIdx) => (
                       <div key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 bg-[#070d1a] p-3 rounded-xl border border-[#1e2e50]">
                         <Check className="w-4 h-4 text-[#22c55e] shrink-0 mt-0.5" />
                         <span>{feat}</span>
@@ -423,14 +454,14 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
                   <div className="inline-flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => handleInquire(selectedSystem.title)}
+                      onClick={() => handleInquire(activeSelectedSystem.title)}
                       className="px-6 py-3 text-xs sm:text-sm font-semibold text-white bg-[#22c55e] hover:bg-[#16a34a] rounded-lg transition-all cursor-pointer whitespace-nowrap"
                     >
                       <span>{currentLang === 'ar' ? 'طلب مقايسة فنية لهذا النظام' : 'Request BOQ For This System'}</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleInquire(selectedSystem.title)}
+                      onClick={() => handleInquire(activeSelectedSystem.title)}
                       aria-label="Direct request"
                       className="w-11 h-11 rounded-lg bg-[#0ea5e9] hover:bg-[#0284c7] text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
                     >
