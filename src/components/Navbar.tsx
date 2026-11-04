@@ -17,6 +17,7 @@ interface NavbarProps {
     showSystems?: boolean;
     showProjects?: boolean;
     showConfigurator?: boolean;
+    showPartners?: boolean;
     showContact?: boolean;
   };
 }
@@ -115,6 +116,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>{t.nav.configurator}</span>
               </button>
             )}
+            {sectionVisibility?.showPartners !== false && (
+              <button
+                onClick={() => handleNavClick('brands')}
+                className={`hover:text-white transition-colors whitespace-nowrap cursor-pointer py-1 flex items-center gap-1.5 ${
+                  activeSection === 'brands' ? 'text-white font-semibold' : ''
+                }`}
+              >
+                {activeSection === 'brands' && <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] inline-block" />}
+                <span>{t.nav.brands}</span>
+              </button>
+            )}
             {sectionVisibility?.showContact !== false && (
               <button
                 onClick={() => handleNavClick('contact')}
@@ -198,9 +210,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             {sectionVisibility?.showConfigurator !== false && (
               <button
                 onClick={() => handleNavClick('configurator')}
-                className="text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-[#0f1a34] hover:text-white transition-colors"
+                className={`text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-[#0f1a34] hover:text-white transition-colors ${
+                  activeSection === 'configurator' ? 'text-white font-semibold bg-[#0f1a34]' : ''
+                }`}
               >
                 {t.nav.configurator}
+              </button>
+            )}
+            {sectionVisibility?.showPartners !== false && (
+              <button
+                onClick={() => handleNavClick('brands')}
+                className={`text-left rtl:text-right py-2 px-3 rounded-lg hover:bg-[#0f1a34] hover:text-white transition-colors ${
+                  activeSection === 'brands' ? 'text-white font-semibold bg-[#0f1a34]' : ''
+                }`}
+              >
+                {t.nav.brands}
               </button>
             )}
             {sectionVisibility?.showContact !== false && (

@@ -17,6 +17,9 @@ import {
   Printer,
   Sliders,
   Info,
+  DoorOpen,
+  Minus,
+  Plus,
 } from 'lucide-react';
 
 import { SiteSettingsData, DEFAULT_ESTIMATOR_CONFIG } from '../services/firebaseService';
@@ -47,6 +50,11 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
   const [floorArea, setFloorArea] = useState<number>(() => {
     return customSettings?.estimatorConfig?.defaultFloorArea || 1200;
   });
+  const [roomsCount, setRoomsCount] = useState<number>(() => {
+    return customSettings?.estimatorConfig?.defaultRoomsCount || 25;
+  });
+  const [isRoomsManuallySet, setIsRoomsManuallySet] = useState<boolean>(false);
+
   const [selectedModules, setSelectedModules] = useState<string[]>([
     'cctv',
     'fire',
@@ -62,6 +70,14 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
     );
   };
 
+  const handleAreaChange = (newArea: number) => {
+    setFloorArea(newArea);
+    if (!isRoomsManuallySet) {
+      const suggested = Math.max(2, Math.round(newArea / (cfg.areaPerRoomDefault || 40)));
+      setRoomsCount(suggested);
+    }
+  };
+
   const densityFactor =
     facilityType === 'office'
       ? (cfg.cablingOfficeDensity ?? 15)
@@ -73,37 +89,58 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
       ? (cfg.cablingResidentialDensity ?? 25)
       : (cfg.cablingOtherDensity ?? 30);
 
+  // Cabling: scales with both area and room drops (min 2 drops per office/room)
+  const dropsByArea = Math.round(floorArea / densityFactor);
+  const dropsByRooms = roomsCount * (cfg.dropsPerRoom ?? 2);
   const estDrops = selectedModules.includes('cabling')
-    ? Math.max(cfg.cablingMinDrops ?? 8, Math.round(floorArea / densityFactor))
+    ? Math.max(cfg.cablingMinDrops ?? 8, Math.max(dropsByArea, dropsByRooms))
     : 0;
 
+  // CCTV: scales with common areas, entrances, and corridor density
   const cameraDensity =
     facilityType === 'commercial' || facilityType === 'healthcare'
       ? (cfg.cctvHighDensity ?? 55)
       : (cfg.cctvStandardDensity ?? 85);
   const estCctv = selectedModules.includes('cctv')
-    ? Math.max(cfg.cctvMinCameras ?? 4, Math.round(floorArea / cameraDensity) + (cfg.cctvBaseAdd ?? 2))
+    ? Math.max(
+        cfg.cctvMinCameras ?? 4,
+        Math.round(floorArea / cameraDensity) + Math.round(roomsCount * 0.15) + (cfg.cctvBaseAdd ?? 2)
+      )
     : 0;
 
+  // Access Control: scales with main entrances and secure office/archive doors
+  const doorsByArea = Math.round(floorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1);
+  const doorsByRooms = Math.round(roomsCount * (cfg.doorsPerRoomFactor ?? 0.2)) + (cfg.accessBaseAdd ?? 1);
   const estDoorsCount = selectedModules.includes('access')
-    ? Math.max(cfg.accessMinDoors ?? 2, Math.round(floorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1))
+    ? Math.max(cfg.accessMinDoors ?? 2, Math.max(doorsByArea, doorsByRooms))
     : 0;
 
+  // Fire Alarm: every room must have at least 1 detector, plus corridors
+  const fireByArea = Math.round(floorArea / (cfg.fireAreaPerDevice ?? 50));
+  const fireByRooms = roomsCount * (cfg.fireDetectorsPerRoom ?? 1) + Math.max(2, Math.round(floorArea / 250));
   const estFireDevices = selectedModules.includes('fire')
-    ? Math.max(cfg.fireMinDevices ?? 6, Math.round(floorArea / (cfg.fireAreaPerDevice ?? 50)))
+    ? Math.max(cfg.fireMinDevices ?? 6, Math.max(fireByArea, fireByRooms))
     : 0;
 
+  // Public Address: scales with area and zoning per room clusters
   const estSpeakers = selectedModules.includes('pa')
-    ? Math.max(cfg.paMinSpeakers ?? 4, Math.round(floorArea / (cfg.paAreaPerSpeaker ?? 70)))
+    ? Math.max(
+        cfg.paMinSpeakers ?? 4,
+        Math.max(Math.round(floorArea / (cfg.paAreaPerSpeaker ?? 70)), Math.round(roomsCount * 0.5))
+      )
     : 0;
 
+  // BMS: supervisory points for AHUs, distribution boards, and zone sensors
   const estBmsPoints = selectedModules.includes('bms')
     ? Math.max(cfg.bmsMinPoints ?? 10, Math.round(floorArea / (cfg.bmsAreaPerPoint ?? 120)) + (cfg.bmsBaseAdd ?? 8))
     : 0;
 
+  // Timeline: scales with area, room partitioning, and number of systems
   const baseWeeks = Math.max(
     cfg.timelineBaseWeeks ?? 2,
-    Math.round(floorArea / (cfg.timelineAreaDivisor ?? 600)) + Math.ceil(selectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
+    Math.round(floorArea / (cfg.timelineAreaDivisor ?? 600)) +
+      Math.round(roomsCount / 20) +
+      Math.ceil(selectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
   );
 
   const handleApplyBOQ = () => {
@@ -122,8 +159,8 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
     if (selectedModules.includes('bms')) quantitativeParts.push(`~${estBmsPoints} نقطة تحكم BMS`);
 
     const summaryText = currentLang === 'ar'
-      ? `طلب مراجعة فنية ومقايسة تقديرية استناداً إلى حاسبة المتطلبات:\n• نوع المنشأة: ${facLabel}\n• المساحة التقريبية: ${floorArea.toLocaleString('ar-EG')} م²\n• الأنظمة المختارة (${selectedModules.length}): ${moduleNames || 'لم يُحدد'}\n• المؤشرات الاسترشادية: ${quantitativeParts.join('، ') || 'وفق دراسة المخططات'}\n• المدة المقدرة استرشادياً: ~${baseWeeks} أسابيع عمل (تعتمد على المخططات الهندسية وجدول التوريدات).`
-      : `Preliminary Technical Review Request from Requirements Estimator:\n• Facility: ${facLabel}\n• Area: ${floorArea.toLocaleString()} m²\n• Selected Systems (${selectedModules.length}): ${moduleNames || 'None specified'}\n• Indicative Metrics: ${quantitativeParts.join(', ') || 'Subject to drawings'}\n• Indicative Duration: ~${baseWeeks} working weeks (subject to MEP drawings and supply schedules).`;
+      ? `طلب مراجعة فنية ومقايسة تقديرية استناداً إلى حاسبة المتطلبات:\n• نوع المنشأة: ${facLabel}\n• المساحة الإجمالية: ${floorArea.toLocaleString('ar-EG')} م²\n• عدد الغرف / المكاتب التقديري: ${roomsCount.toLocaleString('ar-EG')} غرفة\n• الأنظمة المختارة (${selectedModules.length}): ${moduleNames || 'لم يُحدد'}\n• المؤشرات الاسترشادية: ${quantitativeParts.join('، ') || 'وفق دراسة المخططات'}\n• المدة المقدرة استرشادياً: ~${baseWeeks} أسابيع عمل (تعتمد على المخططات الهندسية وجدول التوريدات).`
+      : `Preliminary Technical Review Request from Requirements Estimator:\n• Facility: ${facLabel}\n• Total Floor Area: ${floorArea.toLocaleString()} m²\n• Estimated Rooms / Zones: ${roomsCount.toLocaleString()} rooms\n• Selected Systems (${selectedModules.length}): ${moduleNames || 'None specified'}\n• Indicative Metrics: ${quantitativeParts.join(', ') || 'Subject to drawings'}\n• Indicative Duration: ~${baseWeeks} working weeks (subject to MEP drawings and supply schedules).`;
 
     if (onPrefillInquiry) {
       onPrefillInquiry(summaryText);
@@ -214,7 +251,7 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                       value={floorArea}
                       onChange={(e) => {
                         const val = Math.max(100, Math.min(25000, Number(e.target.value) || 0));
-                        setFloorArea(val);
+                        handleAreaChange(val);
                       }}
                       className="w-20 bg-transparent text-sm sm:text-base font-bold text-[#22c55e] font-mono tabular-nums text-end focus:outline-none"
                     />
@@ -227,13 +264,93 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                   max="10000"
                   step="100"
                   value={Math.min(10000, floorArea)}
-                  onChange={(e) => setFloorArea(Number(e.target.value))}
+                  onChange={(e) => handleAreaChange(Number(e.target.value))}
                   className="w-full accent-[#22c55e] bg-[#070d1a] h-2 rounded-lg cursor-pointer"
                 />
                 <div className="flex justify-between text-[11px] text-slate-400 font-mono mt-1">
                   <span>200 م²</span>
                   <span>5,000 م²</span>
                   <span>10,000+ م²</span>
+                </div>
+              </div>
+
+              {/* Rooms & Zones Count (عدد الغرف / المكاتب / الفراغات) */}
+              <div className="p-3.5 rounded-xl bg-[#070d1a] border border-[#1e2e50]">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <DoorOpen className="w-4 h-4 text-[#38bdf8] shrink-0" />
+                    <div>
+                      <label className="text-xs sm:text-sm font-medium text-slate-200 block">
+                        {currentLang === 'ar' ? 'عدد الغرف والمكاتب والفراغات المستقلة' : 'Rooms & Separate Zones'}
+                      </label>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {currentLang === 'ar'
+                          ? `متوسط مساحة الغرفة: ~${Math.round(floorArea / Math.max(1, roomsCount))} م²`
+                          : `Avg room size: ~${Math.round(floorArea / Math.max(1, roomsCount))} m²`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stepper + Direct numeric input */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRoomsManuallySet(true);
+                        setRoomsCount((prev) => Math.max(1, prev - 1));
+                      }}
+                      className="w-7 h-7 rounded-lg bg-[#0f1a34] hover:bg-[#132347] border border-[#1e2e50] text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                      title={currentLang === 'ar' ? 'تقليل غرفة' : 'Decrease room'}
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="flex items-center gap-1 bg-[#0a1122] px-2 py-1 rounded-lg border border-[#1e2e50]">
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={roomsCount}
+                        onChange={(e) => {
+                          setIsRoomsManuallySet(true);
+                          const val = Math.max(1, Math.min(500, Number(e.target.value) || 1));
+                          setRoomsCount(val);
+                        }}
+                        className="w-12 bg-transparent text-xs sm:text-sm font-bold text-[#38bdf8] font-mono tabular-nums text-center focus:outline-none"
+                      />
+                      <span className="text-[11px] font-mono text-slate-400">
+                        {currentLang === 'ar' ? 'غرفة' : 'rooms'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRoomsManuallySet(true);
+                        setRoomsCount((prev) => Math.min(500, prev + 1));
+                      }}
+                      className="w-7 h-7 rounded-lg bg-[#0f1a34] hover:bg-[#132347] border border-[#1e2e50] text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                      title={currentLang === 'ar' ? 'زيادة غرفة' : 'Increase room'}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  type="range"
+                  min="1"
+                  max="120"
+                  step="1"
+                  value={Math.min(120, roomsCount)}
+                  onChange={(e) => {
+                    setIsRoomsManuallySet(true);
+                    setRoomsCount(Number(e.target.value));
+                  }}
+                  className="w-full accent-[#38bdf8] bg-[#0a1122] h-1.5 rounded-lg cursor-pointer mt-1"
+                />
+                <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+                  <span>1 {currentLang === 'ar' ? 'غرفة' : 'room'}</span>
+                  <span>50 {currentLang === 'ar' ? 'غرفة' : 'rooms'}</span>
+                  <span>100+ {currentLang === 'ar' ? 'غرفة' : 'rooms'}</span>
                 </div>
               </div>
 
@@ -314,7 +431,7 @@ export const BOQConfigurator: React.FC<BOQConfiguratorProps> = ({
                     {t.resultTitle}
                   </h3>
                   <span className="text-xs text-[#38bdf8] font-mono">
-                    {facLabel} — {floorArea.toLocaleString()} م²
+                    {facLabel} — {floorArea.toLocaleString()} م² • {roomsCount} {currentLang === 'ar' ? 'غرفة/فراغ' : 'rooms'}
                   </span>
                 </div>
                 <button

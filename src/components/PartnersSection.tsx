@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Language, VendorBrandItem } from '../types';
+import { Language, VendorBrandItem, NavSection } from '../types';
 import { content } from '../data/translations';
-import { Award, CheckCircle2, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Award, CheckCircle2, ShieldCheck, ExternalLink, ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { SiteSettingsData } from '../services/firebaseService';
 
 interface PartnersSectionProps {
   currentLang: Language;
+  onNavigate?: (section: NavSection) => void;
   customVendors?: VendorBrandItem[];
   customSettings?: SiteSettingsData | null;
+  isCuratedPreview?: boolean;
 }
 
 interface PartnerBrandItem {
@@ -23,9 +25,16 @@ interface PartnerBrandItem {
   renderLogo: () => React.ReactNode;
 }
 
-export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, customVendors, customSettings }) => {
+export const PartnersSection: React.FC<PartnersSectionProps> = ({
+  currentLang,
+  onNavigate,
+  customVendors,
+  customSettings,
+  isCuratedPreview = false,
+}) => {
   const t = content[currentLang].partners;
   const isRtl = currentLang === 'ar';
+  const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
   const [activeCategory, setActiveCategory] = useState<'all' | 'cctv' | 'fire' | 'networks' | 'access' | 'telecom'>('all');
 
   const defaultPartners: PartnerBrandItem[] = [
@@ -303,6 +312,8 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
     ? effectivePartners
     : effectivePartners.filter((p) => p.category === activeCategory);
 
+  const displayedPartners = isCuratedPreview ? filteredPartners.slice(0, 6) : filteredPartners;
+
   return (
     <section className="py-16 sm:py-20 bg-[#f8fafc] text-[#0a1122] border-b border-[#e2e8f0] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -348,7 +359,7 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
 
         {/* Brand Grid: Flat Paper White Cards with 1px #e2e8f0 hairline border */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {filteredPartners.map((brand) => (
+          {displayedPartners.map((brand) => (
             <div
               key={brand.id}
               className="flex flex-col items-center justify-between p-4 sm:p-5 rounded-2xl bg-white border border-[#e2e8f0] hover:border-slate-400 transition-all flat-card text-center"
@@ -385,6 +396,24 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({ currentLang, c
             </div>
           ))}
         </div>
+
+        {/* Curated Preview Full Brands CTA */}
+        {isCuratedPreview && onNavigate && (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => onNavigate('brands')}
+              className="inline-flex items-center gap-2.5 px-6 py-3 text-xs sm:text-sm font-semibold text-[#0a1122] bg-white hover:bg-slate-50 border border-[#e2e8f0] hover:border-slate-400 rounded-xl transition-all cursor-pointer group shadow-sm"
+            >
+              <span>
+                {currentLang === 'ar'
+                  ? `استعراض كافة العلامات التجارية والشركاء المعتمدين (${effectivePartners.length} علامة)`
+                  : `Explore All Certified Brands & Technology Partners (${effectivePartners.length} Brands)`}
+              </span>
+              <ArrowIcon className="w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
         {/* Concise Vendor Integration Statement (P0-5) */}
         <div className="mt-10 p-5 sm:p-6 rounded-2xl bg-white border border-[#e2e8f0] flat-card text-center">

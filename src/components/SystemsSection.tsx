@@ -22,6 +22,7 @@ interface SystemsSectionProps {
   onSelectSystemForBOQ?: (systemTitle: string) => void;
   customSystems?: LightCurrentSystem[];
   customSettings?: SiteSettingsData | null;
+  isCuratedPreview?: boolean;
 }
 
 export const SystemsSection: React.FC<SystemsSectionProps> = ({
@@ -30,6 +31,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
   onSelectSystemForBOQ,
   customSystems,
   customSettings,
+  isCuratedPreview = false,
 }) => {
   const t = content[currentLang].systems;
   const isRtl = currentLang === 'ar';
@@ -52,6 +54,8 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
         }
         return item.category === activeCategory;
       });
+
+  const displayedItems = isCuratedPreview ? filteredItems.slice(0, 4) : filteredItems;
 
   const handleSelectSystem = (item: LightCurrentSystem) => {
     setSelectedSystem(item);
@@ -191,7 +195,7 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
 
         {/* Low Current Systems Cards Grid: Flat #0f1a34 cards with #1e2e50 hairline borders */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => {
+          {displayedItems.map((item) => {
             const isCurrentlySelected = selectedSystem?.id === item.id;
             return (
               <div
@@ -300,6 +304,24 @@ export const SystemsSection: React.FC<SystemsSectionProps> = ({
             );
           })}
         </div>
+
+        {/* Curated Preview Full Catalog CTA Button */}
+        {isCuratedPreview && (
+          <div className="mt-12 text-center">
+            <button
+              type="button"
+              onClick={() => onNavigate('systems')}
+              className="inline-flex items-center gap-3 px-8 py-4 text-xs sm:text-sm font-semibold text-[#0a1122] bg-[#22c55e] hover:bg-[#16a34a] hover:text-white rounded-xl shadow-lg shadow-emerald-500/10 transition-all cursor-pointer group"
+            >
+              <span>
+                {currentLang === 'ar'
+                  ? `استعراض كافة أنظمة التيار الخفيف والمواصفات الفنية (${systemsList.length} أنظمة متكاملة)`
+                  : `Explore All Low Current Systems & Full Specs (${systemsList.length} Systems)`}
+              </span>
+              <ArrowIcon className="w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
         {/* Inline In-Page Technical Dossier */}
         {selectedSystem && (

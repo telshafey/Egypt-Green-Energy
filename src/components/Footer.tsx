@@ -15,6 +15,7 @@ interface FooterProps {
     showSystems?: boolean;
     showProjects?: boolean;
     showConfigurator?: boolean;
+    showPartners?: boolean;
     showContact?: boolean;
   };
 }
@@ -113,6 +114,16 @@ export const Footer: React.FC<FooterProps> = ({ currentLang, onNavigate, customS
                     className="hover:text-[#38bdf8] transition-colors cursor-pointer"
                   >
                     {t.nav.configurator}
+                  </button>
+                </li>
+              )}
+              {sectionVisibility?.showPartners !== false && (
+                <li>
+                  <button
+                    onClick={() => onNavigate('brands')}
+                    className="hover:text-[#38bdf8] transition-colors cursor-pointer"
+                  >
+                    {t.nav.brands}
                   </button>
                 </li>
               )}

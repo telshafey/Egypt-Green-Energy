@@ -22,6 +22,7 @@ interface ProjectsSectionProps {
   onSelectProjectForBOQ?: (projectTitle: string) => void;
   customProjects?: ProjectItem[];
   customSettings?: SiteSettingsData | null;
+  isCuratedPreview?: boolean;
 }
 
 export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
@@ -30,6 +31,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   onSelectProjectForBOQ,
   customProjects,
   customSettings,
+  isCuratedPreview = false,
 }) => {
   const t = content[currentLang].projects;
   const isRtl = currentLang === 'ar';
@@ -45,6 +47,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
   const filteredProjects = activeFilter === 'all'
     ? projectsList
     : projectsList.filter((item) => item.category === activeFilter);
+
+  const displayedProjects = isCuratedPreview ? filteredProjects.slice(0, 3) : filteredProjects;
 
   const handleSelectProject = (project: ProjectItem) => {
     setSelectedProject(project);
@@ -158,7 +162,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
 
         {/* Projects Grid: Flat Paper White Cards with #e2e8f0 hairline border */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => {
+          {displayedProjects.map((project) => {
             const isSelected = selectedProject?.id === project.id;
             return (
               <div
@@ -237,6 +241,24 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({
             );
           })}
         </div>
+
+        {/* Curated Preview Full Projects Gallery CTA Button */}
+        {isCuratedPreview && (
+          <div className="mt-12 text-center">
+            <button
+              type="button"
+              onClick={() => onNavigate('projects')}
+              className="inline-flex items-center gap-3 px-8 py-4 text-xs sm:text-sm font-semibold text-white bg-[#0a1122] hover:bg-[#1a2d54] rounded-xl shadow-lg shadow-slate-900/10 transition-all cursor-pointer group"
+            >
+              <span>
+                {currentLang === 'ar'
+                  ? `استعراض كافة مشاريع سابقة الأعمال والمواصفات المعتمدة (${projectsList.length} مشروع)`
+                  : `Explore All Landmark Projects & Field Specs (${projectsList.length} Projects)`}
+              </span>
+              <ArrowIcon className="w-4 h-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
         {/* Inline In-Page Project Dossier */}
         {selectedProject && (

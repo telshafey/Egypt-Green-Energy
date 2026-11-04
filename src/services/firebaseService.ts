@@ -66,6 +66,13 @@ export interface EstimatorSettingsData {
   timelineAreaDivisor?: number;
   timelineWeeksPerSystem?: number;
 
+  // Rooms & Zones Parameters
+  defaultRoomsCount?: number;
+  areaPerRoomDefault?: number;
+  dropsPerRoom?: number;
+  fireDetectorsPerRoom?: number;
+  doorsPerRoomFactor?: number;
+
   // Default floor area & disclaimer
   defaultFloorArea?: number;
   customDisclaimerAr?: string;
@@ -88,9 +95,11 @@ export const DEFAULT_ESTIMATOR_CONFIG: EstimatorSettingsData = {
   accessAreaPerDoor: 280,
   accessBaseAdd: 1,
   accessMinDoors: 2,
+  doorsPerRoomFactor: 0.2,
 
   fireAreaPerDevice: 50,
   fireMinDevices: 6,
+  fireDetectorsPerRoom: 1,
 
   paAreaPerSpeaker: 70,
   paMinSpeakers: 4,
@@ -102,6 +111,11 @@ export const DEFAULT_ESTIMATOR_CONFIG: EstimatorSettingsData = {
   timelineBaseWeeks: 2,
   timelineAreaDivisor: 600,
   timelineWeeksPerSystem: 0.8,
+
+  // Rooms & Zones Defaults
+  defaultRoomsCount: 25,
+  areaPerRoomDefault: 40,
+  dropsPerRoom: 2,
 
   defaultFloorArea: 1200,
   customDisclaimerAr: 'يتطلب تحديد الكميات بدقة مراجعة المخططات الهندسية وجداول المواصفات الفنية للمنشأة.',

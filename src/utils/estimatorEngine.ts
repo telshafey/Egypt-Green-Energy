@@ -32,6 +32,7 @@ export interface ProjectEstimatorInput {
   selectedSystems: SystemCode[];
   // Progressive Disclosure Fields
   floorsCount?: number;
+  roomsCount?: number;
   buildingsCount?: number;
   projectType?: 'new_construction' | 'existing_facility';
   infrastructureStatus?: 'ready' | 'needs_full_containment' | 'under_assessment';

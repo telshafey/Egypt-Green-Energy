@@ -223,6 +223,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Estimator Sandbox / Simulator States
   const [simFacilityType, setSimFacilityType] = useState<string>('office');
   const [simFloorArea, setSimFloorArea] = useState<number>(1200);
+  const [simRoomsCount, setSimRoomsCount] = useState<number>(25);
   const [simSelectedModules, setSimSelectedModules] = useState<string[]>([
     'cctv',
     'fire',
@@ -2867,8 +2868,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 ? (cfg.cablingResidentialDensity ?? 25)
                 : (cfg.cablingOtherDensity ?? 30);
 
+            const simDropsByArea = Math.round(simFloorArea / simDensityFactor);
+            const simDropsByRooms = simRoomsCount * (cfg.dropsPerRoom ?? 2);
             const simDrops = simSelectedModules.includes('cabling')
-              ? Math.max(cfg.cablingMinDrops ?? 8, Math.round(simFloorArea / simDensityFactor))
+              ? Math.max(cfg.cablingMinDrops ?? 8, Math.max(simDropsByArea, simDropsByRooms))
               : 0;
 
             const simCameraDensity =
@@ -2877,19 +2880,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 : (cfg.cctvStandardDensity ?? 85);
 
             const simCctv = simSelectedModules.includes('cctv')
-              ? Math.max(cfg.cctvMinCameras ?? 4, Math.round(simFloorArea / simCameraDensity) + (cfg.cctvBaseAdd ?? 2))
+              ? Math.max(
+                  cfg.cctvMinCameras ?? 4,
+                  Math.round(simFloorArea / simCameraDensity) + Math.round(simRoomsCount * 0.15) + (cfg.cctvBaseAdd ?? 2)
+                )
               : 0;
 
+            const simDoorsByArea = Math.round(simFloorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1);
+            const simDoorsByRooms = Math.round(simRoomsCount * (cfg.doorsPerRoomFactor ?? 0.2)) + (cfg.accessBaseAdd ?? 1);
             const simDoorsCount = simSelectedModules.includes('access')
-              ? Math.max(cfg.accessMinDoors ?? 2, Math.round(simFloorArea / (cfg.accessAreaPerDoor ?? 280)) + (cfg.accessBaseAdd ?? 1))
+              ? Math.max(cfg.accessMinDoors ?? 2, Math.max(simDoorsByArea, simDoorsByRooms))
               : 0;
 
+            const simFireByArea = Math.round(simFloorArea / (cfg.fireAreaPerDevice ?? 50));
+            const simFireByRooms = simRoomsCount * (cfg.fireDetectorsPerRoom ?? 1) + Math.max(2, Math.round(simFloorArea / 250));
             const simFireDevices = simSelectedModules.includes('fire')
-              ? Math.max(cfg.fireMinDevices ?? 6, Math.round(simFloorArea / (cfg.fireAreaPerDevice ?? 50)))
+              ? Math.max(cfg.fireMinDevices ?? 6, Math.max(simFireByArea, simFireByRooms))
               : 0;
 
             const simSpeakers = simSelectedModules.includes('pa')
-              ? Math.max(cfg.paMinSpeakers ?? 4, Math.round(simFloorArea / (cfg.paAreaPerSpeaker ?? 70)))
+              ? Math.max(
+                  cfg.paMinSpeakers ?? 4,
+                  Math.max(Math.round(simFloorArea / (cfg.paAreaPerSpeaker ?? 70)), Math.round(simRoomsCount * 0.5))
+                )
               : 0;
 
             const simBmsPoints = simSelectedModules.includes('bms')
@@ -2898,7 +2911,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             const simBaseWeeks = Math.max(
               cfg.timelineBaseWeeks ?? 2,
-              Math.round(simFloorArea / (cfg.timelineAreaDivisor ?? 600)) + Math.ceil(simSelectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
+              Math.round(simFloorArea / (cfg.timelineAreaDivisor ?? 600)) +
+                Math.round(simRoomsCount / 20) +
+                Math.ceil(simSelectedModules.length * (cfg.timelineWeeksPerSystem ?? 0.8))
             );
 
             return (
@@ -2984,7 +2999,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
 
                     {/* Area Slider */}
-                    <div className="md:col-span-8">
+                    <div className="md:col-span-4">
                       <div className="flex justify-between items-center mb-1.5">
                         <label className="text-[11px] font-mono text-slate-300">
                           المساحة التجريبية:
@@ -3000,8 +3015,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         max="10000"
                         step="100"
                         value={simFloorArea}
-                        onChange={(e) => setSimFloorArea(Number(e.target.value))}
+                        onChange={(e) => {
+                          const newArea = Number(e.target.value);
+                          setSimFloorArea(newArea);
+                          setSimRoomsCount(Math.max(2, Math.round(newArea / (cfg.areaPerRoomDefault || 40))));
+                        }}
                         className="w-full accent-emerald-500 bg-slate-900 h-2 rounded-lg cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Rooms Slider */}
+                    <div className="md:col-span-4">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="text-[11px] font-mono text-slate-300">
+                          عدد الغرف التجريبي:
+                        </label>
+                        <div className="flex items-center gap-1 text-xs font-mono font-bold text-[#38bdf8]">
+                          <span>{simRoomsCount}</span>
+                          <span className="text-slate-400">غرفة</span>
+                        </div>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="150"
+                        step="1"
+                        value={simRoomsCount}
+                        onChange={(e) => setSimRoomsCount(Number(e.target.value))}
+                        className="w-full accent-[#38bdf8] bg-slate-900 h-2 rounded-lg cursor-pointer"
                       />
                     </div>
                   </div>
@@ -3190,6 +3231,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         />
                         <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 8 نقاط كحد أدنى</span>
                       </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          نقاط الشبكة المقدرة لكل غرفة (Drops / Room)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={cfg.dropsPerRoom ?? 2}
+                          onChange={(e) => updateEstimatorConfig('dropsPerRoom', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 2 نقطة شبكة لكل غرفة</span>
+                      </div>
                     </div>
                   </div>
 
@@ -3328,7 +3384,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span>4. أنظمة إنذار الحريق والسلامة (Fire Alarm Systems)</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">
                           مساحة التغطية للكاشف الواحد طبقاً للكود (م² / كاشف)
@@ -3357,6 +3413,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                         />
                         <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 6 كواشف</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          كواشف الحريق لكل غرفة مستقلة (Detectors / Room)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="5"
+                          value={cfg.fireDetectorsPerRoom ?? 1}
+                          onChange={(e) => updateEstimatorConfig('fireDetectorsPerRoom', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: كاشف واحد لكل غرفة</span>
                       </div>
                     </div>
                   </div>
@@ -3514,6 +3585,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                         />
                         <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 1,200 م²</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          العدد الافتراضي للغرف والمكاتب
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="200"
+                          value={cfg.defaultRoomsCount ?? 25}
+                          onChange={(e) => updateEstimatorConfig('defaultRoomsCount', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 25 غرفة</span>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          متوسط مساحة الغرفة المقترحة (م² / غرفة)
+                        </label>
+                        <input
+                          type="number"
+                          min="15"
+                          max="150"
+                          value={cfg.areaPerRoomDefault ?? 40}
+                          onChange={(e) => updateEstimatorConfig('areaPerRoomDefault', Number(e.target.value))}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                        />
+                        <span className="text-[10px] text-slate-500 mt-0.5 block">الافتراضي: 40 م² لكل غرفة</span>
                       </div>
                     </div>
 
