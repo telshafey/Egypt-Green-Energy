@@ -23,6 +23,9 @@ import {
   UploadCloud,
   LogOut,
   Key,
+  Search,
+  Crop,
+  Filter,
   Server,
   Check,
   Building2,
@@ -108,6 +111,9 @@ import { content, CCTV_IMAGE, CABLING_IMAGE, ACCESS_IMAGE } from '../data/transl
 import { resolveImageUrl, handleImageError, DEFAULT_HERO_IMAGE, DEFAULT_CCTV_IMAGE, DEFAULT_CABLING_IMAGE } from '../utils/imageHelper';
 import { BrandLogo } from './BrandLogo';
 import { checkLoginRateLimit, recordFailedLoginAttempt, resetLoginRateLimit } from '../utils/security';
+import { ImageEditorModal, ImageEditorResult } from './ImageEditorModal';
+import { MediaPickerModal } from './MediaPickerModal';
+import { STOCK_ENGINEERING_IMAGES } from '../data/stockEngineeringImages';
 
 interface AdminDashboardProps {
   currentLang: Language;
@@ -214,6 +220,65 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     format: string;
   } | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
+
+  // Navigation Suite & Tab Filtering State
+  const [activeSuite, setActiveSuite] = useState<'all' | 'content' | 'systems' | 'media' | 'operations'>('all');
+  const [tabSearchQuery, setTabSearchQuery] = useState<string>('');
+
+  // Universal Media Picker Modal State
+  const [mediaPickerState, setMediaPickerState] = useState<{
+    isOpen: boolean;
+    target: 'hero' | 'logo' | 'system' | 'project' | 'vendor' | 'general';
+    title?: string;
+    currentUrl?: string;
+    onSelectCallback?: (url: string, title?: string) => void;
+  }>({
+    isOpen: false,
+    target: 'general',
+  });
+
+  // Universal Image Editor Modal State
+  const [imageEditorState, setImageEditorState] = useState<{
+    isOpen: boolean;
+    imageUrl: string;
+    imageTitle?: string;
+    targetContext: 'hero' | 'system' | 'project' | 'vendor' | 'logo' | 'general';
+    onSaveCallback?: (result: ImageEditorResult) => Promise<void> | void;
+  }>({
+    isOpen: false,
+    imageUrl: '',
+    targetContext: 'general',
+  });
+
+  const openMediaPicker = (
+    target: 'hero' | 'logo' | 'system' | 'project' | 'vendor' | 'general',
+    currentUrl?: string,
+    title?: string,
+    onSelectCallback?: (url: string, title?: string) => void
+  ) => {
+    setMediaPickerState({
+      isOpen: true,
+      target,
+      currentUrl,
+      title: title || 'اختيار صورة من المكتبة',
+      onSelectCallback,
+    });
+  };
+
+  const openImageEditor = (
+    imageUrl: string,
+    targetContext: 'hero' | 'system' | 'project' | 'vendor' | 'logo' | 'general',
+    imageTitle?: string,
+    onSaveCallback?: (result: ImageEditorResult) => Promise<void> | void
+  ) => {
+    setImageEditorState({
+      isOpen: true,
+      imageUrl,
+      imageTitle: imageTitle || 'تعديل الصورة',
+      targetContext,
+      onSaveCallback,
+    });
+  };
 
   // Vendor Brands Management States
   const [vendors, setVendors] = useState<VendorBrandItem[]>(DEFAULT_VENDOR_BRANDS);
@@ -1449,104 +1514,78 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Main Admin Layout with Tabs */}
       <div className="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
         {/* Navigation Sidebar Tabs */}
-        <aside className="w-full md:w-64 shrink-0 space-y-1.5">
-          <button
-            onClick={() => {
-              setActiveTab('general');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'general'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            <span>الهوية والواجهة (Hero)</span>
-          </button>
+        <aside className="w-full md:w-72 shrink-0 space-y-3">
+          {/* Quick Tab Search */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={tabSearchQuery}
+              onChange={(e) => setTabSearchQuery(e.target.value)}
+              placeholder="بحث في أقسام اللوحة..."
+              className="w-full pr-8 pl-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+            {tabSearchQuery && (
+              <button
+                type="button"
+                onClick={() => setTabSearchQuery('')}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
-          <button
-            onClick={() => {
-              setActiveTab('stats');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'stats'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span>الأرقام والإحصائيات (4 Pillars)</span>
-          </button>
+          {/* Suite Category Pills */}
+          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-950 border border-slate-800 rounded-xl text-[10px] font-semibold">
+            {[
+              { id: 'all', label: 'الكل' },
+              { id: 'content', label: 'المحتوى' },
+              { id: 'systems', label: 'الأنظمة' },
+              { id: 'media', label: 'الصور' },
+              { id: 'operations', label: 'الإدارة' },
+            ].map((suite) => (
+              <button
+                key={suite.id}
+                type="button"
+                onClick={() => setActiveSuite(suite.id as any)}
+                className={`py-1 px-1.5 rounded-lg transition-colors cursor-pointer text-center truncate ${
+                  activeSuite === suite.id
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {suite.label}
+              </button>
+            ))}
+          </div>
 
-          <button
-            onClick={() => {
-              setActiveTab('about');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'about'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Compass className="w-4 h-4" />
-            <span>من نحن ورؤية ورسالة الشركة</span>
-          </button>
+          {/* Navigation Buttons List */}
+          <nav className="space-y-1">
+            {[
+              // 1. Content & Brand
+              { id: 'general' as AdminTab, label: 'الهوية والواجهة (Hero)', icon: <Settings className="w-4 h-4" />, suite: 'content' },
+              { id: 'headers' as AdminTab, label: 'عناوين ومقدمات الأقسام', icon: <LayoutGrid className="w-4 h-4" />, suite: 'content' },
+              { id: 'about' as AdminTab, label: 'من نحن والرؤية والرسالة', icon: <Compass className="w-4 h-4" />, suite: 'content' },
+              { id: 'heritage' as AdminTab, label: 'الجذور التاريخية (طاقة ومياه)', icon: <History className="w-4 h-4" />, suite: 'content' },
+              { id: 'stats' as AdminTab, label: 'الأرقام والإحصائيات (4 Pillars)', icon: <TrendingUp className="w-4 h-4" />, suite: 'content' },
 
-          <button
-            onClick={() => {
-              setActiveTab('heritage');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'heritage'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <History className="w-4 h-4" />
-            <span>الجذور التاريخية (طاقة ومياه)</span>
-          </button>
+              // 2. Systems & Engineering Solutions
+              { id: 'systems' as AdminTab, label: 'منظومات التيار الخفيف (ELV)', icon: <Layers className="w-4 h-4" />, suite: 'systems', badge: systems.length },
+              { id: 'projects' as AdminTab, label: 'المشروعات وسابقة الأعمال', icon: <FolderGit2 className="w-4 h-4" />, suite: 'systems', badge: projects.length },
+              { id: 'vendors' as AdminTab, label: 'العلامات والموردين (Vendors)', icon: <Award className="w-4 h-4" />, suite: 'systems', badge: vendors.length },
+              { id: 'estimator' as AdminTab, label: 'حاسبة التقدير (BOQ Config)', icon: <Sliders className="w-4 h-4 text-emerald-400" />, suite: 'systems', badge: 'تحكم كامل' },
 
-          <button
-            onClick={() => {
-              setActiveTab('headers');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'headers'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            <span>عناوين ومقدمات الأقسام</span>
-          </button>
+              // 3. Media & Image Studio
+              { id: 'media' as AdminTab, label: 'استوديو الصور والوسائط', icon: <ImageIcon className="w-4 h-4 text-emerald-400" />, suite: 'media', badge: mediaAssets.length, badgeColor: 'bg-emerald-500/20 text-emerald-300' },
 
-          <button
-            onClick={() => {
-              setActiveTab('visibility');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'visibility'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Eye className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>أقسام العرض (إظهار / إخفاء)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                {[
+              // 4. Operations & Security
+              {
+                id: 'visibility' as AdminTab,
+                label: 'أقسام العرض (إظهار / إخفاء)',
+                icon: <Eye className="w-4 h-4" />,
+                suite: 'operations',
+                badge: `${[
                   settings.showStats !== false,
                   settings.showAbout !== false,
                   settings.showHeritage !== false,
@@ -1555,177 +1594,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   settings.showConfigurator !== false,
                   settings.showPartners !== false,
                   settings.showContact !== false,
-                ].filter(Boolean).length}/8 مفعل
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('estimator');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'estimator'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Sliders className="w-4 h-4 text-emerald-400" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>حاسبة ومساعد التقدير (BOQ)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-semibold">
-                تحكم كامل
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('systems');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'systems'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>أنظمة التيار الخفيف (ELV)</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                {systems.length}
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('projects');
-              setEditingSystem(null);
-              setEditingProject(null);
-              setEditingVendor(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'projects'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <FolderGit2 className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>المشروعات وسابقة الأعمال</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                {projects.length}
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('vendors');
-              setEditingSystem(null);
-              setEditingProject(null);
-              setEditingVendor(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'vendors'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Award className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>العلامات والموردين (Vendors)</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                {vendors.length}
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('media');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'media'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <ImageIcon className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>مكتبة الصور والوسائط</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                {mediaAssets.length}
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('inquiries');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'inquiries'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Mail className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>استشارات وطلبات الزوار</span>
-              {inquiries.length > 0 && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
-                  {inquiries.length}
-                </span>
-              )}
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('users');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'users'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            <div className="flex-1 flex items-center justify-between">
-              <span>المستخدمون والصلاحيات</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                {adminUsers.length}
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab('security');
-              setEditingSystem(null);
-              setEditingProject(null);
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'security'
-                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
-            }`}
-          >
-            <Key className="w-4 h-4" />
-            <span>الرابط السري وفايربيز</span>
-          </button>
+                ].filter(Boolean).length}/8`,
+              },
+              {
+                id: 'inquiries' as AdminTab,
+                label: 'استشارات وطلبات الزوار',
+                icon: <Mail className="w-4 h-4" />,
+                suite: 'operations',
+                badge: inquiries.length > 0 ? inquiries.length : undefined,
+                badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/40',
+              },
+              { id: 'users' as AdminTab, label: 'المستخدمون والصلاحيات', icon: <Users className="w-4 h-4" />, suite: 'operations', badge: adminUsers.length },
+              { id: 'security' as AdminTab, label: 'الرابط السري وفايربيز', icon: <Key className="w-4 h-4" />, suite: 'operations' },
+            ]
+              .filter((tab) => {
+                const matchesSuite = activeSuite === 'all' || tab.suite === activeSuite;
+                const matchesSearch =
+                  !tabSearchQuery.trim() ||
+                  tab.label.toLowerCase().includes(tabSearchQuery.toLowerCase());
+                return matchesSuite && matchesSearch;
+              })
+              .map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setEditingSystem(null);
+                      setEditingProject(null);
+                      setEditingVendor(null);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                    }`}
+                  >
+                    <span className={isActive ? 'text-white' : 'text-slate-400'}>{tab.icon}</span>
+                    <span className="flex-1 text-start truncate">{tab.label}</span>
+                    {tab.badge !== undefined && (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-semibold shrink-0 ${
+                          tab.badgeColor
+                            ? tab.badgeColor
+                            : isActive
+                            ? 'bg-emerald-700/80 text-white'
+                            : 'bg-slate-800 text-slate-300'
+                        }`}
+                      >
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+          </nav>
         </aside>
 
         {/* Main Content Card */}
@@ -1850,9 +1775,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {/* Right: URL Input & Upload Action */}
                   <div className="lg:col-span-7 space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        رابط صورة الشعار (Logo URL) أو رفعه مباشرة
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-300">
+                          صورة الشعار الرسمي (Logo URL / File)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openMediaPicker('logo', settings.logoUrl, 'اختيار شعار الشركة من الوسائط', (url) => {
+                                handleSetLogoImage(url);
+                              })
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <ImageIcon className="w-3 h-3" />
+                            <span>المعرض والوسائط</span>
+                          </button>
+                          {settings.logoUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openImageEditor(
+                                  settings.logoUrl || '',
+                                  'logo',
+                                  'تعديل وقص الشعار الرسمي (1:1)',
+                                  async (res) => {
+                                    handleSetLogoImage(res.dataUrl);
+                                    showToast('تم تعديل وحفظ الشعار بنجاح');
+                                  }
+                                )
+                              }
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-purple-400 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              <Crop className="w-3 h-3" />
+                              <span>تعديل وقص الشعار</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -1882,7 +1844,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {/* Quick Pick from Media Assets */}
                     {mediaAssets.length > 0 && (
                       <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-                        <span className="text-[10px] text-slate-500 shrink-0">اختيار من الوسائط:</span>
+                        <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع:</span>
                         {mediaAssets.slice(0, 7).map((asset) => (
                           <button
                             key={asset.id}
@@ -1965,9 +1927,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {/* Right: URL Input & Device Upload Button */}
                   <div className="lg:col-span-7 space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        رفع صورة خلفية من جهازك أو إدخال رابط مباشر
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-300">
+                          صورة خلفية الواجهة (Hero Image)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openMediaPicker('hero', settings.heroImageUrl, 'اختيار خلفية Hero من المعرض والوسائط', (url) => {
+                                handleSetHeroImage(url);
+                              })
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <ImageIcon className="w-3 h-3" />
+                            <span>المعرض والوسائط</span>
+                          </button>
+                          {settings.heroImageUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openImageEditor(
+                                  settings.heroImageUrl || '',
+                                  'hero',
+                                  'تعديل وقص خلفية الواجهة (16:9)',
+                                  async (res) => {
+                                    handleSetHeroImage(res.dataUrl);
+                                    showToast('تم تعديل وقص خلفية الواجهة بنجاح');
+                                  }
+                                )
+                              }
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              <Crop className="w-3 h-3" />
+                              <span>تعديل وقص (16:9)</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -1997,7 +1996,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {/* Quick Pick from Media Assets */}
                     {mediaAssets.length > 0 && (
                       <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-                        <span className="text-[10px] text-slate-500 shrink-0">اختيار من المكتبة:</span>
+                        <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع:</span>
                         {mediaAssets.slice(0, 7).map((asset) => (
                           <button
                             key={asset.id}
@@ -4107,10 +4106,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      صورة النظام — رفع من جهازك أو إدخال رابط مباشر
-                    </label>
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        صورة النظام والمجال الهندسي
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openMediaPicker(
+                              'system',
+                              editingSystem.image,
+                              `صورة نظام ${editingSystem.title}`,
+                              (url) => setEditingSystem({ ...editingSystem, image: url })
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          <span>اختيار من المعرض</span>
+                        </button>
+
+                        {editingSystem.image && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openImageEditor(
+                                editingSystem.image,
+                                'system',
+                                `تعديل صورة نظام ${editingSystem.title}`,
+                                async (res) => {
+                                  setEditingSystem({ ...editingSystem, image: res.dataUrl });
+                                  showToast('تم تعديل وقص صورة النظام بنجاح');
+                                }
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <Crop className="w-3.5 h-3.5" />
+                            <span>تعديل وقص الصورة</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -4141,10 +4181,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       )}
                     </div>
 
-                    {/* Quick Image Selector from Media Assets */}
-                    <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-1">
+                    {/* Quick Image Selector from Media Assets & Stock */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto py-1">
                       <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع:</span>
-                      {mediaAssets.slice(0, 6).map((asset) => (
+                      {mediaAssets.slice(0, 5).map((asset) => (
                         <button
                           key={asset.id}
                           type="button"
@@ -4156,6 +4196,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             src={resolveImageUrl(asset.url, DEFAULT_CCTV_IMAGE)}
                             alt={asset.title}
                             onError={handleImageError}
+                            className="w-6 h-6 rounded object-cover"
+                          />
+                        </button>
+                      ))}
+                      {STOCK_ENGINEERING_IMAGES.slice(0, 4).map((stock) => (
+                        <button
+                          key={stock.id}
+                          type="button"
+                          onClick={() => setEditingSystem({ ...editingSystem, image: stock.url })}
+                          className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-blue-500 shrink-0 transition-colors"
+                          title={stock.titleAr}
+                        >
+                          <img
+                            src={stock.url}
+                            alt={stock.titleAr}
                             className="w-6 h-6 rounded object-cover"
                           />
                         </button>
@@ -4398,10 +4453,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      صورة المشروع — رفع من جهازك أو إدخال رابط مباشر
-                    </label>
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <label className="block text-xs font-semibold text-slate-300">
+                        صورة المشروع الميداني
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openMediaPicker(
+                              'project',
+                              editingProject.image,
+                              `صورة مشروع ${editingProject.title}`,
+                              (url) => setEditingProject({ ...editingProject, image: url })
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                        >
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          <span>اختيار من المعرض</span>
+                        </button>
+
+                        {editingProject.image && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openImageEditor(
+                                editingProject.image,
+                                'project',
+                                `تعديل وقص صورة مشروع ${editingProject.title}`,
+                                async (res) => {
+                                  setEditingProject({ ...editingProject, image: res.dataUrl });
+                                  showToast('تم تعديل وقص صورة المشروع بنجاح');
+                                }
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <Crop className="w-3.5 h-3.5" />
+                            <span>تعديل وقص الصورة</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -4432,10 +4528,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       )}
                     </div>
 
-                    {/* Quick Image Picker */}
-                    <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-1">
-                      <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع من الوسائط:</span>
-                      {mediaAssets.slice(0, 6).map((asset) => (
+                    {/* Quick Image Picker from Media Assets & Stock */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                      <span className="text-[10px] text-slate-500 shrink-0">اختيار سريع:</span>
+                      {mediaAssets.slice(0, 5).map((asset) => (
                         <button
                           key={asset.id}
                           type="button"
@@ -4447,6 +4543,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             src={resolveImageUrl(asset.url, DEFAULT_CABLING_IMAGE)}
                             alt={asset.title}
                             onError={handleImageError}
+                            className="w-6 h-6 rounded object-cover"
+                          />
+                        </button>
+                      ))}
+                      {STOCK_ENGINEERING_IMAGES.slice(0, 4).map((stock) => (
+                        <button
+                          key={stock.id}
+                          type="button"
+                          onClick={() => setEditingProject({ ...editingProject, image: stock.url })}
+                          className="p-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-blue-500 shrink-0 transition-colors"
+                          title={stock.titleAr}
+                        >
+                          <img
+                            src={stock.url}
+                            alt={stock.titleAr}
                             className="w-6 h-6 rounded object-cover"
                           />
                         </button>
@@ -4651,9 +4762,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     {/* Logo URL & File Upload */}
                     <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                      <label className="block text-xs font-semibold text-slate-300">
-                        ملف الشعار (Logo File / URL)
-                      </label>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label className="block text-xs font-semibold text-slate-300">
+                          ملف الشعار (Logo File / URL)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openMediaPicker('vendor', newVendorForm.logoUrl, 'اختيار شعار العلامة التجارية من المعرض', (url) => {
+                                setNewVendorForm((prev) => ({ ...prev, logoUrl: url }));
+                              })
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            <span>المعرض والوسائط</span>
+                          </button>
+
+                          {newVendorForm.logoUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openImageEditor(
+                                  newVendorForm.logoUrl,
+                                  'vendor',
+                                  `تعديل شعار ${newVendorForm.name || 'العلامة'}`,
+                                  async (res) => {
+                                    setNewVendorForm((prev) => ({ ...prev, logoUrl: res.dataUrl }));
+                                    showToast('تم تعديل وقص الشعار بنجاح');
+                                  }
+                                )
+                              }
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              <Crop className="w-3.5 h-3.5" />
+                              <span>تعديل وقص (1:1)</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex flex-col sm:flex-row items-center gap-3">
                         <input
                           type="text"
@@ -4662,25 +4811,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           onChange={(e) => setNewVendorForm({ ...newVendorForm, logoUrl: e.target.value })}
                           className="flex-1 w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
                         />
-                        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 cursor-pointer whitespace-nowrap">
+                        <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer whitespace-nowrap">
                           <Upload className="w-3.5 h-3.5" />
                           <span>رفع ملف شعار (.svg / .png)</span>
                           <input
                             type="file"
                             accept="image/*,.svg"
                             className="hidden"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (loadEvt) => {
-                                  const res = loadEvt.target?.result as string;
-                                  if (res) {
-                                    setNewVendorForm((prev) => ({ ...prev, logoUrl: res }));
-                                    showToast('تم تحميل ملف الشعار بنجاح');
-                                  }
-                                };
-                                reader.readAsDataURL(file);
+                                try {
+                                  showToast('جارِ ضغط وتجهيز الشعار...', 'info');
+                                  const optimized = await optimizeImageForDatabase(file, {
+                                    maxWidth: 600,
+                                    maxHeight: 600,
+                                    quality: 0.9,
+                                    preserveTransparency: true,
+                                  });
+                                  setNewVendorForm((prev) => ({ ...prev, logoUrl: optimized.dataUrl }));
+                                  showToast(`تم تجهيز الشعار بنجاح (${optimized.compressedSizeKb} KB)`);
+                                } catch (err: unknown) {
+                                  const msg = err instanceof Error ? err.message : 'تعذر رفع الشعار';
+                                  showToast(msg, 'error');
+                                }
                               }
                             }}
                           />
@@ -4871,9 +5025,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     {/* Logo URL & File Upload */}
                     <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-                      <label className="block text-xs font-semibold text-slate-300">
-                        ملف الشعار (Logo File / URL)
-                      </label>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label className="block text-xs font-semibold text-slate-300">
+                          ملف الشعار (Logo File / URL)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openMediaPicker('vendor', editingVendor.logoUrl, `اختيار شعار ${editingVendor.name}`, (url) => {
+                                setEditingVendor((prev) => (prev ? { ...prev, logoUrl: url } : null));
+                              })
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            <span>المعرض والوسائط</span>
+                          </button>
+
+                          {editingVendor.logoUrl && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openImageEditor(
+                                  editingVendor.logoUrl,
+                                  'vendor',
+                                  `تعديل وقص شعار ${editingVendor.name}`,
+                                  async (res) => {
+                                    setEditingVendor((prev) => (prev ? { ...prev, logoUrl: res.dataUrl } : null));
+                                    showToast('تم تعديل وقص الشعار بنجاح');
+                                  }
+                                )
+                              }
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              <Crop className="w-3.5 h-3.5" />
+                              <span>تعديل وقص (1:1)</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex flex-col sm:flex-row items-center gap-3">
                         <input
                           type="text"
@@ -4881,25 +5073,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           onChange={(e) => setEditingVendor({ ...editingVendor, logoUrl: e.target.value })}
                           className="flex-1 w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                         />
-                        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 cursor-pointer whitespace-nowrap">
+                        <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer whitespace-nowrap">
                           <Upload className="w-3.5 h-3.5" />
                           <span>تغيير ملف الشعار (.svg / .png)</span>
                           <input
                             type="file"
                             accept="image/*,.svg"
                             className="hidden"
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (loadEvt) => {
-                                  const res = loadEvt.target?.result as string;
-                                  if (res) {
-                                    setEditingVendor((prev) => (prev ? { ...prev, logoUrl: res } : null));
-                                    showToast('تم تحديث ملف الشعار بنجاح');
-                                  }
-                                };
-                                reader.readAsDataURL(file);
+                                try {
+                                  showToast('جارِ ضغط وتجهيز الشعار...', 'info');
+                                  const optimized = await optimizeImageForDatabase(file, {
+                                    maxWidth: 600,
+                                    maxHeight: 600,
+                                    quality: 0.9,
+                                    preserveTransparency: true,
+                                  });
+                                  setEditingVendor((prev) => (prev ? { ...prev, logoUrl: optimized.dataUrl } : null));
+                                  showToast(`تم تحديث ملف الشعار بنجاح (${optimized.compressedSizeKb} KB)`);
+                                } catch (err: unknown) {
+                                  const msg = err instanceof Error ? err.message : 'تعذر تحديث الشعار';
+                                  showToast(msg, 'error');
+                                }
                               }
                             }}
                           />
@@ -5590,33 +5787,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </p>
                 </div>
 
-                {/* Mode Selector */}
-                <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                {/* Mode Selector and Stock Presets */}
+                <div className="flex items-center flex-wrap gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setMediaUploadMode('upload')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      mediaUploadMode === 'upload'
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
+                    onClick={() =>
+                      openMediaPicker('general', '', 'معرض الصور الهندسية المتخصصة', async (url, title) => {
+                        // Import stock photo to media assets
+                        const newAsset: MediaAssetData = {
+                          id: `media-stock-${Date.now()}`,
+                          title: title || 'صورة هندسية متخصصة',
+                          url,
+                          category: 'systems',
+                          createdAt: new Date().toISOString(),
+                          source: 'upload',
+                        };
+                        await saveMediaAsset(newAsset);
+                        setMediaAssets((prev) => [newAsset, ...prev]);
+                        showToast('تمت إضافة الصورة الهندسية بنجاح إلى مكتبة وسائط الموقع');
+                      })
+                    }
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer shadow-sm"
                   >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>رفع ملف من جهازك</span>
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>المعرض الهندسي الجاهز (Stock Presets)</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setMediaUploadMode('url')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      mediaUploadMode === 'url'
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>رابط خارجي (URL)</span>
-                  </button>
+                  <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setMediaUploadMode('upload')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        mediaUploadMode === 'upload'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>رفع من جهازك</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMediaUploadMode('url')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        mediaUploadMode === 'url'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>رابط خارجي</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -5779,19 +6002,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           إلغاء واختيار صورة أخرى
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={handleSaveDeviceImageToDatabase}
-                          disabled={isUploadingMedia}
-                          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
-                        >
-                          <Save className="w-4 h-4" />
-                          <span>
-                            {isUploadingMedia
-                              ? 'جارِ الحفظ في قاعدة البيانات...'
-                              : 'حفظ الصورة في قاعدة بيانات فايربيز'}
-                          </span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openImageEditor(
+                                selectedDeviceImage.dataUrl,
+                                'general',
+                                newMediaTitle || selectedDeviceImage.name,
+                                (result) => {
+                                  setSelectedDeviceImage({
+                                    ...selectedDeviceImage,
+                                    dataUrl: result.dataUrl,
+                                    width: result.width,
+                                    height: result.height,
+                                    compressedKb: result.sizeKb,
+                                    format: result.format,
+                                  });
+                                  if (result.title) setNewMediaTitle(result.title);
+                                  showToast('تم تطبيق التعديلات والقص على الصورة المعاينة');
+                                }
+                              )
+                            }
+                            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-blue-400 border border-slate-700 transition-colors cursor-pointer"
+                          >
+                            <Sliders className="w-3.5 h-3.5" />
+                            <span>تعديل وقص بالاستوديو</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleSaveDeviceImageToDatabase}
+                            disabled={isUploadingMedia}
+                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                          >
+                            <Save className="w-4 h-4" />
+                            <span>
+                              {isUploadingMedia
+                                ? 'جارِ الحفظ في قاعدة البيانات...'
+                                : 'حفظ الصورة في قاعدة بيانات فايربيز'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -5953,6 +6205,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </div>
 
                           <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openImageEditor(
+                                  asset.url,
+                                  'general',
+                                  `تعديل ${asset.title}`,
+                                  async (res) => {
+                                    const updatedAsset: MediaAssetData = {
+                                      ...asset,
+                                      title: res.title,
+                                      url: res.dataUrl,
+                                      sizeKb: res.sizeKb,
+                                      dimensions: `${res.width}x${res.height}`,
+                                      format: res.format,
+                                      createdAt: new Date().toISOString(),
+                                    };
+                                    await saveMediaAsset(updatedAsset);
+                                    setMediaAssets((prev) =>
+                                      prev.map((item) => (item.id === asset.id ? updatedAsset : item))
+                                    );
+                                    showToast(`تم حفظ وتحديث الصورة المعدلة (${res.sizeKb} KB)`);
+                                  }
+                                )
+                              }
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-900 transition-colors cursor-pointer"
+                              title="تعديل وقص وضبط الصورة بالاستوديو"
+                            >
+                              <Sliders className="w-3.5 h-3.5" />
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => {
@@ -6708,6 +6991,96 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         </main>
       </div>
+
+      {/* Universal Media Picker Modal */}
+      <MediaPickerModal
+        isOpen={mediaPickerState.isOpen}
+        currentSelectedUrl={mediaPickerState.currentUrl}
+        mediaAssets={mediaAssets}
+        title={mediaPickerState.title}
+        onClose={() => setMediaPickerState((prev) => ({ ...prev, isOpen: false }))}
+        onSelect={(url, title) => {
+          if (mediaPickerState.onSelectCallback) {
+            mediaPickerState.onSelectCallback(url, title);
+          }
+        }}
+        onUploadNew={async (file) => {
+          try {
+            showToast('جارِ فحص وضغط الصورة...', 'info');
+            const optimized = await optimizeImageForDatabase(file, {
+              maxWidth: 1600,
+              maxHeight: 1200,
+              quality: 0.85,
+            });
+            const newAsset: MediaAssetData = {
+              id: `media-${Date.now()}`,
+              title: file.name.replace(/\.[^/.]+$/, ''),
+              url: optimized.dataUrl,
+              category:
+                mediaPickerState.target === 'hero'
+                  ? 'hero'
+                  : mediaPickerState.target === 'logo' || mediaPickerState.target === 'vendor'
+                  ? 'brand'
+                  : 'systems',
+              createdAt: new Date().toISOString(),
+              sizeKb: optimized.compressedSizeKb,
+              dimensions: `${optimized.width}x${optimized.height}`,
+              format: optimized.format,
+              source: 'upload',
+            };
+            await saveMediaAsset(newAsset);
+            setMediaAssets((prev) => [newAsset, ...prev]);
+            showToast(`تم رفع الصورة وحفظها في قاعدة البيانات بنجاح (${optimized.compressedSizeKb} KB)`);
+            if (mediaPickerState.onSelectCallback) {
+              mediaPickerState.onSelectCallback(optimized.dataUrl, newAsset.title);
+            }
+            setMediaPickerState((prev) => ({ ...prev, isOpen: false }));
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'تعذر رفع الصورة';
+            showToast(msg, 'error');
+          }
+        }}
+        onOpenEditorForImage={(url, title) => {
+          openImageEditor(
+            url,
+            mediaPickerState.target,
+            title,
+            async (result) => {
+              const newAsset: MediaAssetData = {
+                id: `media-edited-${Date.now()}`,
+                title: result.title,
+                url: result.dataUrl,
+                category: mediaPickerState.target === 'hero' ? 'hero' : 'systems',
+                createdAt: new Date().toISOString(),
+                sizeKb: result.sizeKb,
+                dimensions: `${result.width}x${result.height}`,
+                format: result.format,
+                source: 'upload',
+              };
+              await saveMediaAsset(newAsset);
+              setMediaAssets((prev) => [newAsset, ...prev]);
+              if (mediaPickerState.onSelectCallback) {
+                mediaPickerState.onSelectCallback(result.dataUrl, result.title);
+              }
+              showToast(`تم حفظ وتطبيق الصورة المعدلة (${result.sizeKb} KB)`);
+            }
+          );
+        }}
+      />
+
+      {/* Universal Image Editor Modal */}
+      <ImageEditorModal
+        isOpen={imageEditorState.isOpen}
+        imageUrl={imageEditorState.imageUrl}
+        imageTitle={imageEditorState.imageTitle}
+        targetContext={imageEditorState.targetContext}
+        onClose={() => setImageEditorState((prev) => ({ ...prev, isOpen: false }))}
+        onSave={async (result) => {
+          if (imageEditorState.onSaveCallback) {
+            await imageEditorState.onSaveCallback(result);
+          }
+        }}
+      />
     </div>
   );
 };
